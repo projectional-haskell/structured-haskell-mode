@@ -63,7 +63,7 @@ the parsing.
 Add the elisp library to your `load-path` and require the library.
 
     (add-to-list 'load-path "/path/to/structured-haskell-mode/elisp")
-    (require 'structured-haskell-mode)
+    (require 'shm)
 
 Then add it to your haskell-mode-hook:
 
