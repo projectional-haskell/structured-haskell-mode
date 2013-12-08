@@ -42,7 +42,7 @@ outputWith action typ code =
                      code
     _ -> error "Unknown parser type."
 
-fix :: AppFixity ast => ast -> ast
+fix :: AppFixity ast => ast SrcSpanInfo -> ast SrcSpanInfo
 fix = fromMaybe (error "fix") . applyFixities baseFixities
 
 instance Alternative ParseResult where
