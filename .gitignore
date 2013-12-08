@@ -1,0 +1,4 @@
+TAGS
+dist/
+.dir-locals.el
+*.elc
