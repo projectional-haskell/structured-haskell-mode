@@ -42,8 +42,7 @@ outputWith action typ code =
                      code
     _ -> error "Unknown parser type."
 
-fix :: AppFixity ast => ast -> ast
-fix = fromMaybe (error "fix") . applyFixities baseFixities
+  where fix = fromMaybe (error "fix") . applyFixities baseFixities
 
 instance Alternative ParseResult where
   empty = ParseFailed undefined undefined
