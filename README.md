@@ -16,6 +16,10 @@ deletes your Emacs configuration (worse!). It is not fit for public
 consumption. Any bug reports, complaints, requests, etc. will be
 considered a syntax error.
 
+**TL;DR** by [Anthony Cowley](https://twitter.com/intent/tweet?in_reply_to=409757464297746432)
+
+<img src="http://mymememaker.com/media/created/vqggr3.jpg" alt="TL;DR" width="300"/>
+
 That said, it beats vanilla haskell-mode.
 
 ## Features
