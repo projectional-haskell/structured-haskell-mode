@@ -3,7 +3,7 @@
 This minor mode provides structured editing operations based on the syntax
 of Haskell. In short-hand it's called SHM and throughout the codebase,
 too. It acts a bit like, and is heavily inspired by,
-[paredit-mode](http://www.emacswiki.org/emacs/ParEdit) for Emacs.
+[paredit-mode](https://www.youtube.com/watch?v=D6h5dFyyUX0) for Emacs.
 
 ## Alpha: Here be dragons
 
