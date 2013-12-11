@@ -70,7 +70,6 @@
     (define-key map (kbd "[") 'shm/open-bracket)
     (define-key map (kbd "{") 'shm/open-brace)
     (define-key map (kbd ",") 'shm/comma)
-    (define-key map (kbd "=") 'shm/=)
     (define-key map (kbd ":") 'shm/:)
     ;; Indentation
     (define-key map (kbd "C-j") 'shm/newline-indent)
