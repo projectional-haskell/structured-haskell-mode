@@ -440,8 +440,7 @@ the current node to the parent."
   with it."
   (interactive)
   (if (and (looking-at ".+")
-           (save-excursion (looking-at " ")
-                           (forward-char -1)))
+           (looking-back " "))
       ;; If there's some stuff trailing us, then drag that with us.
       (let ((newline-string (shm/kill 'buffer-substring-no-properties))
             (point (point)))
