@@ -79,6 +79,8 @@
     (define-key map (kbd "DEL") 'shm/del)
     (define-key map (kbd "<deletechar>") 'shm/delete)
     (define-key map (kbd "M-^") 'shm/delete-indentation)
+    (define-key map (kbd "M-DEL") 'shm/backward-kill-word)
+    (define-key map (kbd "C-<backspace>") 'shm/backward-kill-word)
     ;; Killing & yanking
     (define-key map (kbd "C-k") 'shm/kill-line)
     (define-key map (kbd "M-k") 'shm/kill)
@@ -701,6 +703,15 @@ location. See `shm/yank' for documentation on that."
 
 ;;; Deletion
 
+(defun shm/backward-kill-word ()
+  "Kill the word backwards."
+  (interactive)
+  (shm-appropriate-adjustment-point)
+  (let ((to-be-deleted (save-excursion (backward-word)
+                                       (point))))
+    (shm-adjust-dependents (point) (* -1 (- (point) to-be-deleted)))
+    (backward-kill-word n)))
+
 (defun shm/delete ()
   "Delete the current node."
   (interactive)
@@ -744,12 +755,10 @@ parse errors that are rarely useful. For example:
    ;; This is the base case, we assume that we can freely delete
    ;; whatever we're looking back at, and that the node will be able
    ;; to re-parse it.
-   (t (let ((current (shm-current-node)))
-        (let ((buffer-read-only nil))
-          (save-excursion
-            (shm-appropriate-adjustment-point)
-            (shm-adjust-dependents (point) -1))
-          (shm-delete-char)))))
+   (t (save-excursion
+        (shm-appropriate-adjustment-point)
+        (shm-adjust-dependents (point) -1))
+      (shm-delete-char)))
   (shm/init t))
 
 
