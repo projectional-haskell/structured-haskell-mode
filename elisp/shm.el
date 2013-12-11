@@ -1050,8 +1050,12 @@ this underside dangling vs not. But that will be implemented as a
 separate function rather than hard-coded into this one specific
 operation."
   (let ((column (current-column))
+        (line (line-beginning-position))
         (start (point)))
     (funcall do-insert)
+    (when (= line (line-beginning-position))
+      (shm-adjust-dependents start (- (current-column)
+                                      column)))
     (let ((end (point)))
       (cond
        ((progn (goto-char start)
