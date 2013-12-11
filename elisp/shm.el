@@ -153,6 +153,12 @@ state that will hopefully be garbage collected."
   (when structured-haskell-mode
     (shm/reparse)))
 
+(defun shm-indent-spaces ()
+  "Get the number of spaces to indent."
+  (if (boundp 'haskell-indent-spaces)
+      haskell-indent-spaces
+    shm-indent-spaces))
+
 
 ;; Faces
 
@@ -181,8 +187,10 @@ state that will hopefully be garbage collected."
   :group 'shm
   :type 'string)
 
-(defcustom shm-node-indent-spaces
-  2
+(defcustom shm-indent-spaces
+  (if (boundp 'haskell-indent-spaces)
+      haskell-indent-spaces
+    2)
   "The number of spaces to indent by default."
   :group 'shm
   :type 'string)
@@ -849,7 +857,7 @@ lists."
      ;; Lambdas indents k spaces inwards
      ((eq 'Lambda (shm-node-cons current))
       (newline)
-      (indent-to (+ shm-node-indent-spaces (shm-node-start-column current))))
+      (indent-to (+ (shm-indent-spaces) (shm-node-start-column current))))
      ;; Indentation for function application.
      ((eq 'App (shm-node-cons parent))
       (let ((column
@@ -860,11 +868,11 @@ lists."
         (cond
          ((and (or (= column (current-column))
                    (= column (+ (shm-node-start-column parent)
-                                shm-node-indent-spaces)))
+                                (shm-indent-spaces))))
                (/= column (shm-node-start-column parent)))
           (newline)
           (indent-to (+ (shm-node-start-column parent)
-                        shm-node-indent-spaces)))
+                        (shm-indent-spaces))))
          (t
           (newline)
           (indent-to column)))))
@@ -895,7 +903,7 @@ lists."
         (shm/init)))
      ((eq 'Lambda (shm-node-cons parent))
       (newline)
-      (indent-to (+ shm-node-indent-spaces
+      (indent-to (+ (shm-indent-spaces)
                     (shm-node-start-column parent))))
      ;; Guards | foo = …
      ((string= "GuardedRhs" (shm-node-type-name current))
@@ -907,24 +915,24 @@ lists."
           (string= "Rhs" (shm-node-type-name current))
           (string= "GuardedAlt" (shm-node-type-name parent)))
       (newline)
-      (indent-to (+ shm-node-indent-spaces
+      (indent-to (+ (shm-indent-spaces)
                     (shm-node-start-column (cdr (shm-node-parent parent-pair))))))
      ;; When in a field update.
      ((string= "FieldUpdate" (shm-node-type-name parent))
       (newline)
       (indent-to (+ (shm-node-start-column parent)
-                    shm-node-indent-spaces)))
+                    (shm-indent-spaces))))
      ;; When in an alt list
      ((string= "GuardedAlts" (shm-node-type-name current))
       (newline)
       (indent-to (+ (shm-node-start-column parent)
-                    shm-node-indent-spaces)))
+                    (shm-indent-spaces))))
      ;; When in a case alt.
      ((string= "GuardedAlts" (shm-node-type-name parent))
       (newline)
       (let ((alt (cdr (shm-node-parent parent-pair))))
         (indent-to (+ (shm-node-start-column alt)
-                      shm-node-indent-spaces))))
+                      (shm-indent-spaces)))))
      ;; Infix operators
      ((eq 'InfixApp (shm-node-cons parent))
       (newline)
@@ -1043,7 +1051,7 @@ operation."
           (goto-char end)
           (indent-rigidly start
                           end
-                          (+ shm-node-indent-spaces
+                          (+ (shm-indent-spaces)
                              (shm-node-start-column node)))
           (delete-region start
                          (save-excursion
