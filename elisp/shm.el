@@ -705,11 +705,13 @@ location. See `shm/yank' for documentation on that."
 (defun shm/backward-kill-word ()
   "Kill the word backwards."
   (interactive)
-  (shm-appropriate-adjustment-point)
+
   (let ((to-be-deleted (save-excursion (backward-word)
                                        (point))))
-    (shm-adjust-dependents (point) (* -1 (- (point) to-be-deleted)))
-    (backward-kill-word n)))
+    (save-excursion
+      (shm-appropriate-adjustment-point)
+      (shm-adjust-dependents (point) (* -1 (- (point) to-be-deleted))))
+    (backward-kill-word 1)))
 
 (defun shm/delete ()
   "Delete the current node."
