@@ -82,8 +82,9 @@
     (define-key map (kbd "C-<backspace>") 'shm/backward-kill-word)
     ;; Killing & yanking
     (define-key map (kbd "C-k") 'shm/kill-line)
-    (define-key map (kbd "M-k") 'shm/kill)
-    (define-key map (kbd "C-M-k") 'shm/kill)
+    (define-key map (kbd "M-k") 'shm/kill-node)
+    (define-key map (kbd "C-w") 'shm/kill-region)
+    (define-key map (kbd "C-M-k") 'shm/kill-node)
     (define-key map (kbd "C-y") 'shm/yank)
     (define-key map (kbd "M-y") 'shm/yank-pop)
     ;; Navigation
@@ -428,7 +429,7 @@ the current node to the parent."
        ((or (looking-at "then[] [{}\"'()]")
             (looking-at "else[] [{}\"'()]"))
         (delete-indentation))
-       (t (let ((string (shm/kill 'buffer-substring-no-properties)))
+       (t (let ((string (shm-kill-node 'buffer-substring-no-properties)))
             (delete-indentation)
             (insert " ")
             (shm-insert-indented
@@ -443,7 +444,7 @@ the current node to the parent."
   (if (and (looking-at ".+")
            (looking-back " "))
       ;; If there's some stuff trailing us, then drag that with us.
-      (let ((newline-string (shm/kill 'buffer-substring-no-properties))
+      (let ((newline-string (shm-kill-node 'buffer-substring-no-properties))
             (point (point)))
         (shm-newline-indent)
         (shm-insert-indented
@@ -572,8 +573,8 @@ This is more convenient than typing out the same operator."
     (if parent
         (if (string= (shm-node-type current)
                      (shm-node-type parent))
-            (let ((shm/raise-code (shm/kill 'buffer-substring-no-properties)))
-              (shm/kill 'buffer-substring-no-properties parent)
+            (let ((shm/raise-code (shm-kill-node 'buffer-substring-no-properties)))
+              (shm-kill-node 'buffer-substring-no-properties parent)
               (shm-insert-indented (lambda () (insert shm/raise-code)))
               (shm/reparse)))
       (error "No parent!"))))
@@ -590,6 +591,11 @@ This is more convenient than typing out the same operator."
 ;;         )))))
 
 ;;; Killing and yanking
+
+(defun shm/kill-region (beg end)
+  "Kill the region, and save it in the clipboard."
+  (interactive "r")
+  (shm-kill-region nil beg end))
 
 (defun shm/kill-line ()
   "Kill everything possible to kill after point before the end of
@@ -615,77 +621,10 @@ will insert them back verbatim."
       (shm-kill-to-end-of-line t)))
    (t (shm-kill-to-end-of-line))))
 
-(defun shm/kill (&optional save-it node start)
-  "Kill the current node.
-
-This normalizes everything it kills assuming what has been killed
-is a node or set of nodes. Indentation is stripped off and
-preserved appropriately so that if we kill e.g.
-
-foo = {do bar
-          mu}
-
-where {} indicates the current node, then what is put into the kill ring is:
-
-do bar
-   mu
-
-rather than what is normally put there,
-
-do bar
-          mu
-
-So this is nice to paste elsewhere outside of Emacs, but it's
-especially nice for pasting back into other parts of code,
-because the yank function will take advantage of this
-normalization and paste and re-indent to fit into the new
-location. See `shm/yank' for documentation on that."
+(defun shm/kill-node ()
+  "Kill the current node."
   (interactive)
-  (let* ((current (or node (shm-current-node)))
-         (start (or start (shm-node-start current))))
-    (goto-char start)
-    (let* ((start-col (current-column))
-           (multi-line (/= (line-beginning-position)
-                           (save-excursion (goto-char (shm-node-end current))
-                                           (line-beginning-position))))
-           (string (buffer-substring-no-properties
-                    start
-                    (shm-node-end current))))
-      (let ((result
-             (with-current-buffer (get-buffer-create shm-kill-zone-name)
-               (erase-buffer)
-               (when multi-line
-                 (insert (make-string start-col ? )))
-               (insert string)
-               ;; This code de-indents code until a single line is hitting column zero.
-               (while (progn (goto-char (point-min))
-                             (not (and (search-forward-regexp "^[^ ]" nil t 1)
-                                       (forward-line -1)
-                                       ;; If there are empty lines, they
-                                       ;; don't count as hitting column zero.
-                                       (if (/= (line-beginning-position)
-                                               (line-end-position))
-                                           t
-                                         ;; And we should actually delete empty lines.
-                                         (progn (delete-region (1- (point)) (point))
-                                                nil)))))
-                 ;; Bring everything back one.
-                 (indent-rigidly (point-min) (point-max)
-                                 -1))
-               ;; If there's an empty line at the end, then strip that
-               ;; out. It's just bothersome when pasting back in.
-               (goto-char (point-max))
-               (when (looking-at "^$")
-                 (delete-region (1- (point))
-                                (point)))
-               ;; Finally, the actual save.
-               (funcall (if save-it save-it 'clipboard-kill-ring-save)
-                        (point-min)
-                        (point-max)))))
-        (let ((inhibit-read-only t))
-          (delete-region start
-                         (shm-node-end current)))
-        result))))
+  (shm-kill-node))
 
 (defun shm/yank ()
   "Yank from the kill ring and insert indented with `shm-insert-indented'."
@@ -819,6 +758,86 @@ NODE-PAIR to use the specific node-pair (index + node)."
 
 
 ;; Indentation
+
+(defun shm-kill-node (&optional save-it node start)
+  "Kill the current node.
+
+See documentation of `shm-kill-region' for the transformations
+this does."
+  (interactive)
+  (let* ((current (or node (shm-current-node))))
+    (shm-kill-region save-it
+                     (or start (shm-node-start current))
+                     (shm-node-end current))))
+
+(defun shm-kill-region (save-it start end)
+  "Kill the given region, dropping any redundant indentation.
+
+This normalizes everything it kills assuming what has been killed
+is a node or set of nodes. Indentation is stripped off and
+preserved appropriately so that if we kill e.g.
+
+foo = {do bar
+          mu}
+
+where {} indicates the current node, then what is put into the kill ring is:
+
+do bar
+   mu
+
+rather than what is normally put there,
+
+do bar
+          mu
+
+So this is nice to paste elsewhere outside of Emacs, but it's
+especially nice for pasting back into other parts of code,
+because the yank function will take advantage of this
+normalization and paste and re-indent to fit into the new
+location. See `shm/yank' for documentation on that."
+  (goto-char start)
+  (let* ((start-col (current-column))
+         (multi-line (/= (line-beginning-position)
+                         (save-excursion (goto-char end)
+                                         (line-beginning-position))))
+         (string (buffer-substring-no-properties
+                  start
+                  end))
+         (result
+          (with-current-buffer (get-buffer-create shm-kill-zone-name)
+            (erase-buffer)
+            (when multi-line
+              (insert (make-string start-col ? )))
+            (insert string)
+            ;; This code de-indents code until a single line is hitting column zero.
+            (while (progn (goto-char (point-min))
+                          (not (and (search-forward-regexp "^[^ ]" nil t 1)
+                                    (forward-line -1)
+                                    ;; If there are empty lines, they
+                                    ;; don't count as hitting column zero.
+                                    (if (/= (line-beginning-position)
+                                            (line-end-position))
+                                        t
+                                      ;; And we should actually delete empty lines.
+                                      (progn (delete-region (1- (point)) (point))
+                                             nil)))))
+              ;; Bring everything back one.
+              (indent-rigidly (point-min) (point-max)
+                              -1))
+            ;; If there's an empty line at the end, then strip that
+            ;; out. It's just bothersome when pasting back in.
+            (goto-char (point-max))
+            (when (looking-at "^$")
+              (delete-region (1- (point))
+                             (point)))
+            ;; Finally, the actual save.
+            (funcall (if save-it save-it 'clipboard-kill-ring-save)
+                     (point-min)
+                     (point-max)))))
+    (let ((inhibit-read-only t))
+      (delete-region start
+                     end))
+    result))
 
 (defun shm-appropriate-adjustment-point ()
   "Go to the appropriate adjustment point.
@@ -1116,9 +1135,9 @@ the line."
                      (when prepend-newline
                        (kill-append "\n" nil))
                      (if (< i (length vector))
-                         (shm/kill 'clipboard-kill-ring-save
-                                   parent
-                                   (point))
+                         (shm-kill-node 'clipboard-kill-ring-save
+                                        parent
+                                        (point))
                        (let ((line-end-position (if prepend-newline
                                                     (save-excursion (forward-line)
                                                                     (line-end-position))

@@ -308,15 +308,6 @@ parseModulePragma mode code =
          :end-buffer-content "main :: X
 "
          :kbd ":X")
-   (list :name "auto-insert-equal"
-         :start-buffer-content "main
-"
-         :start-cursor 5
-         :finish-cursor 9
-         :current-node-overlay '(8 9)
-         :end-buffer-content "main = x
-"
-         :kbd "=x")
    (list :name "slide-over-used-equal"
          :start-buffer-content "main = x
 "
