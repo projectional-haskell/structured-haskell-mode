@@ -962,6 +962,8 @@ lists."
       (let ((alt (cdr (shm-node-parent parent-pair))))
         (indent-to (+ (shm-node-start-column alt)
                       (shm-indent-spaces)))))
+     ;; Copy infix operators similar to making new list/tuple
+     ;; separators
      ((eq 'InfixApp (shm-node-cons parent))
       (let* ((operand-pair (shm-node-previous current-pair))
              (operand (cdr operand-pair))
