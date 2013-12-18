@@ -199,6 +199,12 @@ state that will hopefully be garbage collected."
   :group 'shm
   :type 'string)
 
+(defcustom shm-lambda-indent-style
+  'leftmost-parent
+  "Specify a particular style for indenting lambdas?"
+  :group 'shm
+  :type 'symbol)
+
 (defcustom shm-idle-timeout
   0.2
   "Number of seconds before re-parsing."
@@ -507,8 +513,8 @@ hai = do foo bar
   with it."
   (interactive)
   (if (and (looking-at "[^])}\"]") ;; This is a cheap solution. It
-                                   ;; could use node boundaries
-                                   ;; instead.
+           ;; could use node boundaries
+           ;; instead.
            (not (looking-at "$"))
            (looking-back " "))
       ;; If there's some stuff trailing us, then drag that with us.
@@ -999,9 +1005,15 @@ lists."
                              ? ))
         (shm/init)))
      ((eq 'Lambda (shm-node-cons parent))
-      (newline)
-      (indent-to (+ (shm-indent-spaces)
-                    (shm-node-start-column parent))))
+      (cond
+       ((eq shm-lambda-indent-style 'leftmost-parent)
+        (let ((leftmost-parent (cdr (shm-find-furthest-parent-on-line parent-pair))))
+          (newline)
+          (indent-to (+ (shm-indent-spaces)
+                        (shm-node-indent-column leftmost-parent)))))
+       (t (newline)
+          (indent-to (+ (shm-indent-spaces)
+                        (shm-node-start-column parent))))))
      ;; Guards | foo = …
      ((string= "GuardedRhs" (shm-node-type-name current))
       (newline)
@@ -1163,7 +1175,7 @@ operation."
           (indent-rigidly start
                           end
                           (+ (shm-indent-spaces)
-                             (shm-node-start-column node)))
+                             (shm-node-indent-column node)))
           (delete-region start
                          (save-excursion
                            (goto-char start)
@@ -1762,6 +1774,15 @@ deletion. The markers will be garbage collected eventually."
   "Get the starting column of N."
   (save-excursion (goto-char (shm-node-start n))
                   (current-column)))
+
+(defun shm-node-indent-column (n)
+  "Get the starting column of N."
+  (+ (shm-node-start-column n)
+     (if (or (string= "Tuple" (shm-node-cons n))
+             (string= "Paren" (shm-node-cons n))
+             (string= "List" (shm-node-cons n)))
+         1
+       0)))
 
 (defun shm-node-end-column (n)
   "Get the end column of N."
