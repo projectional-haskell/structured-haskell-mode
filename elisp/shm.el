@@ -458,6 +458,7 @@ the current node to the parent."
   (if (and (looking-at "[^])}\"]") ;; This is a cheap solution. It
                                    ;; could use node boundaries
                                    ;; instead.
+           (not (looking-at "$"))
            (looking-back " "))
       ;; If there's some stuff trailing us, then drag that with us.
       (let ((newline-string (shm-kill-node 'buffer-substring-no-properties))
