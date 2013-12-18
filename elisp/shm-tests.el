@@ -316,6 +316,32 @@ parseModulePragma mode code =
          :current-node-overlay '(1 5)
          :end-buffer-content "main = x
 "
-         :kbd [backspace])))
+         :kbd [backspace])
+   (list :name "swing-down"
+         :start-buffer-content "main = do foo bar
+          mu zot
+
+"
+         :start-cursor 9
+         :finish-cursor 14
+         :current-node-overlay '(14 17)
+         :end-buffer-content "main = do
+  foo bar
+  mu zot
+"
+         :kbd "
+")
+   (list :name "swing-up"
+         :start-buffer-content "hai = do
+  foo bar
+  mu zot
+"
+         :start-cursor 8
+         :finish-cursor 10
+         :current-node-overlay '(10 13)
+         :end-buffer-content "hai = do foo bar
+         mu zot
+"
+         :kbd "")))
 
 (provide 'shm-tests)

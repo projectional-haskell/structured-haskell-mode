@@ -74,6 +74,8 @@
     ;; Indentation
     (define-key map (kbd "C-j") 'shm/newline-indent)
     (define-key map (kbd "M-)") 'paredit-close-round-and-newline)
+    (define-key map (kbd "C-c C-^") 'shm/swing-up)
+    (define-key map (kbd "C-c C-j") 'shm/swing-down)
     ;; Deletion
     (define-key map (kbd "DEL") 'shm/del)
     (define-key map (kbd "<deletechar>") 'shm/delete)
@@ -452,6 +454,33 @@ the current node to the parent."
              (lambda ()
                (insert string))))))
     (delete-indentation)))
+
+(defun shm/swing-down ()
+  "Swing the children of the current node downwards."
+  (interactive)
+  (let* ((current-pair (shm-current-node-pair))
+         (current (cdr current-pair))
+         (swing-string
+          (shm-kill-node 'buffer-substring-no-properties
+                         current
+                         (shm-node-start (shm-node-child current-pair)))))
+    (shm/newline-indent)
+    (shm-insert-indented (lambda () (insert swing-string)))))
+
+(defun shm/swing-up ()
+  "Swing the children of the current node upwards."
+  (interactive)
+  (let* ((current-pair (shm-current-node-pair))
+         (current (cdr current-pair))
+         (swing-string
+          (shm-kill-node 'buffer-substring-no-properties
+                         current
+                         (shm-node-start (shm-node-child current-pair)))))
+    (delete-indentation)
+    (if (looking-at " ")
+        (forward-char 1)
+      (insert " "))
+    (shm-insert-indented (lambda () (insert swing-string)))))
 
 (defun shm/newline-indent ()
   "Make a newline and indent, making sure to drag anything down, re-indented
@@ -1427,6 +1456,18 @@ tree."
                                            bound))))
                      (cons i
                            (elt vector i)))))))
+
+(defun shm-node-child-pair (node-pair)
+  "Return the immediate child-pair of the given parent."
+  (let ((vector (shm-decl-ast))
+        (i (car node-pair)))
+    (when (< i (1- (length vector)))
+      (cons (1+ i)
+            (elt vector (1+ i))))))
+
+(defun shm-node-child (node-pair)
+  "Return the immediate child of the given parent."
+  (cdr (shm-node-child-pair node-pair)))
 
 (defun shm-node-parent (node-pair &optional type bound)
   "Return the direct parent of the given node-pair.
