@@ -77,6 +77,13 @@ You'll want to customize these two variables: `shm-quarantine-face`
 and `shm-current-face` to something that better suites your color
 theme.
 
+**Solarized-light users**
+
+The following are apparently pretty good for solarized-light.
+
+    (set-face-background 'shm-current-face "#eee8d5")
+    (set-face-background 'shm-quarantine-face "lemonchiffon")
+
 ## Checking it works
 
 Some users have trouble with the executable being in their PATH
