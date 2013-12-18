@@ -77,6 +77,39 @@ You'll want to customize these two variables: `shm-quarantine-face`
 and `shm-current-face` to something that better suites your color
 theme.
 
+## Checking it works
+
+Some users have trouble with the executable being in their PATH
+properly. That's fine, here's how to check that you're setup.
+
+1. Open a Haskell file and go to a _syntactically valid_ declaration,
+   e.g. `main = return ()`.
+2. Check that your modeline contains `SHM` only.
+
+    * `SHM!` means a parse error.
+    * `SHM?` means it hasn't been able to parse _anything_ yet.
+
+   Both in this scenario should not appear, if they do, see the
+   next steps.
+
+If your modeline is not `SHM` and the current declaration doesn't have
+a grey box anywhere in it, then you have a problem.
+
+Go back to the declaration and try `M-x shm/test-exe`. You should be
+taken to a `*shm-scratch-test*` buffer containing a vector of source
+spans. If you don't, and you have something more like "program not
+found", then you need to make sure it's findable.
+
+You can try:
+
+1. Set the Emacs `PATH`:
+
+        (setenv "PATH" (shell-command-to-string "echo $PATH"))
+
+2. Set the binary path that SHM calls:
+
+        (setq shm-program-name "/absolute/path/to/structured-haskell-mode")
+
 ## Development
 
 ### Run tests

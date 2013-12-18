@@ -281,6 +281,19 @@ force a reparse immediately (if necessary)."
     (goto-char (shm-node-start current))
     (set-mark (shm-node-end current))))
 
+(defun shm/test-exe ()
+  "Test that the executable is working properly."
+  (let ((region (shm-decl-points)))
+    (call-process-region (car region)
+                         (cdr region)
+                         shm-program-name
+                         nil
+                         "*shm-scratch-test*"
+                         nil
+                         "parse"
+                         "decl")
+    (switch-to-buffer "*shm-scratch-test*")))
+
 (defun shm/describe-node (&optional node)
   "Present a description of the current node in the minibuffer.
 
@@ -1548,14 +1561,17 @@ imagine."
       (with-temp-buffer
         (let ((temp-buffer (current-buffer)))
           (with-current-buffer buffer
-            (call-process-region start
-                                 end
-                                 shm-program-name
-                                 nil
-                                 temp-buffer
-                                 nil
-                                 "parse"
-                                 type)))
+            (condition-case e
+                (call-process-region start
+                                     end
+                                     shm-program-name
+                                     nil
+                                     temp-buffer
+                                     nil
+                                     "parse"
+                                     type)
+              ((file-error)
+               (error "Unable to find structured-haskell-mode executable! See README for help.")))))
         (read (buffer-string))))))
 
 (defun shm-check-ast (type start end)
