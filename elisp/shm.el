@@ -283,6 +283,7 @@ force a reparse immediately (if necessary)."
 
 (defun shm/test-exe ()
   "Test that the executable is working properly."
+  (interactive)
   (let ((region (shm-decl-points)))
     (call-process-region (car region)
                          (cdr region)
