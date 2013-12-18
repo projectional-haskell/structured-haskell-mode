@@ -110,6 +110,8 @@ You can try:
 
         (setq shm-program-name "/absolute/path/to/structured-haskell-mode")
 
+After that, disable and re-enable `structured-haskell-mode`.
+
 ## Development
 
 ### Run tests
