@@ -200,10 +200,10 @@ state that will hopefully be garbage collected."
   :type 'string)
 
 (defcustom shm-lambda-indent-style
-  'leftmost-parent
+  nil
   "Specify a particular style for indenting lambdas?"
   :group 'shm
-  :type 'symbol)
+  :type '(choice (const leftmost-parent) (const nil)))
 
 (defcustom shm-idle-timeout
   0.2
