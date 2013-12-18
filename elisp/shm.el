@@ -456,7 +456,17 @@ the current node to the parent."
     (delete-indentation)))
 
 (defun shm/swing-down ()
-  "Swing the children of the current node downwards."
+  "Swing the children of the current node downwards.
+
+hai = do foo bar
+         mu zot
+
+With the cursor on `do', this will produce:
+
+hai = do
+  foo bar
+  mu zot
+"
   (interactive)
   (let* ((current-pair (shm-current-node-pair))
          (current (cdr current-pair))
@@ -468,7 +478,17 @@ the current node to the parent."
     (shm-insert-indented (lambda () (insert swing-string)))))
 
 (defun shm/swing-up ()
-  "Swing the children of the current node upwards."
+  "Swing the children of the current node upwards.
+
+hai = do
+  foo bar
+  mu zot
+
+With the cursor on `do', this will produce:
+
+hai = do foo bar
+         mu zot
+"
   (interactive)
   (let* ((current-pair (shm-current-node-pair))
          (current (cdr current-pair))
