@@ -443,6 +443,8 @@ the current node to the parent."
        ((or (looking-at "then[] [{}\"'()]")
             (looking-at "else[] [{}\"'()]"))
         (delete-indentation))
+       ((looking-at "[ ]*$")
+        (delete-indentation))
        (t (let ((string (shm-kill-node 'buffer-substring-no-properties)))
             (delete-indentation)
             (insert " ")
