@@ -455,7 +455,9 @@ the current node to the parent."
   "Make a newline and indent, making sure to drag anything down, re-indented
   with it."
   (interactive)
-  (if (and (looking-at ".+")
+  (if (and (looking-at "[^])}\"]") ;; This is a cheap solution. It
+                                   ;; could use node boundaries
+                                   ;; instead.
            (looking-back " "))
       ;; If there's some stuff trailing us, then drag that with us.
       (let ((newline-string (shm-kill-node 'buffer-substring-no-properties))
