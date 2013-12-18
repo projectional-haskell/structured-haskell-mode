@@ -90,6 +90,8 @@
     (define-key map (kbd "C-y") 'shm/yank)
     (define-key map (kbd "M-y") 'shm/yank-pop)
     ;; Navigation
+    (define-key map (kbd "C-M-f") 'shm/forward-node)
+    (define-key map (kbd "C-M-b") 'shm/backward-node)
     (define-key map (kbd "M-a") 'shm/goto-parent)
     (define-key map (kbd ")") 'shm/close-paren)
     (define-key map (kbd "C-s") 'shm/isearch-forward)
@@ -557,6 +559,30 @@ hai = do foo bar
   end rather than the start."
   (interactive)
   (shm/goto-parent nil 'end))
+
+(defun shm/forward-node ()
+  "Go forward by node, i.e. go to the next of the current node. If
+we're already at the end of the current node, jump to the next
+node."
+  (interactive)
+  (let* ((current-pair (shm-current-node-pair))
+         (current (cdr current-pair)))
+    (if (= (point) (shm-node-end current))
+        (let ((next-pair (shm-node-next current-pair)))
+          (goto-char (shm-node-start (cdr next-pair))))
+      (goto-char (shm-node-end current)))))
+
+(defun shm/backward-node ()
+  "Go backward by node, i.e. go to the previous of the current node. If
+we're already at the start of the current node, jump to the previous
+node."
+  (interactive)
+  (let* ((current-pair (shm-current-node-pair))
+         (current (cdr current-pair)))
+    (if (= (point) (shm-node-start current))
+        (let ((prev-pair (shm-node-previous current-pair)))
+          (goto-char (shm-node-start (cdr prev-pair))))
+      (goto-char (shm-node-start current)))))
 
 (defun shm/goto-parent (&optional node-pair direction)
   "Set the current node overlay to the parent node-pair"
