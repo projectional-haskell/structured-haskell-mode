@@ -102,8 +102,6 @@
     ;; Splitting, slurping, barfing, etc.
     (define-key map (kbd "C-+") 'shm/add-operand)
     (define-key map (kbd "M-r") 'shm/raise)
-    ;; Type info operations
-    (define-key map (kbd "C-c C-t") 'shm/type-of-node)
     map)
   "Structural editing operations keymap. Any key bindings in this
   map are intended to be only structural operations which operate
