@@ -877,7 +877,7 @@ NODE-PAIR to use the specific node-pair (index + node)."
 
 ;; Indentation
 
-(defun shm-kill-node (&optional save-it node start)
+(defun shm-kill-node (&optional save-it node start do-not-delete)
   "Kill the current node.
 
 See documentation of `shm-kill-region' for the transformations
@@ -886,9 +886,10 @@ this does."
   (let* ((current (or node (shm-current-node))))
     (shm-kill-region save-it
                      (or start (shm-node-start current))
-                     (shm-node-end current))))
+                     (shm-node-end current)
+                     do-not-delete)))
 
-(defun shm-kill-region (save-it start end)
+(defun shm-kill-region (save-it start end do-not-delete)
   "Kill the given region, dropping any redundant indentation.
 
 This normalizes everything it kills assuming what has been killed
@@ -953,8 +954,9 @@ location. See `shm/yank' for documentation on that."
                      (point-min)
                      (point-max)))))
     (let ((inhibit-read-only t))
-      (delete-region start
-                     end))
+      (unless do-not-delete
+        (delete-region start
+                       end)))
     result))
 
 (defun shm-appropriate-adjustment-point ()
