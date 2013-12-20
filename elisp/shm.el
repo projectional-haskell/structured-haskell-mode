@@ -225,6 +225,12 @@ state that will hopefully be garbage collected."
   :group 'shm
   :type 'bool)
 
+(defcustom shm-type-info-fallback-to-ghci
+  t
+  "Fallback to GHCi when the type-info backend returns nothing?"
+  :group 'shm
+  :type 'bool)
+
 (defcustom shm-idle-timeout
   0.2
   "Number of seconds before re-parsing."
@@ -334,7 +340,9 @@ force a reparse immediately (if necessary)."
       (let ((type-info (shm-node-type-info current)))
         (if type-info
             (shm-present-type-info current type-info)
-          (error "Unable to get type information for that node."))))
+          (if shm-type-info-fallback-to-ghci
+              (haskell-process-do-type)
+            (error "Unable to get type information for that node.")))))
      ((and (string= (shm-node-type-name current) "Name")
            (let ((parent-name (shm-node-type-name (cdr (shm-node-parent (shm-current-node-pair))))))
              (or (string= parent-name "Match")
@@ -343,7 +351,9 @@ force a reparse immediately (if necessary)."
              (type-info (shm-node-type-info node)))
         (if type-info
             (shm-present-type-info node type-info)
-          (error "Unable to get type information for that node (tried the whole decl, too)."))))
+          (if shm-type-info-fallback-to-ghci
+              (haskell-process-do-type)
+            (error "Unable to get type information for that node (tried the whole decl, too).")))))
      (t (error "Not an expression, operator, pattern binding or declaration.")))))
 
 (defun shm/describe-node (&optional node)
