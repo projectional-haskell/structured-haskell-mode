@@ -94,8 +94,6 @@
     (define-key map (kbd "C-M-b") 'shm/backward-node)
     (define-key map (kbd "M-a") 'shm/goto-parent)
     (define-key map (kbd ")") 'shm/close-paren)
-    (define-key map (kbd "C-s") 'shm/isearch-forward)
-    (define-key map (kbd "C-r") 'shm/isearch-backward)
     (define-key map (kbd "M-}") 'shm/forward-paragraph)
     (define-key map (kbd "M-{") 'shm/backward-paragraph)
     (define-key map (kbd "C-M-SPC") 'shm/mark-node)
@@ -655,18 +653,6 @@ node."
                 (shm-set-node-overlay parent-pair direction)))))
       (when node-pair
         (shm-set-node-overlay node-pair direction)))))
-
-(defun shm/isearch-forward ()
-  "Search forward and init."
-  (interactive)
-  (isearch-forward)
-  (shm/init))
-
-(defun shm/isearch-backward ()
-  "Search backward and init."
-  (interactive)
-  (isearch-backward)
-  (shm/init))
 
 ;;; Splitting, slurping, barfing
 
