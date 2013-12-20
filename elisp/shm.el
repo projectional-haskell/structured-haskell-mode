@@ -207,6 +207,24 @@ state that will hopefully be garbage collected."
   :group 'shm
   :type '(choice (const leftmost-parent) (const nil)))
 
+(defcustom shm-use-presentation-mode
+  nil
+  "Use haskell-presentation-mode?"
+  :group 'shm
+  :type 'bool)
+
+(defcustom shm-display-quarantine
+  t
+  "Display quarantine?"
+  :group 'shm
+  :type 'bool)
+
+(defcustom shm-use-hdevtools
+  nil
+  "Use hdevtools for type information?"
+  :group 'shm
+  :type 'bool)
+
 (defcustom shm-idle-timeout
   0.2
   "Number of seconds before re-parsing."
@@ -1642,7 +1660,8 @@ and instate this one."
                        (shm/init)
                        ast)
               (progn
-                (shm-quarantine-overlay start end)
+                (when shm-display-quarantine
+                  (shm-quarantine-overlay start end))
                 (setq shm-lighter " SHM!")
                 nil))))))))
 
