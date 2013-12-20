@@ -1,4 +1,5 @@
 (require 'shm)
+(require 'shm-tests)
 
 (defun shm-test/run-all ()
   "Run all tests."
