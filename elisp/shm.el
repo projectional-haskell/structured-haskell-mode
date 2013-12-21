@@ -717,7 +717,7 @@ This is more convenient than typing out the same operator."
               (shm-kill-node 'buffer-substring-no-properties parent)
               (shm-insert-indented (lambda () (insert shm/raise-code)))
               (shm/reparse)))
-      (error "No parent!"))))
+      (error "No matching parent!"))))
 
 ;; (defun shm/transpose ()
 ;;   "Transpose the current node with the previous node."
