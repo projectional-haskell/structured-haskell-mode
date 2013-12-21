@@ -1739,9 +1739,10 @@ expected to work."
                             (nth 1 con-doc))
                   (format "“%s” (no more info)"
                           (shm-node-cons node)))
-                (buffer-substring-no-properties
-                 (shm-node-start node)
-                 (shm-node-end node)))
+                (shm-kill-node 'buffer-substring-no-properties
+                               node
+                               nil
+                               t))
       (format "Node type: “%s” (no more info)"
               (shm-node-type-name node)))))
 
