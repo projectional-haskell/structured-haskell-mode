@@ -820,7 +820,7 @@ parse errors that are rarely useful. For example:
    ((looking-back "[{}]") (shm-delete-or-glide "{" "}"))
    ((looking-back "[\"]") (shm-delete-or-glide "\"" "\""))
    ((looking-back "[_ ]->") (forward-char -3))
-   ((and (looking-back "[ ]+=[ ]+")
+   ((and (looking-back " = ")
          (not (looking-at "$")))
     (search-backward-regexp "[ ]+=[ ]+"
                             (line-beginning-position)
