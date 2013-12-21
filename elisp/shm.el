@@ -539,6 +539,22 @@ hai = do
                             (shm-node-start (shm-node-child current-pair)))))
         (shm/newline-indent)
         (shm-insert-indented (lambda () (insert swing-string)))))
+     ((eq (shm-node-cons current)
+          'Var)
+      (let* ((next-pair (shm-node-next current-pair))
+            (parent-pair (shm-node-parent current-pair))
+            (start (shm-node-start-column (cdr parent-pair))))
+        (let ((swing-string
+               (shm-kill-region 'buffer-substring-no-properties
+                                (shm-node-start (cdr next-pair))
+                                (shm-node-end (cdr parent-pair))
+                                nil)))
+          (shm/reparse)
+          (forward-char -1)
+          (newline)
+          (indent-to (+ (shm-indent-spaces)
+                        start))
+          (shm-insert-indented (lambda () (insert swing-string))))))
      (t
       (error "Don't know how to swing that kind of expression.")))))
 
