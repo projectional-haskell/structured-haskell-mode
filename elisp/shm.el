@@ -1335,8 +1335,7 @@ the line."
   (let* ((vector (shm-decl-ast))
          (current-pair (shm-current-node-pair))
          (current (cdr current-pair))
-         (parent-pair (or (shm-node-parent current-pair nil (point))
-                          current-pair))
+         (parent-pair (shm-node-ancestor-at-point current-pair (point)))
          (parent (cdr parent-pair)))
     (loop for i
           from 0
@@ -1627,6 +1626,14 @@ tree."
 (defun shm-node-child (node-pair)
   "Return the immediate child of the given parent."
   (cdr (shm-node-child-pair node-pair)))
+
+(defun shm-node-ancestor-at-point (node-pair point)
+  "Find the highest up ancestor that still starts at this point."
+  (let ((parent-pair (shm-node-parent node-pair)))
+    (if (= (shm-node-start (cdr parent-pair))
+           point)
+        (shm-node-ancestor-at-point parent-pair point)
+      node-pair)))
 
 (defun shm-node-parent (node-pair &optional type bound)
   "Return the direct parent of the given node-pair.
