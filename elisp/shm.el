@@ -1418,7 +1418,7 @@ here."
         (shm-adjust-dependents
          (point)
          (+
-          (if (not (looking-back "[ ,[({}]"))
+          (if (not (looking-back "[ ,[({]"))
               (progn (insert " ") 1)
             0)
           (length open)
