@@ -5,23 +5,6 @@ of Haskell. In short-hand it's called SHM and throughout the codebase,
 too. It acts a bit like, and is heavily inspired by,
 [paredit-mode](https://www.youtube.com/watch?v=D6h5dFyyUX0) for Emacs.
 
-## Alpha: Here be dragons
-
-I've been using this for about two months, I am intimitely familiar
-with its quirks and bugs. Sometimes it doesn't work, sometimes it goes
-into an infinite loop, it doesn't support quasi quotes that start at
-the beginning of the line, it assumes a particular style of
-indentation, it sometimes it sets your pants on fire (uh, oh!) and
-deletes your Emacs configuration (worse!). It is not fit for public
-consumption. Any bug reports, complaints, requests, etc. will be
-considered a syntax error.
-
-**TL;DR** by [Anthony Cowley](https://twitter.com/intent/tweet?in_reply_to=409757464297746432)
-
-<img src="http://mymememaker.com/media/created/vqggr3.jpg" alt="TL;DR" width="300"/>
-
-That said, it beats vanilla haskell-mode.
-
 ## Features
 
 Its features work by parsing the current declaration with an
