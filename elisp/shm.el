@@ -1590,7 +1590,8 @@ here."
     (shm-delete-char))
    ;; Otherwise just glide over the character.
    (t
-    (forward-char -1))))
+    (when (looking-back close)
+     (forward-char -1)))))
 
 (defun shm-delimiter-empty (open close)
   "Is the current expression delimited by OPEN and CLOSE empty?"
