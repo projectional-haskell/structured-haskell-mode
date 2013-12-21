@@ -1011,7 +1011,8 @@ lists."
     (cond
      ;; When inside a list, indent to the list's position with an
      ;; auto-inserted comma.
-     ((eq 'List (shm-node-cons parent))
+     ((and parent
+           (eq 'List (shm-node-cons parent)))
       (newline)
       (indent-to (shm-node-start-column parent))
       (insert ",")
@@ -1021,7 +1022,8 @@ lists."
       (newline)
       (indent-to (+ (shm-indent-spaces) (shm-node-start-column current))))
      ;; Indentation for function application.
-     ((eq 'App (shm-node-cons parent))
+     ((and parent
+           (eq 'App (shm-node-cons parent)))
       (let ((column
              (save-excursion
                (shm/goto-parent)
@@ -1039,7 +1041,8 @@ lists."
           (newline)
           (indent-to column)))))
      ;; Indent for sum types
-     ((eq 'DataDecl (shm-node-cons parent))
+     ((and parent
+           (eq 'DataDecl (shm-node-cons parent)))
       (newline)
       (indent-to (shm-node-start-column current))
       (delete-char -2)
@@ -1065,7 +1068,8 @@ lists."
                                      (1+ column)))
                              ? ))
         (shm/init)))
-     ((eq 'Lambda (shm-node-cons parent))
+     ((and parent
+           (eq 'Lambda (shm-node-cons parent)))
       (cond
        ((eq shm-lambda-indent-style 'leftmost-parent)
         (let ((leftmost-parent (cdr (shm-find-furthest-parent-on-line parent-pair))))
@@ -1081,31 +1085,36 @@ lists."
       (indent-to (shm-node-start-column current))
       (insert "| "))
      ;; Indent after or at the = (an rhs).
-     ((or (string= "Rhs" (shm-node-type-name parent))
-          (string= "Rhs" (shm-node-type-name current))
-          (string= "GuardedAlt" (shm-node-type-name parent)))
+     ((and parent
+           (or (string= "Rhs" (shm-node-type-name parent))
+               (string= "Rhs" (shm-node-type-name current))
+               (string= "GuardedAlt" (shm-node-type-name parent))))
       (newline)
       (indent-to (+ (shm-indent-spaces)
                     (shm-node-start-column (cdr (shm-node-parent parent-pair))))))
      ;; When in a field update.
-     ((string= "FieldUpdate" (shm-node-type-name parent))
+     ((and parent
+           (string= "FieldUpdate" (shm-node-type-name parent)))
       (newline)
       (indent-to (+ (shm-node-start-column parent)
                     (shm-indent-spaces))))
      ;; When in an alt list
-     ((string= "GuardedAlts" (shm-node-type-name current))
+     ((and parent
+           (string= "GuardedAlts" (shm-node-type-name current)))
       (newline)
       (indent-to (+ (shm-node-start-column parent)
                     (shm-indent-spaces))))
      ;; When in a case alt.
-     ((string= "GuardedAlts" (shm-node-type-name parent))
+     ((and parent
+           (string= "GuardedAlts" (shm-node-type-name parent)))
       (newline)
       (let ((alt (cdr (shm-node-parent parent-pair))))
         (indent-to (+ (shm-node-start-column alt)
                       (shm-indent-spaces)))))
      ;; Copy infix operators similar to making new list/tuple
      ;; separators
-     ((eq 'InfixApp (shm-node-cons parent))
+     ((and parent
+           (eq 'InfixApp (shm-node-cons parent)))
       (let* ((operand-pair (shm-node-previous current-pair))
              (operand (cdr operand-pair))
              (string (buffer-substring-no-properties (shm-node-start operand)
@@ -1114,7 +1123,8 @@ lists."
         (indent-to (shm-node-start-column operand))
         (insert string " ")))
      ;; Infix operators
-     ((eq 'InfixApp (shm-node-cons parent))
+     ((and parent
+           (eq 'InfixApp (shm-node-cons parent)))
       (newline)
       (indent-to (+ (shm-node-start-column parent))))
      ;; Default indentation just copies the current node's indentation
