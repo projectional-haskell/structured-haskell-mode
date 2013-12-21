@@ -199,6 +199,12 @@ state that will hopefully be garbage collected."
 
 ;; Customization
 
+(defcustom shm-auto-insert-skeletons
+  nil
+  "Auto-insert skeletons for case, if, etc."
+  :group 'shm
+  :type 'bool)
+
 (defcustom shm-program-name
   "structured-haskell-mode"
   "The path to call for parsing Haskell syntax."
@@ -410,7 +416,8 @@ Very useful for debugging and also a bit useful for newbies."
     (cond
      ((shm-in-comment)
       (insert " "))
-     ((looking-back "[^a-zA-Z0-9_]case")
+     ((and shm-auto-insert-skeletons
+           (looking-back "[^a-zA-Z0-9_]case"))
       (let ((start (save-excursion (forward-char -1)
                                    (search-backward-regexp "[^a-zA-Z0-9_]")
                                    (forward-char 1)
@@ -424,7 +431,8 @@ Very useful for debugging and also a bit useful for newbies."
          (lambda ()
            (insert template)))
         (forward-char 5)))
-     ((looking-back "[^a-zA-Z0-9_]if")
+     ((and shm-auto-insert-skeletons
+           (looking-back "[^a-zA-Z0-9_]if"))
       (let ((start (save-excursion (forward-char -1)
                                    (search-backward-regexp "[^a-zA-Z0-9_]")
                                    (forward-char 1)
