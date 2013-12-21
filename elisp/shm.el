@@ -71,6 +71,7 @@
     (define-key map (kbd "{") 'shm/open-brace)
     (define-key map (kbd ",") 'shm/comma)
     (define-key map (kbd ":") 'shm/:)
+    (define-key map (kbd "SPC") 'shm/space)
     ;; Indentation
     (define-key map (kbd "C-j") 'shm/newline-indent)
     (define-key map (kbd "M-)") 'paredit-close-round-and-newline)
@@ -131,6 +132,13 @@
   (unless shm-parsing-timer
     (setq shm-parsing-timer
           (run-with-idle-timer shm-idle-timeout t 'shm-reparsing-timer))))
+
+(defun shm-post-self-insert ()
+  "Self-insertion handler."
+  (save-excursion
+    (shm-appropriate-adjustment-point)
+    (forward-char -1)
+    (shm-adjust-dependents (point) 1)))
 
 (defun shm-mode-stop ()
   "Stop the minor mode. Restore various settings and clean up any
@@ -381,12 +389,41 @@ Very useful for debugging and also a bit useful for newbies."
       (insert ")"))
     (forward-char 1)))
 
-(defun shm-post-self-insert ()
-  "Self-insertion handler."
-  (save-excursion
-    (shm-appropriate-adjustment-point)
-    (forward-char -1)
-    (shm-adjust-dependents (point) 1)))
+(defun shm/space ()
+  "Insert a space but sometimes do something more clever, like
+  inserting skeletons."
+  (interactive)
+  (cond
+   ((looking-back "[^a-zA-Z0-9_]case")
+    (let ((start (save-excursion (forward-char -1)
+                                 (search-backward-regexp "[^a-zA-Z0-9_]")
+                                 (forward-char 1)
+                                 (point)))
+          (template "case  of
+  _ -> undefined"))
+      (shm-adjust-dependents (point) (- start (point)))
+      (delete-region start (point))
+      (shm-adjust-dependents (point) (length (car (last (split-string template "\n")))))
+      (shm-insert-indented
+       (lambda ()
+         (insert template)))
+      (forward-char 5)))
+   ((looking-back "[^a-zA-Z0-9_]if")
+    (let ((start (save-excursion (forward-char -1)
+                                 (search-backward-regexp "[^a-zA-Z0-9_]")
+                                 (forward-char 1)
+                                 (point)))
+          (template (if (looking-at "$")
+                        "if \n   then undefined\n   else undefined"
+                      "if  then undefined else undefined")))
+      (shm-adjust-dependents (point) (- start (point)))
+      (delete-region start (point))
+      (shm-adjust-dependents (point) (length (car (last (split-string template "\n")))))
+      (shm-insert-indented
+       (lambda ()
+         (insert template)))
+      (forward-char 3)))
+   (t (shm-insert-string " "))))
 
 (defun shm/double-quote ()
   "Insert double quotes.
@@ -542,8 +579,8 @@ hai = do
      ((eq (shm-node-cons current)
           'Var)
       (let* ((next-pair (shm-node-next current-pair))
-            (parent-pair (shm-node-parent current-pair))
-            (start (shm-node-start-column (cdr parent-pair))))
+             (parent-pair (shm-node-parent current-pair))
+             (start (shm-node-start-column (cdr parent-pair))))
         (let ((swing-string
                (shm-kill-region 'buffer-substring-no-properties
                                 (shm-node-start (cdr next-pair))
@@ -801,7 +838,6 @@ will insert them back verbatim."
 (defun shm/backward-kill-word ()
   "Kill the word backwards."
   (interactive)
-
   (let ((to-be-deleted (save-excursion (backward-word)
                                        (point))))
     (save-excursion
