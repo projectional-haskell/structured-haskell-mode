@@ -393,37 +393,39 @@ Very useful for debugging and also a bit useful for newbies."
   "Insert a space but sometimes do something more clever, like
   inserting skeletons."
   (interactive)
-  (cond
-   ((looking-back "[^a-zA-Z0-9_]case")
-    (let ((start (save-excursion (forward-char -1)
-                                 (search-backward-regexp "[^a-zA-Z0-9_]")
-                                 (forward-char 1)
-                                 (point)))
-          (template "case  of
+  (if (bound-and-true-p god-local-mode)
+      (god-mode-self-insert)
+      (cond
+       ((looking-back "[^a-zA-Z0-9_]case")
+        (let ((start (save-excursion (forward-char -1)
+                                     (search-backward-regexp "[^a-zA-Z0-9_]")
+                                     (forward-char 1)
+                                     (point)))
+              (template "case  of
   _ -> undefined"))
-      (shm-adjust-dependents (point) (- start (point)))
-      (delete-region start (point))
-      (shm-adjust-dependents (point) (length (car (last (split-string template "\n")))))
-      (shm-insert-indented
-       (lambda ()
-         (insert template)))
-      (forward-char 5)))
-   ((looking-back "[^a-zA-Z0-9_]if")
-    (let ((start (save-excursion (forward-char -1)
-                                 (search-backward-regexp "[^a-zA-Z0-9_]")
-                                 (forward-char 1)
-                                 (point)))
-          (template (if (looking-at "$")
-                        "if \n   then undefined\n   else undefined"
-                      "if  then undefined else undefined")))
-      (shm-adjust-dependents (point) (- start (point)))
-      (delete-region start (point))
-      (shm-adjust-dependents (point) (length (car (last (split-string template "\n")))))
-      (shm-insert-indented
-       (lambda ()
-         (insert template)))
-      (forward-char 3)))
-   (t (shm-insert-string " "))))
+          (shm-adjust-dependents (point) (- start (point)))
+          (delete-region start (point))
+          (shm-adjust-dependents (point) (length (car (last (split-string template "\n")))))
+          (shm-insert-indented
+           (lambda ()
+             (insert template)))
+          (forward-char 5)))
+       ((looking-back "[^a-zA-Z0-9_]if")
+        (let ((start (save-excursion (forward-char -1)
+                                     (search-backward-regexp "[^a-zA-Z0-9_]")
+                                     (forward-char 1)
+                                     (point)))
+              (template (if (looking-at "$")
+                            "if \n   then undefined\n   else undefined"
+                          "if  then undefined else undefined")))
+          (shm-adjust-dependents (point) (- start (point)))
+          (delete-region start (point))
+          (shm-adjust-dependents (point) (length (car (last (split-string template "\n")))))
+          (shm-insert-indented
+           (lambda ()
+             (insert template)))
+          (forward-char 3)))
+       (t (shm-insert-string " ")))))
 
 (defun shm/double-quote ()
   "Insert double quotes.
