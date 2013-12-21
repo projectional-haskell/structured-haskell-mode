@@ -561,9 +561,9 @@ hai = do foo bar
      ((eq (shm-node-cons current)
           'Do)
       (let ((swing-string
-              (shm-kill-node 'buffer-substring-no-properties
-                             current
-                             (shm-node-start (shm-node-child current-pair)))))
+             (shm-kill-node 'buffer-substring-no-properties
+                            current
+                            (shm-node-start (shm-node-child current-pair)))))
         (delete-indentation)
         (if (looking-at " ")
             (forward-char 1)
