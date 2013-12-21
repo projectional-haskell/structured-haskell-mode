@@ -945,36 +945,37 @@ location. See `shm/yank' for documentation on that."
                   start
                   end))
          (result
-          (with-current-buffer (get-buffer-create shm-kill-zone-name)
-            (erase-buffer)
-            (when multi-line
-              (insert (make-string start-col ? )))
-            (insert string)
-            ;; This code de-indents code until a single line is hitting column zero.
-            (while (progn (goto-char (point-min))
-                          (not (and (search-forward-regexp "^[^ ]" nil t 1)
-                                    (forward-line -1)
-                                    ;; If there are empty lines, they
-                                    ;; don't count as hitting column zero.
-                                    (if (/= (line-beginning-position)
-                                            (line-end-position))
-                                        t
-                                      ;; And we should actually delete empty lines.
-                                      (progn (delete-region (1- (point)) (point))
-                                             nil)))))
-              ;; Bring everything back one.
-              (indent-rigidly (point-min) (point-max)
-                              -1))
-            ;; If there's an empty line at the end, then strip that
-            ;; out. It's just bothersome when pasting back in.
-            (goto-char (point-max))
-            (when (looking-at "^$")
-              (delete-region (1- (point))
-                             (point)))
-            ;; Finally, the actual save.
-            (funcall (if save-it save-it 'clipboard-kill-ring-save)
-                     (point-min)
-                     (point-max)))))
+          (unless (string= string "")
+            (with-current-buffer (get-buffer-create shm-kill-zone-name)
+              (erase-buffer)
+              (when multi-line
+                (insert (make-string start-col ? )))
+              (insert string)
+              ;; This code de-indents code until a single line is hitting column zero.
+              (while (progn (goto-char (point-min))
+                            (not (and (search-forward-regexp "^[^ ]" nil t 1)
+                                      (forward-line -1)
+                                      ;; If there are empty lines, they
+                                      ;; don't count as hitting column zero.
+                                      (if (/= (line-beginning-position)
+                                              (line-end-position))
+                                          t
+                                        ;; And we should actually delete empty lines.
+                                        (progn (delete-region (1- (point)) (point))
+                                               nil)))))
+                ;; Bring everything back one.
+                (indent-rigidly (point-min) (point-max)
+                                -1))
+              ;; If there's an empty line at the end, then strip that
+              ;; out. It's just bothersome when pasting back in.
+              (goto-char (point-max))
+              (when (looking-at "^$")
+                (delete-region (1- (point))
+                               (point)))
+              ;; Finally, the actual save.
+              (funcall (if save-it save-it 'clipboard-kill-ring-save)
+                       (point-min)
+                       (point-max))))))
     (let ((inhibit-read-only t))
       (unless do-not-delete
         (delete-region start
@@ -1350,7 +1351,7 @@ the line."
     (loop for i
           from 0
           to (length vector)
-          until (or (= i (length vector))
+          until (or (>= i (length vector))
                     (let ((node (elt vector i)))
                       (and (>= (shm-node-start node)
                                (shm-node-start parent))
