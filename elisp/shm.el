@@ -1046,7 +1046,9 @@ lists."
       (insert "| "))
      ;; Auto-insert commas for field updates
      ((or (string= "FieldUpdate" (shm-node-type-name current))
-          (string= "FieldDecl" (shm-node-type-name current)))
+          (string= "FieldDecl" (shm-node-type-name current))
+          (string= "ExportSpec" (shm-node-type-name current))
+          (string= "ImportSpec" (shm-node-type-name current)))
       ;; This is hacky because HSE doesn't have special nodes for the
       ;; record and the update in record {update} and so we have to
       ;; figure out where the { starts. There is some additional
