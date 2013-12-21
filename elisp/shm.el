@@ -749,7 +749,8 @@ will insert them back verbatim."
                                      (goto-char (+ (line-beginning-position)
                                                    column))))
       (shm-kill-to-end-of-line t)))
-   (t (shm-kill-to-end-of-line))))
+   ((shm-current-node) (shm-kill-to-end-of-line))
+   (t (kill-line))))
 
 (defun shm/kill-node ()
   "Kill the current node."
