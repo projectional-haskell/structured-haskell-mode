@@ -94,6 +94,7 @@
     (define-key map (kbd "C-M-b") 'shm/backward-node)
     (define-key map (kbd "M-a") 'shm/goto-parent)
     (define-key map (kbd ")") 'shm/close-paren)
+    (define-key map (kbd "]") 'shm/close-paren)
     (define-key map (kbd "M-}") 'shm/forward-paragraph)
     (define-key map (kbd "M-{") 'shm/backward-paragraph)
     (define-key map (kbd "C-M-SPC") 'shm/mark-node)
