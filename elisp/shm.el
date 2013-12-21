@@ -529,13 +529,18 @@ hai = do
 "
   (interactive)
   (let* ((current-pair (shm-current-node-pair))
-         (current (cdr current-pair))
-         (swing-string
-          (shm-kill-node 'buffer-substring-no-properties
-                         current
-                         (shm-node-start (shm-node-child current-pair)))))
-    (shm/newline-indent)
-    (shm-insert-indented (lambda () (insert swing-string)))))
+         (current (cdr current-pair)))
+    (cond
+     ((eq (shm-node-cons current)
+          'Do)
+      (let ((swing-string
+             (shm-kill-node 'buffer-substring-no-properties
+                            current
+                            (shm-node-start (shm-node-child current-pair)))))
+        (shm/newline-indent)
+        (shm-insert-indented (lambda () (insert swing-string)))))
+     (t
+      (error "Don't know how to swing that kind of expression.")))))
 
 (defun shm/swing-up ()
   "Swing the children of the current node upwards.
@@ -551,16 +556,21 @@ hai = do foo bar
 "
   (interactive)
   (let* ((current-pair (shm-current-node-pair))
-         (current (cdr current-pair))
-         (swing-string
-          (shm-kill-node 'buffer-substring-no-properties
-                         current
-                         (shm-node-start (shm-node-child current-pair)))))
-    (delete-indentation)
-    (if (looking-at " ")
-        (forward-char 1)
-      (insert " "))
-    (shm-insert-indented (lambda () (insert swing-string)))))
+         (current (cdr current-pair)))
+    (cond
+     ((eq (shm-node-cons current)
+          'Do)
+      (let ((swing-string
+              (shm-kill-node 'buffer-substring-no-properties
+                             current
+                             (shm-node-start (shm-node-child current-pair)))))
+        (delete-indentation)
+        (if (looking-at " ")
+            (forward-char 1)
+          (insert " "))
+        (shm-insert-indented (lambda () (insert swing-string)))))
+     (t
+      (error "Don't know how to swing that kind of expression.")))))
 
 (defun shm/newline-indent ()
   "Make a newline and indent, making sure to drag anything down, re-indented
