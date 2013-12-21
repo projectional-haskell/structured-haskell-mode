@@ -719,17 +719,6 @@ This is more convenient than typing out the same operator."
               (shm/reparse)))
       (error "No matching parent!"))))
 
-;; (defun shm/transpose ()
-;;   "Transpose the current node with the previous node."
-;;   (interactive)
-;;   (let* ((current-pair (shm-current-node-pair))
-;;          (current (cdr current-pair)))
-;;     (cond
-;;      ((= (point) (shm-node-start current))
-;;       (let* ((prev-pair (shm-node-previous current-pair))
-;;              (prev (cdr prev-pair)))
-;;         )))))
-
 ;;; Killing and yanking
 
 (defun shm/kill-region (beg end)
