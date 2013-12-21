@@ -764,6 +764,8 @@ Hitting C-k C-k C-k here will killall three lines, and then C-y
 will insert them back verbatim."
   (interactive)
   (shm/reparse)
+  (when (looking-at "[ ]+$")
+    (delete-region (point) (line-end-position)))
   (cond
    ((and (= (point) (line-end-position))
          (not (looking-at "\n[^ ]")))
