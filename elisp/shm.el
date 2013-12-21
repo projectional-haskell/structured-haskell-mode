@@ -255,6 +255,8 @@ state that will hopefully be garbage collected."
   :group 'shm
   :type 'string)
 
+
+
 
 ;; Globals
 
@@ -886,34 +888,48 @@ parse errors that are rarely useful. For example:
 
 "
   (interactive)
-  (cond
-   ;; These cases are “gliders”. They simply move over the character
-   ;; backwards. These could be handled all as one regular
-   ;; expression, but in the interest of clarity—for now—they are left
-   ;; as separate cases.
-   ((looking-back "[()]") (shm-delete-or-glide "(" ")"))
-   ((looking-back "[[]") (shm-delete-or-glide "\\[" "\\]"))
-   ((looking-back "[]]") (shm-delete-or-glide "\\[" "\\]"))
-   ((looking-back "[{}]") (shm-delete-or-glide "{" "}"))
-   ((looking-back "[\"]") (shm-delete-or-glide "\"" "\""))
-   ((looking-back "[_ ]->") (forward-char -3))
-   ((and (looking-back " = ")
-         (not (looking-at "$")))
-    (search-backward-regexp "[ ]+=[ ]+"
-                            (line-beginning-position)
-                            t
-                            1)
-    (when (looking-back " ")
-      (when (search-backward-regexp "[^ ]" (line-beginning-position)
-                                    t 1)
-        (forward-char 1))))
-   ;; This is the base case, we assume that we can freely delete
-   ;; whatever we're looking back at, and that the node will be able
-   ;; to re-parse it.
-   (t (save-excursion
-        (shm-appropriate-adjustment-point)
-        (shm-adjust-dependents (point) -1))
-      (shm-delete-char)))
+  (shm-with-fallback
+   delete-backward-char
+   (cond
+    ;; These cases are “gliders”. They simply move over the character
+    ;; backwards. These could be handled all as one regular
+    ;; expression, but in the interest of clarity—for now—they are left
+    ;; as separate cases.
+    ((looking-back "[()]") (shm-delete-or-glide "(" ")"))
+    ((looking-back "[[]") (shm-delete-or-glide "\\[" "\\]"))
+    ((looking-back "[]]") (shm-delete-or-glide "\\[" "\\]"))
+    ((looking-back "[{}]") (shm-delete-or-glide "{" "}"))
+    ((looking-back "[\"]") (shm-delete-or-glide "\"" "\""))
+    ((looking-back "[_ ]->") (forward-char -3))
+    ((looking-back "[^A-Zaz0-9_]then[ ]*")
+     (search-backward-regexp "[^ ][ ]*then")
+     (unless (or (looking-at "$") (looking-at " "))
+       (forward-char 1)))
+    ((looking-back "[^A-Zaz0-9_]else[ ]*")
+     (search-backward-regexp "[^ ][ ]*else")
+     (unless (or (looking-at "$") (looking-at " "))
+       (forward-char 1)))
+    ((looking-back "[^A-Zaz0-9_]if[ ]*")
+     nil) ; do nothing
+    ((looking-back "[^A-Zaz0-9_]case[ ]*")
+     nil) ; do nothing
+    ((and (looking-back " = ")
+          (not (looking-at "$")))
+     (search-backward-regexp "[ ]+=[ ]+"
+                             (line-beginning-position)
+                             t
+                             1)
+     (when (looking-back " ")
+       (when (search-backward-regexp "[^ ]" (line-beginning-position)
+                                     t 1)
+         (forward-char 1))))
+    ;; This is the base case, we assume that we can freely delete
+    ;; whatever we're looking back at, and that the node will be able
+    ;; to re-parse it.
+    (t (save-excursion
+         (shm-appropriate-adjustment-point)
+         (shm-adjust-dependents (point) -1))
+       (shm-delete-char))))
   (shm/init t))
 
 
