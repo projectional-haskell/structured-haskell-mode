@@ -120,6 +120,16 @@
     (shm-mode-stop)))
 
 
+;; Macros
+
+(defmacro shm-with-fallback (fallback &rest body)
+  "Perform the given action unless we're in a comment, in which
+  case run the fallback function insteaad."
+  `(if (shm-in-comment)
+       (call-interactively ',fallback)
+     (progn ,@body)))
+
+
 ;; Internal mode functions
 
 (defun shm-mode-start ()
@@ -395,37 +405,39 @@ Very useful for debugging and also a bit useful for newbies."
   (interactive)
   (if (bound-and-true-p god-local-mode)
       (god-mode-self-insert)
-      (cond
-       ((looking-back "[^a-zA-Z0-9_]case")
-        (let ((start (save-excursion (forward-char -1)
-                                     (search-backward-regexp "[^a-zA-Z0-9_]")
-                                     (forward-char 1)
-                                     (point)))
-              (template "case  of
+    (cond
+     ((shm-in-comment)
+      (insert " "))
+     ((looking-back "[^a-zA-Z0-9_]case")
+      (let ((start (save-excursion (forward-char -1)
+                                   (search-backward-regexp "[^a-zA-Z0-9_]")
+                                   (forward-char 1)
+                                   (point)))
+            (template "case  of
   _ -> undefined"))
-          (shm-adjust-dependents (point) (- start (point)))
-          (delete-region start (point))
-          (shm-adjust-dependents (point) (length (car (last (split-string template "\n")))))
-          (shm-insert-indented
-           (lambda ()
-             (insert template)))
-          (forward-char 5)))
-       ((looking-back "[^a-zA-Z0-9_]if")
-        (let ((start (save-excursion (forward-char -1)
-                                     (search-backward-regexp "[^a-zA-Z0-9_]")
-                                     (forward-char 1)
-                                     (point)))
-              (template (if (looking-at "$")
-                            "if \n   then undefined\n   else undefined"
-                          "if  then undefined else undefined")))
-          (shm-adjust-dependents (point) (- start (point)))
-          (delete-region start (point))
-          (shm-adjust-dependents (point) (length (car (last (split-string template "\n")))))
-          (shm-insert-indented
-           (lambda ()
-             (insert template)))
-          (forward-char 3)))
-       (t (shm-insert-string " ")))))
+        (shm-adjust-dependents (point) (- start (point)))
+        (delete-region start (point))
+        (shm-adjust-dependents (point) (length (car (last (split-string template "\n")))))
+        (shm-insert-indented
+         (lambda ()
+           (insert template)))
+        (forward-char 5)))
+     ((looking-back "[^a-zA-Z0-9_]if")
+      (let ((start (save-excursion (forward-char -1)
+                                   (search-backward-regexp "[^a-zA-Z0-9_]")
+                                   (forward-char 1)
+                                   (point)))
+            (template (if (looking-at "$")
+                          "if \n   then undefined\n   else undefined"
+                        "if  then undefined else undefined")))
+        (shm-adjust-dependents (point) (- start (point)))
+        (delete-region start (point))
+        (shm-adjust-dependents (point) (length (car (last (split-string template "\n")))))
+        (shm-insert-indented
+         (lambda ()
+           (insert template)))
+        (forward-char 3)))
+     (t (shm-insert-string " ")))))
 
 (defun shm/double-quote ()
   "Insert double quotes.
@@ -667,9 +679,11 @@ hai = do foo bar
 (defun shm/close-paren ()
   "Either insert a close paren or go to the end of the node."
   (interactive)
-  (if (shm-literal-insertion)
-      (shm-insert-string ")")
-    (shm/goto-parent-end)))
+  (shm-with-fallback
+   self-insert-command
+   (if (shm-literal-insertion)
+       (shm-insert-string ")")
+     (shm/goto-parent-end))))
 
 (defun shm/goto-parent-end ()
   "Set the current node overlay to the parent node, but go to the
@@ -802,20 +816,22 @@ do |foo
 Hitting C-k C-k C-k here will killall three lines, and then C-y
 will insert them back verbatim."
   (interactive)
-  (shm/reparse)
-  (when (looking-at "[ ]+$")
-    (delete-region (point) (line-end-position)))
-  (cond
-   ((and (= (point) (line-end-position))
-         (not (looking-at "\n[^ ]")))
-    (let ((column (current-column)))
-      (delete-region (point)
-                     (save-excursion (forward-line 1)
-                                     (goto-char (+ (line-beginning-position)
-                                                   column))))
-      (shm-kill-to-end-of-line t)))
-   ((shm-current-node) (shm-kill-to-end-of-line))
-   (t (kill-line))))
+  (shm-with-fallback
+   kill-line
+   (shm/reparse)
+   (when (looking-at "[ ]+$")
+     (delete-region (point) (line-end-position)))
+   (cond
+    ((and (= (point) (line-end-position))
+          (not (looking-at "\n[^ ]")))
+     (let ((column (current-column)))
+       (delete-region (point)
+                      (save-excursion (forward-line 1)
+                                      (goto-char (+ (line-beginning-position)
+                                                    column))))
+       (shm-kill-to-end-of-line t)))
+    ((shm-current-node) (shm-kill-to-end-of-line))
+    (t (kill-line)))))
 
 (defun shm/kill-node ()
   "Kill the current node."
@@ -825,15 +841,19 @@ will insert them back verbatim."
 (defun shm/yank ()
   "Yank from the kill ring and insert indented with `shm-insert-indented'."
   (interactive)
-  (shm-insert-indented #'clipboard-yank))
+  (shm-with-fallback
+   yank
+   (shm-insert-indented #'clipboard-yank)))
 
 (defun shm/yank-pop ()
   "Yank from the kill ring and insert indented with `shm-insert-indented'."
   (interactive)
-  (if (not (eq last-command 'yank))
-      (error "Previous command was not a yank (error from shm/yank-pop)"))
-  (apply #'delete-region shm-last-yanked)
-  (shm-insert-indented #'yank-pop))
+  (shm-with-fallback
+   yank-pop
+   (if (not (eq last-command 'yank))
+       (error "Previous command was not a yank (error from shm/yank-pop)"))
+   (apply #'delete-region shm-last-yanked)
+   (shm-insert-indented #'yank-pop)))
 
 ;;; Deletion
 
