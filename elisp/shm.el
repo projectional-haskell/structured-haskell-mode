@@ -1652,9 +1652,11 @@ tree."
 (defun shm-node-ancestor-at-point (node-pair point)
   "Find the highest up ancestor that still starts at this point."
   (let ((parent-pair (shm-node-parent node-pair)))
-    (if (= (shm-node-start (cdr parent-pair))
-           point)
-        (shm-node-ancestor-at-point parent-pair point)
+    (if parent-pair
+        (if (= (shm-node-start (cdr parent-pair))
+               point)
+            (shm-node-ancestor-at-point parent-pair point)
+          node-pair)
       node-pair)))
 
 (defun shm-node-parent (node-pair &optional type bound)
