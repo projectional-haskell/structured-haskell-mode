@@ -683,25 +683,23 @@ This is more convenient than typing out the same operator."
          (current (cdr current-pair))
          (parent-pair (shm-node-parent current-pair))
          (parent (cdr parent-pair)))
-    (when (eq 'InfixApp (shm-node-cons parent))
+    (cond
+     ((eq 'InfixApp (shm-node-cons parent))
       (let ((qop
-             (save-excursion (goto-char (shm-node-start current))
-                             (backward-sexp)
-                             (let ((qop (shm-current-node-pair)))
-                               (when (string= (shm-node-type-name (cdr qop)) "QOp")
-                                 (cdr qop))))))
-        (when qop
-          (goto-char (shm-node-start current))
-          (unless (looking-back "  ")
-            (insert " "))
-          (forward-char -1)
-          (let ((point (point)))
-            (insert (buffer-substring-no-properties (shm-node-start qop)
-                                                    (shm-node-end qop)))
-            (goto-char point)
-            (unless (looking-back "  ")
-              (insert " "))
-            (forward-char -1)))))))
+             (or (shm-get-qop-string (cdr (shm-node-previous current-pair)))
+                 (shm-get-qop-string (cdr (shm-node-next current-pair))))))
+        (cond
+         (qop
+          (cond
+           ((= (point) (shm-node-start current))
+            (let ((point (point)))
+              (insert " " qop " ")
+              (goto-char point)))
+           ((= (point) (shm-node-end current))
+            (insert " " qop " "))
+           (t (error "Please go to the start or end of the node to indicate direction."))))
+         (t (error "Unable to figure out the operator.")))))
+     (t (error "Not in an infix application.")))))
 
 (defun shm/raise ()
   "Raise the expression up one, replacing its parent."
@@ -1011,9 +1009,9 @@ lists."
          (inhibit-read-only t))
     (cond
      ((or (string= (shm-node-type-name current)
-               "ImportSpecList")
+                   "ImportSpecList")
           (and (string= (shm-node-type-name current)
-                    "ModuleName")
+                        "ModuleName")
                (looking-at "$")
                parent
                (string= (shm-node-type-name parent)
@@ -1351,6 +1349,12 @@ This is used when indenting dangling expressions."
 
 
 ;; Internal buffer operations
+
+(defun shm-get-qop-string (node)
+  "Get the string of the operator, if the node is an operator."
+  (when (string= (shm-node-type-name node) "QOp")
+    (buffer-substring-no-properties (shm-node-start node)
+                                    (shm-node-end node))))
 
 (defun shm-kill-to-end-of-line (&optional prepend-newline)
   "Kill everything possible to kill after point before the end of
