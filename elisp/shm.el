@@ -752,7 +752,8 @@ will insert them back verbatim."
   (interactive)
   (shm/reparse)
   (cond
-   ((= (point) (line-end-position))
+   ((and (= (point) (line-end-position))
+         (not (looking-at "\n[^ ]")))
     (let ((column (current-column)))
       (delete-region (point)
                      (save-excursion (forward-line 1)
