@@ -1009,6 +1009,16 @@ lists."
          (parent (cdr parent-pair))
          (inhibit-read-only t))
     (cond
+     ((or (string= (shm-node-type-name current)
+               "ImportSpecList")
+          (and (string= (shm-node-type-name current)
+                    "ModuleName")
+               (looking-at "$")
+               parent
+               (string= (shm-node-type-name parent)
+                        "ImportDecl")))
+      (newline)
+      (insert "import "))
      ;; When inside a list, indent to the list's position with an
      ;; auto-inserted comma.
      ((and parent
