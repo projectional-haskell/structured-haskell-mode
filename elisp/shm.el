@@ -1314,7 +1314,7 @@ This is used when indenting dangling expressions."
 
 (defun shm-parse-hdevtools-type-info (string)
   "Parse type information from the output of hdevtools."
-  (let ((lines (split-string string "\n\n")))
+  (let ((lines (split-string string "\n+")))
     (loop for line
           in lines
           while (string-match "\\([0-9]+\\) \\([0-9]+\\) \\([0-9]+\\) \\([0-9]+\\) \"\\(.+\\)\"$"
