@@ -832,6 +832,9 @@ will insert them back verbatim."
    (when (looking-at "[ ]+$")
      (delete-region (point) (line-end-position)))
    (cond
+    ((shm-in-string)
+     (kill-region (point)
+                  (1- (shm-node-end (shm-current-node)))))
     ((and (= (point) (line-end-position))
           (not (looking-at "\n[^ ]")))
      (let ((column (current-column)))
