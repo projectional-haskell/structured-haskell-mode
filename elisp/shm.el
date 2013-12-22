@@ -832,7 +832,9 @@ will insert them back verbatim."
    (when (looking-at "[ ]+$")
      (delete-region (point) (line-end-position)))
    (cond
-    ((shm-in-string)
+    ((and (shm-in-string)
+          (not (= (point)
+                  (shm-node-start (shm-current-node)))))
      (kill-region (point)
                   (1- (shm-node-end (shm-current-node)))))
     ((and (= (point) (line-end-position))
