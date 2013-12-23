@@ -1616,7 +1616,7 @@ here."
         (let ((point (point)))
           (insert close)
           (when (and (/= (point) (line-end-position))
-                     (not (looking-at "[]){} ,[(]")))
+                     (not (looking-at "[]){} ,]")))
             (insert " "))
           (goto-char point)
           (shm/init t))))))))
