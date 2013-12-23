@@ -100,6 +100,7 @@
     (define-key map (kbd "M-}") 'shm/forward-paragraph)
     (define-key map (kbd "M-{") 'shm/backward-paragraph)
     (define-key map (kbd "C-M-SPC") 'shm/mark-node)
+    (define-key map (kbd "C-c C-w") 'shm/goto-where)
     ;; Splitting, slurping, barfing, etc.
     (define-key map (kbd "C-+") 'shm/add-operand)
     (define-key map (kbd "M-r") 'shm/raise)
@@ -669,6 +670,44 @@ hai = do foo bar
            (insert newline-string))))
     ;; Otherwise just do the indent.
     (shm-newline-indent)))
+
+(defun shm/goto-where ()
+  "Either make or go to a where clause of the current right-hand-side."
+  (interactive)
+  (let ((node-pair (shm-current-node-pair))
+        (vector (shm-decl-ast)))
+    (loop for i
+          downfrom (car node-pair)
+          to -1
+          until (or (= i -1)
+                    (let ((node (elt vector i)))
+                      (and (string= "Rhs"
+                                    (shm-node-type-name node))
+                           (<= (shm-node-start node)
+                               (shm-node-start (cdr node-pair)))
+                           (>= (shm-node-end node)
+                               (shm-node-end (cdr node-pair))))))
+          finally (return
+                   (when (>= i 0)
+                     (let ((rhs (elt vector i)))
+                       (goto-char (shm-node-end rhs))
+                       (cond
+                        ((looking-at "[\n ]*where")
+                         (search-forward-regexp "where[ \n]*"))
+                        (t
+                         (unless (= (line-beginning-position) (point))
+                           (newline))
+                         (newline)
+                         (indent-to
+                          (+ 2
+                             (shm-node-start-column
+                              (cdr (shm-node-parent (cons i rhs))))))
+                         (insert "where ")
+                         (let ((point (point)))
+                           (unless (looking-at "\n\n")
+                             (insert "\n"))
+                           (goto-char point))
+                         ))))))))
 
 ;;; Navigation
 
@@ -1598,7 +1637,7 @@ here."
    ;; Otherwise just glide over the character.
    (t
     (when (looking-back close)
-     (forward-char -1)))))
+      (forward-char -1)))))
 
 (defun shm-delimiter-empty (open close)
   "Is the current expression delimited by OPEN and CLOSE empty?"
