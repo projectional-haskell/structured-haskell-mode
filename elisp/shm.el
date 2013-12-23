@@ -899,6 +899,12 @@ will insert them back verbatim."
   (interactive)
   (shm-with-fallback
    yank
+   ;; This avoids merging two identifiers together accidentally.
+   (when (looking-back "[a-zA-Z0-9]+_*")
+     (shm-insert-string " "))
+   (when (looking-at "[a-zA-Z0-9]+_*")
+     (shm-insert-string " ")
+     (forward-char -1))
    (shm-insert-indented #'clipboard-yank)))
 
 (defun shm/yank-pop ()
