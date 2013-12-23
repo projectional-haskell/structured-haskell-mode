@@ -536,8 +536,10 @@ the current node to the parent."
     (cond
      ((eq (shm-node-cons current)
           'SpliceDecl)
-      (unless (looking-back "[ ]+::[ ]+")
-        (shm-insert-string " :: ")))
+      (unless (looking-back "[ ]+")
+        (insert " "))
+      (unless (looking-back "::[ ]+")
+        (shm-insert-string ":: ")))
      (t
       (shm-insert-string ":")))))
 
