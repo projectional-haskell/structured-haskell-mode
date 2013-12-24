@@ -1865,22 +1865,18 @@ declaration. This assumes that declarations start at column zero
 and that the rest is always indented by one space afterwards, so
 Template Haskell uses with it all being at column zero are not
 expected to work."
-  (let ((point (point)))
-    (save-excursion
-      (let ((start (or (progn (goto-char (line-end-position))
-                              (search-backward-regexp "^[^ \n]" nil t 1))
-                       0))
-            (end (progn (goto-char (1+ (point)))
-                        (or (when (search-forward-regexp "[\n]+[^ \n]" nil t 1)
-                              (forward-char -1)
-                              (search-backward-regexp "[^\n ]" nil t)
-                              (forward-char)
-                              (point))
-                            (when (search-forward "\n" nil t 1)
-                              (1- (point)))
-                            (point-max)))))
-        (unless (< end point)
-          (cons start end))))))
+  (save-excursion
+    (let ((start (or (progn (goto-char (line-end-position))
+                            (search-backward-regexp "^[^ \n]" nil t 1))
+                     0))
+          (end (progn (goto-char (1+ (point)))
+                      (or (when (search-forward-regexp "[\n]+[^ \n]" nil t 1)
+                            (forward-char -1)
+                            (search-backward-regexp "[^\n ]" nil t)
+                            (forward-char)
+                            (point))
+                          (point-max)))))
+      (cons start end))))
 
 
 ;; Internal AST information acquisition functions
