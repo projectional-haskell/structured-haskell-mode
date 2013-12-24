@@ -1,5 +1,3 @@
-(require 'shm-test)
-
 (defvar shm-tests
   (list
    (list :name "goto-parent"
