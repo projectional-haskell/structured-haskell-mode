@@ -1265,7 +1265,8 @@ lists."
      ((and parent
            (or (string= "Rhs" (shm-node-type-name parent))
                (string= "Rhs" (shm-node-type-name current))
-               (string= "GuardedAlt" (shm-node-type-name parent))))
+               (string= "GuardedAlt" (shm-node-type-name parent))
+               (string= "GuardedRhs" (shm-node-type-name parent))))
       (newline)
       (indent-to (+ (shm-indent-spaces)
                     (shm-node-start-column (cdr (shm-node-parent parent-pair))))))
