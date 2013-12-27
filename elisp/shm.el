@@ -1257,7 +1257,8 @@ lists."
           (indent-to (+ (shm-indent-spaces)
                         (shm-node-start-column parent))))))
      ;; Guards | foo = …
-     ((string= "GuardedRhs" (shm-node-type-name current))
+     ((or (string= "GuardedRhs" (shm-node-type-name current))
+          (string= "GuardedAlt" (shm-node-type-name current)))
       (newline)
       (indent-to (shm-node-start-column current))
       (insert "| "))
