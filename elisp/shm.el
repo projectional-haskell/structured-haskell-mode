@@ -845,7 +845,7 @@ This is more convenient than typing out the same operator."
     (if parent
         (if (string= (shm-node-type current)
                      (shm-node-type parent))
-            (let ((shm/raise-code (shm-kill-node 'buffer-substring-no-properties)))
+            (let ((shm/raise-code (shm-kill-node 'buffer-substring-no-properties nil nil t)))
               (shm-kill-node 'buffer-substring-no-properties parent)
               (shm-insert-indented (lambda () (insert shm/raise-code)))
               (shm/reparse)))
