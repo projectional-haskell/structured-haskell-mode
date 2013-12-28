@@ -454,6 +454,14 @@ Very useful for debugging and also a bit useful for newbies."
          (lambda ()
            (insert template)))
         (forward-char 3)))
+     ((and shm-auto-insert-skeletons
+           (looking-back "[^a-zA-Z0-9_]let")
+           (let ((current (shm-current-node)))
+             (not (or (eq 'Do (shm-node-cons current))
+                      (string= "Stmt" (shm-node-type-name current))))))
+      (delete-region (- (point) 3) (point))
+      (shm-insert-indented (lambda () (insert "let \nin undefined")))
+      (forward-char 4))
      (t (shm-insert-string " ")))))
 
 (defun shm/double-quote ()
