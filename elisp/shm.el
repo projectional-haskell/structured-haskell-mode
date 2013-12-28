@@ -703,7 +703,6 @@ hai = do foo bar
                         (t
                          (unless (= (line-beginning-position) (point))
                            (newline))
-                         (newline)
                          (indent-to
                           (+ 2
                              (shm-node-start-column
@@ -712,8 +711,7 @@ hai = do foo bar
                          (let ((point (point)))
                            (unless (looking-at "\n\n")
                              (insert "\n"))
-                           (goto-char point))
-                         ))))))))
+                           (goto-char point))))))))))
 
 ;;; Navigation
 
