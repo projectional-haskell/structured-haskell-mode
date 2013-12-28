@@ -207,7 +207,7 @@ state that will hopefully be garbage collected."
 ;; Customization
 
 (defcustom shm-auto-insert-skeletons
-  nil
+  t
   "Auto-insert skeletons for case, if, etc."
   :group 'shm
   :type 'bool)
