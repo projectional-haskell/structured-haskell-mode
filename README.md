@@ -5,6 +5,12 @@ of Haskell. In short-hand it's called SHM and throughout the codebase,
 too. It acts a bit like, and is heavily inspired by,
 [paredit-mode](https://www.youtube.com/watch?v=D6h5dFyyUX0) for Emacs.
 
+In using structured-haskell-mode you will find that your layout style
+will change and become more regular as the editor does the menial work
+for you. Given that, some assumptions about style are made in
+structured-haskell-mode and are best described by
+[this style guide](https://github.com/chrisdone/haskell-style-guide).
+
 ## Features
 
 Its features work by parsing the current declaration with an
