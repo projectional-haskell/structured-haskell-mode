@@ -1304,6 +1304,13 @@ lists."
            (eq 'InfixApp (shm-node-cons parent)))
       (newline)
       (indent-to (+ (shm-node-start-column parent))))
+     ((string= "Match" (shm-node-type-name current))
+      (let ((name (cdr (shm-node-child-pair current-pair))))
+        (newline)
+        (indent-to (shm-node-start-column current))
+        (insert (buffer-substring-no-properties (shm-node-start name)
+                                                (shm-node-end name))
+                " ")))
      ;; Default indentation just copies the current node's indentation
      ;; level. Generally works reliably, but has less than favourable
      ;; indentation sometimes. It just serves as a catch-all.
