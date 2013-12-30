@@ -34,14 +34,15 @@ main = do
 outputWith :: String -> String -> String -> IO ()
 outputWith action typ code =
   case typ of
-    "decl" -> output action
-                     (\mode code -> fmap D (fmap fix (parseDeclWithMode mode code)) <|>
-                                    fmap D (parseImport mode code) <|>
-                                    fmap D (fmap fix (parseModuleWithMode mode code)) <|>
-                                    fmap D (parseModulePragma mode code))
-                     code
+    "decl" ->
+      output action
+             (\mode code ->
+                fmap D (fmap fix (parseDeclWithMode mode code)) <|>
+                fmap D (parseImport mode code) <|>
+                fmap D (fmap fix (parseModuleWithMode mode code)) <|>
+                fmap D (parseModulePragma mode code))
+             code
     _ -> error "Unknown parser type."
-
   where fix = fromMaybe (error "fix") . applyFixities baseFixities
 
 instance Alternative ParseResult where
@@ -65,13 +66,16 @@ output action parseWithMode code = do
 
 -- | Parse mode, includes all extensions, doesn't assume any fixities.
 parseMode :: ParseMode
-parseMode = defaultParseMode { extensions = filter (\x ->
-                                                     case x of
-                                                       DisableExtension x -> False
-                                                       _ -> True)
-                                                   knownExtensions
-                             , fixities   = Nothing
-                             }
+parseMode =
+  defaultParseMode { extensions = allExtensions
+                   , fixities   = Nothing
+                   }
+  where allExtensions =
+          filter (\x ->
+                   case x of
+                     DisableExtension x -> False
+                     _ -> True)
+                 knownExtensions
 
 -- | Generate a list of spans from the HSE AST.
 genHSE :: (Data a) => a -> [String]
