@@ -1354,7 +1354,9 @@ for top-level functions and things like that."
                          (current-column)))
           (point nil)
           (end-point nil))
-      (while (= 0 (forward-line 1))
+      (while (and (= 0 (forward-line 1))
+                  (or (not end-point)
+                      (/= end-point (line-end-position))))
         (if (shm-line-indented-past (1+ column))
             (progn (unless point
                      (setq point (goto-char (line-beginning-position))))
