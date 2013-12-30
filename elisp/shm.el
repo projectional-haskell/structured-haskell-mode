@@ -722,11 +722,7 @@ hai = do foo bar
                           (+ 2
                              (shm-node-start-column
                               (cdr (shm-node-parent (cons i rhs))))))
-                         (insert "where ")
-                         (let ((point (point)))
-                           (unless (looking-at "\n\n")
-                             (insert "\n"))
-                           (goto-char point))))))))))
+                         (insert "where ")))))))))
 
 ;;; Navigation
 
