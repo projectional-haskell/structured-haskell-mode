@@ -78,16 +78,37 @@ parseMode =
                  knownExtensions
 
 -- | Generate a list of spans from the HSE AST.
-genHSE :: (Data a) => a -> [String]
+genHSE :: Data a => a -> [String]
 genHSE x =
   case gmapQ D x of
     zs@(D y:ys) ->
       case cast y of
-        Just s -> spanHSE (show (show (typeOf x)))
-                          (showConstr (toConstr x))
-                          (srcInfoSpan s)
-                          : concat (map (\(D d) -> genHSE d) ys)
-        _ -> concatMap (\(D d) -> genHSE d) zs
+        Just s ->
+          spanHSE (show (show (typeOf x)))
+                  (showConstr (toConstr x))
+                  (srcInfoSpan s) :
+          concat (map (\(i,(D d)) -> pre x i ++ genHSE d)
+                      (zip [0..] ys))
+        _ ->
+          concatMap (\(D d) -> genHSE d) zs
+    _ -> []
+
+-- | Pre-children tweaks for a given parent at index i.
+--
+-- <foo { <foo = 1> }> becomes <foo <{ <foo = 1> }>>
+--
+pre :: (Typeable a) => a -> Integer -> [String]
+pre x i =
+  case cast x  of
+    Just (RecUpdate SrcSpanInfo{srcInfoPoints=(start:_),srcInfoSpan=end} _ _)
+      | i == 1 ->
+        [spanHSE (show "RecUpdates SrcSpanInfo")
+                 "RecUpdates"
+                 (SrcSpan (srcSpanFilename start)
+                          (srcSpanStartLine start)
+                          (srcSpanStartColumn start)
+                          (srcSpanEndLine end)
+                          (srcSpanEndColumn end))]
     _ -> []
 
 -- | Generate a span from a HSE SrcSpan.
@@ -101,7 +122,6 @@ spanHSE typ cons (SrcSpan _ a b c d) =
                   ,show c
                   ,show d]
          ,"]"]
-
   where unqualify = go [] where
           go acc ('.':cs) = go [] cs
           go acc (c:cs)   = go (c:acc) cs
