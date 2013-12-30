@@ -985,10 +985,15 @@ parse errors that are rarely useful. For example:
      nil) ; do nothing
     ((looking-back "[^A-Zaz0-9_]case[ ]*")
      nil) ; do nothing
-    ((and (looking-back " = ")
-          (not (looking-at "$"))
-          (not (looking-at " ")))
-     (search-backward-regexp "[ ]+=[ ]+"
+    ((and (looking-at "= ")
+          (looking-back " "))
+     (forward-char -1))
+    ((or (and (looking-back " = ")
+              (not (looking-at "$"))
+              (not (looking-at " ")))
+         (and (looking-back "=")
+              (looking-at " ")))
+     (search-backward-regexp "[ ]+=[ ]*"
                              (line-beginning-position)
                              t
                              1)
