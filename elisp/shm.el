@@ -571,7 +571,14 @@ the current node to the parent."
 (defun shm/open-brace ()
   "Delimit braces."
   (interactive)
-  (shm-delimit "{" "}"))
+  (let ((current (shm-current-node)))
+    (cond
+     ((and current
+           (string= "Pat" (shm-node-type-name current)))
+      (insert "{}")
+      (forward-char -1))
+     (t
+      (shm-delimit "{" "}")))))
 
 ;;; Indentation
 
