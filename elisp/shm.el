@@ -986,7 +986,8 @@ parse errors that are rarely useful. For example:
     ((looking-back "[^A-Zaz0-9_]case[ ]*")
      nil) ; do nothing
     ((and (looking-back " = ")
-          (not (looking-at "$")))
+          (not (looking-at "$"))
+          (not (looking-at " ")))
      (search-backward-regexp "[ ]+=[ ]+"
                              (line-beginning-position)
                              t
