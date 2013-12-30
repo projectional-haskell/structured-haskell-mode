@@ -89,10 +89,14 @@ genHSE x =
 -- | Generate a span from a HSE SrcSpan.
 spanHSE :: String -> String -> SrcSpan -> String
 spanHSE typ cons (SrcSpan _ a b c d) =
-  concat ["[" ,
-            unqualify typ , " " , cons ,
-            " " , show a , " " , show b , " " , show c , " " , show d ,
-            "]"]
+  concat ["["
+         ,unwords [unqualify typ
+                  ,cons
+                  ,show a
+                  ,show b
+                  ,show c
+                  ,show d]
+         ,"]"]
 
   where unqualify = go [] where
           go acc ('.':cs) = go [] cs
