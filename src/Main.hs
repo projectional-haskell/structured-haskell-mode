@@ -43,7 +43,7 @@ outputWith action typ code =
                 fmap D (parseModulePragma mode code))
              code
     _ -> error "Unknown parser type."
-  where fix = fromMaybe (error "fix") . applyFixities baseFixities
+  where fix ast = fromMaybe ast (applyFixities baseFixities ast)
 
 instance Alternative ParseResult where
   empty = ParseFailed undefined undefined
