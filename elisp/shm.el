@@ -69,6 +69,8 @@
     (define-key map (kbd "M-(") 'shm/wrap-parens)
     (define-key map (kbd "[") 'shm/open-bracket)
     (define-key map (kbd "{") 'shm/open-brace)
+    (define-key map (kbd "-") 'shm/hyphen)
+    (define-key map (kbd "#") 'shm/hash)
     (define-key map (kbd ",") 'shm/comma)
     (define-key map (kbd ":") 'shm/:)
     (define-key map (kbd "SPC") 'shm/space)
@@ -557,6 +559,24 @@ the current node to the parent."
         (shm-insert-string ":: ")))
      (t
       (shm-insert-string ":")))))
+
+(defun shm/hyphen (n)
+  "The - hyphen."
+  (interactive "p")
+  (if (and (looking-back "{")
+           (looking-at "}"))
+      (progn (insert "--")
+             (forward-char -1))
+    (self-insert-command n)))
+
+(defun shm/hash (n)
+  "The # hash."
+  (interactive "p")
+  (if (and (looking-back "{-")
+           (looking-at "-}"))
+      (progn (insert "#  #")
+             (forward-char -2))
+    (self-insert-command n)))
 
 (defun shm/open-paren ()
   "Delimit parentheses."
@@ -1640,7 +1660,8 @@ here."
         (shm-adjust-dependents
          (point)
          (+
-          (if (not (looking-back "[ ,[({]"))
+          (if (not (or (looking-back "[ ,[({]")
+                       (bolp)))
               (progn (insert " ") 1)
             0)
           (length open)
