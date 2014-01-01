@@ -990,6 +990,16 @@ parse errors that are rarely useful. For example:
     ;; backwards. These could be handled all as one regular
     ;; expression, but in the interest of clarity—for now—they are left
     ;; as separate cases.
+    ((and (looking-back "{-[ ]*")
+          (looking-at "[ ]*-}"))
+     (delete-region (search-backward-regexp "-")
+                    (progn (forward-char 1)
+                           (search-forward-regexp "-"))))
+    ((and (looking-back "^{-#[ ]*")
+          (looking-at "[ ]*#-}$"))
+     (delete-region (search-backward-regexp "#")
+                    (progn (forward-char 1)
+                           (search-forward-regexp "#"))))
     ((looking-back "[()]") (shm-delete-or-glide "(" ")"))
     ((looking-back "[[]") (shm-delete-or-glide "\\[" "\\]"))
     ((looking-back "[]]") (shm-delete-or-glide "\\[" "\\]"))
@@ -1612,12 +1622,17 @@ the line."
 
 (defun shm-in-comment ()
   "Are we currently in a comment?"
-  (or (eq 'font-lock-comment-delimiter-face
-          (get-text-property (point) 'face))
+  (or (and (eq 'font-lock-comment-delimiter-face
+               (get-text-property (point) 'face))
+           ;; This is taking liberties, but I'm not too sad about it.
+           (not (save-excursion (goto-char (line-beginning-position))
+                                (looking-at "{-"))))
       (eq 'font-lock-doc-face
           (get-text-property (point) 'face))
-      (eq 'font-lock-comment-face
-          (get-text-property (point) 'face))))
+      (and (eq 'font-lock-comment-face
+               (get-text-property (point) 'face))
+           (not (save-excursion (goto-char (line-beginning-position))
+                                (looking-at "{-"))))))
 
 (defun shm-in-string ()
   "Are we in a string?"
