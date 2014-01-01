@@ -464,6 +464,11 @@ Very useful for debugging and also a bit useful for newbies."
       (delete-region (- (point) 3) (point))
       (shm-insert-indented (lambda () (insert "let \nin undefined")))
       (forward-char 4))
+     ((and shm-auto-insert-skeletons
+           (looking-back "[^a-zA-Z0-9_]module"))
+      (insert "  where")
+      (backward-word 1)
+      (forward-char -1))
      (t (shm-insert-string " ")))))
 
 (defun shm/double-quote ()
