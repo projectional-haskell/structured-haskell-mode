@@ -1,6 +1,8 @@
 (require 'shm)
 (require 'shm-tests)
 
+(defvar shm-test-eob nil)
+
 (defun shm-test/run-all ()
   "Run all tests."
   (interactive)
@@ -20,8 +22,6 @@
     (god-local-mode -1))
   (erase-buffer)
   (insert "\n")
-  (when (boundp 'shm-test-eob)
-    (set-marker shm-test-eob nil))
   (setq shm-test-eob (set-marker (make-marker) (point)))
   (insert "-- Steps to create a test\n"
           "-- \n"
@@ -72,8 +72,7 @@
          (format ":start-buffer-content %S\n"
                  (buffer-substring-no-properties
                   (point-min) (marker-position shm-test-eob)))
-         (format ":start-cursor %d\n" point))
-        (setq cursor point))))))
+         (format ":start-cursor %d\n" point)))))))
 
 (defun shm-test/save ()
   "Save the test to a lisp expression."
@@ -117,3 +116,9 @@
   t)
 
 (provide 'shm-test)
+
+
+;;; shm-test.el ends here
+;; Local Variables:
+;; byte-compile-warnings: (not cl-functions)
+;; End:

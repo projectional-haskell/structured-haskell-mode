@@ -315,20 +315,6 @@ parseModulePragma mode code =
          :end-buffer-content "main = x
 "
          :kbd [backspace])
-   (list :name "swing-down"
-         :start-buffer-content "main = do foo bar
-          mu zot
-
-"
-         :start-cursor 9
-         :finish-cursor 14
-         :current-node-overlay '(14 17)
-         :end-buffer-content "main = do
-  foo bar
-  mu zot
-"
-         :kbd "
-")
    (list :name "swing-up"
          :start-buffer-content "hai = do
   foo bar
@@ -340,6 +326,15 @@ parseModulePragma mode code =
          :end-buffer-content "hai = do foo bar
          mu zot
 "
-         :kbd "")))
+         :kbd "")
+   (list :name "pragmas"
+         :start-buffer-content "{}
+"
+         :start-cursor 2
+         :finish-cursor 5
+         :current-node-overlay 'nil
+         :end-buffer-content "{-#  #-}
+"
+         :kbd "-#")))
 
 (provide 'shm-tests)
