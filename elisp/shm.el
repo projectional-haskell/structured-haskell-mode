@@ -396,7 +396,10 @@ force a reparse immediately (if necessary)."
 
 Very useful for debugging and also a bit useful for newbies."
   (interactive)
-  (message "%s" (shm-node-description (or node (shm-current-node)))))
+  (let ((node (or node (shm-current-node))))
+    (if node
+        (message "%s" (shm-node-description node))
+      (error "No current node."))))
 
 ;;; Insertion
 
@@ -1991,10 +1994,11 @@ expected to work."
                             (nth 1 con-doc))
                   (format "“%s” (no more info)"
                           (shm-node-cons node)))
-                (shm-kill-node 'buffer-substring-no-properties
-                               node
-                               nil
-                               t))
+                (save-excursion
+                  (shm-kill-node 'buffer-substring-no-properties
+                                 node
+                                 nil
+                                 t)))
       (format "Node type: “%s” (no more info)"
               (shm-node-type-name node)))))
 
