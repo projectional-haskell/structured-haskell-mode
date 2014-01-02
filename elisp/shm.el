@@ -703,20 +703,29 @@ hai = do foo bar
   "Make a newline and indent, making sure to drag anything down, re-indented
   with it."
   (interactive)
-  (if (and (looking-at "[^])}\"]") ;; This is a cheap solution. It
-           ;; could use node boundaries
-           ;; instead.
-           (not (looking-at "$"))
-           (looking-back " "))
-      ;; If there's some stuff trailing us, then drag that with us.
-      (let ((newline-string (shm-kill-node 'buffer-substring-no-properties))
-            (point (point)))
-        (shm-newline-indent)
-        (shm-insert-indented
-         (lambda ()
-           (insert newline-string))))
-    ;; Otherwise just do the indent.
-    (shm-newline-indent)))
+  (cond
+   ((and (shm-in-string)
+         (not (= (shm-node-start (shm-current-node))
+                 (point))))
+    (let ((column (shm-node-start-column (shm-current-node))))
+      (insert "\\")
+      (newline)
+      (indent-to column)
+      (insert "\\")))
+   ((and (looking-at "[^])}\"]") ;; This is a cheap solution. It
+         ;; could use node boundaries
+         ;; instead.
+         (not (looking-at "$"))
+         (looking-back " "))
+    ;; If there's some stuff trailing us, then drag that with us.
+    (let ((newline-string (shm-kill-node 'buffer-substring-no-properties))
+          (point (point)))
+      (shm-newline-indent)
+      (shm-insert-indented
+       (lambda ()
+         (insert newline-string)))))
+   ;; Otherwise just do the indent.
+   (t (shm-newline-indent))))
 
 (defun shm/goto-where ()
   "Either make or go to a where clause of the current right-hand-side."
@@ -996,6 +1005,11 @@ parse errors that are rarely useful. For example:
     ;; backwards. These could be handled all as one regular
     ;; expression, but in the interest of clarity—for now—they are left
     ;; as separate cases.
+    ((and (shm-in-string)
+          (looking-back "^[ ]*\\\\"))
+     (let ((here (point)))
+       (delete-region (search-backward-regexp "\\\\$")
+                      here)))
     ((and (looking-back "{-[ ]*")
           (looking-at "[ ]*-}"))
      (delete-region (search-backward-regexp "-")
