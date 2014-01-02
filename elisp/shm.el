@@ -139,6 +139,116 @@
           (call-interactively ',fallback))))))
 
 
+;; Buffer-local variables
+
+(defvar shm-decl-asts nil
+  "This is partly an optimization and partly for more
+functionality. We could parse the whole module, but that would be
+wasteful and expensive to lookup nodes every time we want a
+node. So it's cheaper to have the granularity of lookup start at
+the declaration's point and the node's span.
+
+Second it's better because a module may have unparseable content
+in it, but that doesn't mean we don't want structured editing to
+stop working on declarations that are fine. I've found in my use
+of SHM that this is a common use-case worth taking into account.")
+
+(defvar shm-current-node-overlay nil
+  "Overlay to highlight the current node.")
+
+
+;; Globals
+
+(defvar shm-parsing-timer nil
+  "The timer used to re-parse every so often. The idle time can
+  be configured with `shm-idle-timeout'.")
+
+(defvar shm-last-parse-start 0
+  "This is used to avoid unnecessary work, if the start of the
+  declaration hasn't changed, and the end (see
+  `shm-last-parse-end') since we last parsed, don't bother
+  re-parsing.")
+
+(defvar shm-last-parse-end 0
+  "See `shm-last-parse-start' for explanation.")
+
+(defvar shm-last-point 0
+  "When moving around, the current node overlay will update
+  according to where you are. But often you can shrink/expand the
+  scope of the current node. This variable lets us avoid the node
+  being reset by realising we haven't actually moved the point.")
+
+(defvar shm-last-yanked (list 0 0)
+  "When yanking, some text will be inserted, when popping a
+  yank (i.e. with M-y), you need to be able to erase the previous
+  yank. This is simply a region.")
+
+
+;; Customization
+
+(defcustom shm-auto-insert-skeletons
+  t
+  "Auto-insert skeletons for case, if, etc."
+  :group 'shm
+  :type 'boolean)
+
+(defcustom shm-program-name
+  "structured-haskell-mode"
+  "The path to call for parsing Haskell syntax."
+  :group 'shm
+  :type 'string)
+
+(defcustom shm-kill-zone-name
+  "*shm-kill-zone*"
+  "The name of the buffer to use for the kill zone."
+  :group 'shm
+  :type 'string)
+
+(defcustom shm-indent-spaces
+  (if (boundp 'haskell-indent-spaces)
+      haskell-indent-spaces
+    2)
+  "The number of spaces to indent by default."
+  :group 'shm
+  :type 'string)
+
+(defcustom shm-lambda-indent-style
+  nil
+  "Specify a particular style for indenting lambdas?"
+  :group 'shm
+  :type '(choice (const leftmost-parent) (const nil)))
+
+(defcustom shm-use-presentation-mode
+  nil
+  "Use haskell-presentation-mode?"
+  :group 'shm
+  :type 'boolean)
+
+(defcustom shm-display-quarantine
+  t
+  "Display quarantine?"
+  :group 'shm
+  :type 'boolean)
+
+(defcustom shm-use-hdevtools
+  nil
+  "Use hdevtools for type information?"
+  :group 'shm
+  :type 'boolean)
+
+(defcustom shm-type-info-fallback-to-ghci
+  t
+  "Fallback to GHCi when the type-info backend returns nothing?"
+  :group 'shm
+  :type 'boolean)
+
+(defcustom shm-idle-timeout
+  0.2
+  "Number of seconds before re-parsing."
+  :group 'shm
+  :type 'string)
+
+
 ;; Internal mode functions
 
 (defun shm-mode-start ()
@@ -206,118 +316,6 @@ state that will hopefully be garbage collected."
   :group 'shm)
 
 
-;; Customization
-
-(defcustom shm-auto-insert-skeletons
-  t
-  "Auto-insert skeletons for case, if, etc."
-  :group 'shm
-  :type 'boolean)
-
-(defcustom shm-program-name
-  "structured-haskell-mode"
-  "The path to call for parsing Haskell syntax."
-  :group 'shm
-  :type 'string)
-
-(defcustom shm-kill-zone-name
-  "*shm-kill-zone*"
-  "The name of the buffer to use for the kill zone."
-  :group 'shm
-  :type 'string)
-
-(defcustom shm-indent-spaces
-  (if (boundp 'haskell-indent-spaces)
-      haskell-indent-spaces
-    2)
-  "The number of spaces to indent by default."
-  :group 'shm
-  :type 'string)
-
-(defcustom shm-lambda-indent-style
-  nil
-  "Specify a particular style for indenting lambdas?"
-  :group 'shm
-  :type '(choice (const leftmost-parent) (const nil)))
-
-(defcustom shm-use-presentation-mode
-  nil
-  "Use haskell-presentation-mode?"
-  :group 'shm
-  :type 'boolean)
-
-(defcustom shm-display-quarantine
-  t
-  "Display quarantine?"
-  :group 'shm
-  :type 'boolean)
-
-(defcustom shm-use-hdevtools
-  nil
-  "Use hdevtools for type information?"
-  :group 'shm
-  :type 'boolean)
-
-(defcustom shm-type-info-fallback-to-ghci
-  t
-  "Fallback to GHCi when the type-info backend returns nothing?"
-  :group 'shm
-  :type 'boolean)
-
-(defcustom shm-idle-timeout
-  0.2
-  "Number of seconds before re-parsing."
-  :group 'shm
-  :type 'string)
-
-
-
-
-;; Globals
-
-(defvar shm-parsing-timer nil
-  "The timer used to re-parse every so often. The idle time can
-  be configured with `shm-idle-timeout'.")
-
-(defvar shm-last-parse-start 0
-  "This is used to avoid unnecessary work, if the start of the
-  declaration hasn't changed, and the end (see
-  `shm-last-parse-end') since we last parsed, don't bother
-  re-parsing.")
-
-(defvar shm-last-parse-end 0
-  "See `shm-last-parse-start' for explanation.")
-
-(defvar shm-last-point 0
-  "When moving around, the current node overlay will update
-  according to where you are. But often you can shrink/expand the
-  scope of the current node. This variable lets us avoid the node
-  being reset by realising we haven't actually moved the point.")
-
-(defvar shm-last-yanked (list 0 0)
-  "When yanking, some text will be inserted, when popping a
-  yank (i.e. with M-y), you need to be able to erase the previous
-  yank. This is simply a region.")
-
-
-;; Buffer-local variables
-
-(defvar shm-decl-asts nil
-  "This is partly an optimization and partly for more
-functionality. We could parse the whole module, but that would be
-wasteful and expensive to lookup nodes every time we want a
-node. So it's cheaper to have the granularity of lookup start at
-the declaration's point and the node's span.
-
-Second it's better because a module may have unparseable content
-in it, but that doesn't mean we don't want structured editing to
-stop working on declarations that are fine. I've found in my use
-of SHM that this is a common use-case worth taking into account.")
-
-(defvar shm-current-node-overlay nil
-  "Overlay to highlight the current node.")
-
-
 ;; Public commands
 
 ;;; Generic node operations
@@ -375,7 +373,8 @@ force a reparse immediately (if necessary)."
       (let ((type-info (shm-node-type-info current)))
         (if type-info
             (shm-present-type-info current type-info)
-          (if shm-type-info-fallback-to-ghci
+          (if (and shm-type-info-fallback-to-ghci
+                   (fboundp 'haskell-process-do-type))
               (haskell-process-do-type)
             (error "Unable to get type information for that node.")))))
      ((and (string= (shm-node-type-name current) "Name")
@@ -386,7 +385,8 @@ force a reparse immediately (if necessary)."
              (type-info (shm-node-type-info node)))
         (if type-info
             (shm-present-type-info node type-info)
-          (if shm-type-info-fallback-to-ghci
+          (if (and shm-type-info-fallback-to-ghci
+                   (fboundp 'haskell-process-do-type))
               (haskell-process-do-type)
             (error "Unable to get type information for that node (tried the whole decl, too).")))))
      (t (error "Not an expression, operator, pattern binding or declaration.")))))
@@ -420,7 +420,8 @@ Very useful for debugging and also a bit useful for newbies."
   "Insert a space but sometimes do something more clever, like
   inserting skeletons."
   (interactive)
-  (if (bound-and-true-p god-local-mode)
+  (if (and (bound-and-true-p god-local-mode)
+           (fboundp 'god-mode-self-insert))
       (god-mode-self-insert)
     (cond
      ((shm-in-comment)
