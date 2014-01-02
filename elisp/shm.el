@@ -135,7 +135,8 @@
        (condition-case e
            (progn ,@body)
          (error
-          (message "Falling back to %S" ',fallback)
+          (message "(SHM command failed, falling back to %S. Run M-: (setq debug-on-error t) to see the error.)"
+                   ',fallback)
           (call-interactively ',fallback))))))
 
 
