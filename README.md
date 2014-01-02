@@ -110,6 +110,10 @@ After that, disable and re-enable `structured-haskell-mode`.
 
 ## Development
 
+Byte-compiling:
+
+    emacs -Q --batch shm.el --eval "(progn (add-to-list 'load-path \".\") (emacs-lisp-byte-compile))"
+
 ### Run tests
 
 You can run the tests with the following command line:
