@@ -516,24 +516,25 @@ also space out any neccessary spacing."
        (t
         (shm-delimit "\"" "\""))))))
 
-(defun shm/comma ()
+(defun shm/comma (n)
   "Insert a comma. In a list it tries to help a bit by setting
 the current node to the parent."
-  (interactive)
-  (let* ((current-pair (shm-current-node-pair))
-         (current (cdr current-pair))
-         (parent-pair (shm-node-parent current-pair))
-         (parent (cdr parent-pair))
-         (inhibit-read-only t))
-    (cond
-     ;; When inside a list, indent to the list's position with an
-     ;; auto-inserted comma.
-     ((eq 'List (shm-node-cons parent))
-      (insert ",")
-      (shm-set-node-overlay parent-pair))
-     (t
-      (insert ",")
-      (shm-set-node-overlay parent-pair)))))
+  (interactive "p")
+  (if (shm-in-comment)
+      (self-insert-command n)
+   (let* ((current-pair (shm-current-node-pair))
+          (current (cdr current-pair))
+          (parent-pair (shm-node-parent current-pair))
+          (parent (cdr parent-pair)))
+     (cond
+      ;; When inside a list, indent to the list's position with an
+      ;; auto-inserted comma.
+      ((eq 'List (shm-node-cons parent))
+       (insert ",")
+       (shm-set-node-overlay parent-pair))
+      (t
+       (insert ",")
+       (shm-set-node-overlay parent-pair))))))
 
 (defun shm/single-quote ()
   "Delimit single quotes."
