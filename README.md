@@ -106,6 +106,9 @@ You can try:
 
         (setq shm-program-name "/absolute/path/to/structured-haskell-mode")
 
+3. Get the `exec-path-from-shell` package
+   [here](https://github.com/purcell/exec-path-from-shell.git) and try that.
+
 After that, disable and re-enable `structured-haskell-mode`.
 
 ## Development
