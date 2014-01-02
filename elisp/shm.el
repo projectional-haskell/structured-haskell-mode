@@ -212,7 +212,7 @@ state that will hopefully be garbage collected."
   t
   "Auto-insert skeletons for case, if, etc."
   :group 'shm
-  :type 'bool)
+  :type 'boolean)
 
 (defcustom shm-program-name
   "structured-haskell-mode"
@@ -244,25 +244,25 @@ state that will hopefully be garbage collected."
   nil
   "Use haskell-presentation-mode?"
   :group 'shm
-  :type 'bool)
+  :type 'boolean)
 
 (defcustom shm-display-quarantine
   t
   "Display quarantine?"
   :group 'shm
-  :type 'bool)
+  :type 'boolean)
 
 (defcustom shm-use-hdevtools
   nil
   "Use hdevtools for type information?"
   :group 'shm
-  :type 'bool)
+  :type 'boolean)
 
 (defcustom shm-type-info-fallback-to-ghci
   t
   "Fallback to GHCi when the type-info backend returns nothing?"
   :group 'shm
-  :type 'bool)
+  :type 'boolean)
 
 (defcustom shm-idle-timeout
   0.2
