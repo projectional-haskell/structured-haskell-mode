@@ -1,6 +1,7 @@
 ;;; structured-haskell-mode --- Structured editing for Haskell
 
-;; Copyright (c) 2013, Chris Done. All rights reserved.
+;; Copyright (c) 2013 Chris Done. All rights reserved.
+;; Copyright (c) 1998 Heribert Schuetz, Graeme E Moss
 
 ;; Author:    Chris Done <chrisdone@gmail.com>
 ;; Created:   19-Oct-2013
@@ -8,36 +9,18 @@
 ;; Keywords:  development, haskell, structured
 ;; Stability: unstable
 
-;; Redistribution and use in source and binary forms, with or without
-;; modification, are permitted provided that the following conditions
-;; are met:
+;; This file is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation; either version 3, or (at your option)
+;; any later version.
 
-;;     * Redistributions of source code must retain the above
-;;       copyright notice, this list of conditions and the following
-;;       disclaimer.
+;; This file is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
 
-;;     * Redistributions in binary form must reproduce the above
-;;       copyright notice, this list of conditions and the following
-;;       disclaimer in the documentation and/or other materials
-;;       provided with the distribution.
-
-;;     * Neither the name of Chris Done nor the names of other
-;;       contributors may be used to endorse or promote products
-;;       derived from this software without specific prior written
-;;       permission.
-
-;; THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-;; "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-;; LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
-;; FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
-;; COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
-;; INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-;; (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-;; SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
-;; HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
-;; STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-;; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
-;; OF THE POSSIBILITY OF SUCH DAMAGE.
+;; You should have received a copy of the GNU General Public License
+;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ;;; Commentary:
 
@@ -79,6 +62,10 @@
     (define-key map (kbd "M-)") 'paredit-close-round-and-newline)
     (define-key map (kbd "C-c C-^") 'shm/swing-up)
     (define-key map (kbd "C-c C-j") 'shm/swing-down)
+    (define-key map (kbd "TAB") 'shm/simple-indent)
+    (define-key map (kbd "<backtab>") 'shm/simple-indent-backtab)
+    (define-key map (kbd "RET") 'shm/simple-indent-newline-same-col)
+    (define-key map (kbd "C-<return>") 'shm/simple-indent-newline-indent)
     ;; Deletion
     (define-key map (kbd "DEL") 'shm/del)
     (define-key map (kbd "<deletechar>") 'shm/delete)
@@ -1134,88 +1121,88 @@ NODE-PAIR to use the specific node-pair (index + node)."
 
 ;; Indentation
 
-(defun shm-kill-node (&optional save-it node start do-not-delete)
-  "Kill the current node.
-
-See documentation of `shm-kill-region' for the transformations
-this does."
+(defun shm/simple-indent ()
+  "Space out to under next visible indent point.
+Indent points are positions of non-whitespace following whitespace in
+lines preceeding point.  A position is visible if it is to the left of
+the first non-whitespace of every nonblank line between the position and
+the current line.  If there is no visible indent point beyond the current
+column, `tab-to-tab-stop' is done instead."
   (interactive)
-  (let* ((current (or node (shm-current-node))))
-    (shm-kill-region save-it
-                     (or start (shm-node-start current))
-                     (shm-node-end current)
-                     do-not-delete)))
+  (let* ((start-column (current-column))
+         (invisible-from nil)           ; `nil' means infinity here
+         (indent
+          (catch 'shm-simple-indent-break
+            (save-excursion
+              (while (progn (beginning-of-line)
+                            (not (bobp)))
+                (forward-line -1)
+                (if (not (looking-at "[ \t]*\n"))
+                    (let ((this-indentation (current-indentation)))
+                      (if (or (not invisible-from)
+                              (< this-indentation invisible-from))
+                          (if (> this-indentation start-column)
+                              (setq invisible-from this-indentation)
+                            (let ((end (line-beginning-position 2)))
+                              (move-to-column start-column)
+                              ;; Is start-column inside a tab on this line?
+                              (if (> (current-column) start-column)
+                                  (backward-char 1))
+                              (or (looking-at "[ \t]")
+                                  (skip-chars-forward "^ \t" end))
+                              (skip-chars-forward " \t" end)
+                              (let ((col (current-column)))
+                                (throw 'shm-simple-indent-break
+                                       (if (or (= (point) end)
+                                               (and invisible-from
+                                                    (> col invisible-from)))
+                                           invisible-from
+                                         col)))))))))))))
+    (if indent
+        (let ((opoint (point-marker)))
+          (indent-line-to indent)
+          (if (> opoint (point))
+              (goto-char opoint))
+          (set-marker opoint nil))
+      (tab-to-tab-stop))))
 
-(defun shm-kill-region (save-it start end do-not-delete)
-  "Kill the given region, dropping any redundant indentation.
+(defun shm/simple-indent-backtab ()
+  "Indent backwards. Dual to `shm-simple-indent'."
+  (interactive)
+  (let ((current-point (point))
+        (i 0)
+        (x 0))
+    (goto-char (line-beginning-position))
+    (save-excursion
+      (while (< (point) current-point)
+        (shm/simple-indent)
+        (setq i (+ i 1))))
+    (while (< x (- i 1))
+      (shm/simple-indent)
+      (setq x (+ x 1)))))
 
-This normalizes everything it kills assuming what has been killed
-is a node or set of nodes. Indentation is stripped off and
-preserved appropriately so that if we kill e.g.
+(defun shm/simple-indent-newline-same-col ()
+  "Make a newline and go to the same column as the current line."
+  (interactive)
+  (let ((point (point)))
+    (let ((start-end
+           (save-excursion
+             (let* ((start (line-beginning-position))
+                    (end (progn (goto-char start)
+                                (search-forward-regexp
+                                 "[^ ]" (line-end-position) t 1))))
+               (when end (cons start (1- end)))))))
+      (if start-end
+          (progn (newline)
+                 (insert (buffer-substring-no-properties
+                          (car start-end) (cdr start-end))))
+        (newline)))))
 
-foo = {do bar
-          mu}
-
-where {} indicates the current node, then what is put into the kill ring is:
-
-do bar
-   mu
-
-rather than what is normally put there,
-
-do bar
-          mu
-
-So this is nice to paste elsewhere outside of Emacs, but it's
-especially nice for pasting back into other parts of code,
-because the yank function will take advantage of this
-normalization and paste and re-indent to fit into the new
-location. See `shm/yank' for documentation on that."
-  (goto-char start)
-  (let* ((start-col (current-column))
-         (multi-line (/= (line-beginning-position)
-                         (save-excursion (goto-char end)
-                                         (line-beginning-position))))
-         (string (buffer-substring-no-properties
-                  start
-                  end))
-         (result
-          (unless (string= string "")
-            (with-current-buffer (get-buffer-create shm-kill-zone-name)
-              (erase-buffer)
-              (when multi-line
-                (insert (make-string start-col ? )))
-              (insert string)
-              ;; This code de-indents code until a single line is hitting column zero.
-              (while (progn (goto-char (point-min))
-                            (not (and (search-forward-regexp "^[^ ]" nil t 1)
-                                      (forward-line -1)
-                                      ;; If there are empty lines, they
-                                      ;; don't count as hitting column zero.
-                                      (if (/= (line-beginning-position)
-                                              (line-end-position))
-                                          t
-                                        ;; And we should actually delete empty lines.
-                                        (progn (delete-region (1- (point)) (point))
-                                               nil)))))
-                ;; Bring everything back one.
-                (indent-rigidly (point-min) (point-max)
-                                -1))
-              ;; If there's an empty line at the end, then strip that
-              ;; out. It's just bothersome when pasting back in.
-              (goto-char (point-max))
-              (when (looking-at "^$")
-                (delete-region (1- (point))
-                               (point)))
-              ;; Finally, the actual save.
-              (funcall (if save-it save-it 'clipboard-kill-ring-save)
-                       (point-min)
-                       (point-max))))))
-    (let ((inhibit-read-only t))
-      (unless do-not-delete
-        (delete-region start
-                       end)))
-    result))
+(defun shm/simple-indent-newline-indent ()
+  "Make a newline on the current column and indent on step."
+  (interactive)
+  (shm/simple-indent-newline-same-col)
+  (insert (make-string haskell-indent-spaces ? )))
 
 (defun shm-appropriate-adjustment-point ()
   "Go to the appropriate adjustment point.
@@ -1536,6 +1523,92 @@ This is used when indenting dangling expressions."
             (shm-find-furthest-parent-on-line parent)
           current)
       current)))
+
+
+;; Killing
+
+(defun shm-kill-node (&optional save-it node start do-not-delete)
+  "Kill the current node.
+
+See documentation of `shm-kill-region' for the transformations
+this does."
+  (interactive)
+  (let* ((current (or node (shm-current-node))))
+    (shm-kill-region save-it
+                     (or start (shm-node-start current))
+                     (shm-node-end current)
+                     do-not-delete)))
+
+(defun shm-kill-region (save-it start end do-not-delete)
+  "Kill the given region, dropping any redundant indentation.
+
+This normalizes everything it kills assuming what has been killed
+is a node or set of nodes. Indentation is stripped off and
+preserved appropriately so that if we kill e.g.
+
+foo = {do bar
+          mu}
+
+where {} indicates the current node, then what is put into the kill ring is:
+
+do bar
+   mu
+
+rather than what is normally put there,
+
+do bar
+          mu
+
+So this is nice to paste elsewhere outside of Emacs, but it's
+especially nice for pasting back into other parts of code,
+because the yank function will take advantage of this
+normalization and paste and re-indent to fit into the new
+location. See `shm/yank' for documentation on that."
+  (goto-char start)
+  (let* ((start-col (current-column))
+         (multi-line (/= (line-beginning-position)
+                         (save-excursion (goto-char end)
+                                         (line-beginning-position))))
+         (string (buffer-substring-no-properties
+                  start
+                  end))
+         (result
+          (unless (string= string "")
+            (with-current-buffer (get-buffer-create shm-kill-zone-name)
+              (erase-buffer)
+              (when multi-line
+                (insert (make-string start-col ? )))
+              (insert string)
+              ;; This code de-indents code until a single line is hitting column zero.
+              (while (progn (goto-char (point-min))
+                            (not (and (search-forward-regexp "^[^ ]" nil t 1)
+                                      (forward-line -1)
+                                      ;; If there are empty lines, they
+                                      ;; don't count as hitting column zero.
+                                      (if (/= (line-beginning-position)
+                                              (line-end-position))
+                                          t
+                                        ;; And we should actually delete empty lines.
+                                        (progn (delete-region (1- (point)) (point))
+                                               nil)))))
+                ;; Bring everything back one.
+                (indent-rigidly (point-min) (point-max)
+                                -1))
+              ;; If there's an empty line at the end, then strip that
+              ;; out. It's just bothersome when pasting back in.
+              (goto-char (point-max))
+              (when (looking-at "^$")
+                (delete-region (1- (point))
+                               (point)))
+              ;; Finally, the actual save.
+              (funcall (if save-it save-it 'clipboard-kill-ring-save)
+                       (point-min)
+                       (point-max))))))
+    (let ((inhibit-read-only t))
+      (unless do-not-delete
+        (delete-region start
+                       end)))
+    result))
 
 
 ;; Type information operations

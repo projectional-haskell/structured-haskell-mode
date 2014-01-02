@@ -62,6 +62,9 @@ Then add it to your haskell-mode-hook:
 
     (add-hook 'haskell-mode-hook 'structured-haskell-mode)
 
+Turn off haskell-indentation-modes. They are incompatible with
+structured-haskell-mode. It has its own indentation functionality.
+
 You'll want to customize these two variables: `shm-quarantine-face`
 and `shm-current-face` to something that better suites your color
 theme.
