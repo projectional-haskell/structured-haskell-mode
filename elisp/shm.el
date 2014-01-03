@@ -180,6 +180,27 @@ of SHM that this is a common use-case worth taking into account.")
   :group 'shm
   :type 'boolean)
 
+(defcustom shm-skip-applications
+  t
+  "Skip successive applications to the top parent.
+
+So if you have
+
+foo| bar mu
+
+And go up a parent, it will go to
+
+foo bar mu|
+
+instead of
+
+foo bar| mu
+
+I tend to want the former behaviour more often than the latter,
+but others may differ."
+  :group 'shm
+  :type 'boolean)
+
 (defcustom shm-program-name
   "structured-haskell-mode"
   "The path to call for parsing Haskell syntax."
@@ -513,19 +534,19 @@ the current node to the parent."
   (interactive "p")
   (if (shm-in-comment)
       (self-insert-command n)
-   (let* ((current-pair (shm-current-node-pair))
-          (current (cdr current-pair))
-          (parent-pair (shm-node-parent current-pair))
-          (parent (cdr parent-pair)))
-     (cond
-      ;; When inside a list, indent to the list's position with an
-      ;; auto-inserted comma.
-      ((eq 'List (shm-node-cons parent))
-       (insert ",")
-       (shm-set-node-overlay parent-pair))
-      (t
-       (insert ",")
-       (shm-set-node-overlay parent-pair))))))
+    (let* ((current-pair (shm-current-node-pair))
+           (current (cdr current-pair))
+           (parent-pair (shm-node-parent current-pair))
+           (parent (cdr parent-pair)))
+      (cond
+       ;; When inside a list, indent to the list's position with an
+       ;; auto-inserted comma.
+       ((eq 'List (shm-node-cons parent))
+        (insert ",")
+        (shm-set-node-overlay parent-pair))
+       (t
+        (insert ",")
+        (shm-set-node-overlay parent-pair))))))
 
 (defun shm/single-quote ()
   "Delimit single quotes."
@@ -951,10 +972,10 @@ will insert them back verbatim."
    (unless (or (shm-in-comment)
                (shm-in-string))
      (when (looking-back "[a-zA-Z0-9]+_*")
-     (shm-insert-string " "))
-   (when (looking-at "[a-zA-Z0-9]+_*")
-     (shm-insert-string " ")
-     (forward-char -1)))
+       (shm-insert-string " "))
+     (when (looking-at "[a-zA-Z0-9]+_*")
+       (shm-insert-string " ")
+       (forward-char -1)))
    (shm-insert-indented #'clipboard-yank)))
 
 (defun shm/yank-pop ()
@@ -1904,16 +1925,18 @@ then the parent is the correct one to work with."
   (let* ((parent-pair (shm-node-parent current-pair))
          (parent (cdr parent-pair))
          (current (cdr current-pair)))
-    (if parent
-        (if (and (= (shm-node-start current)
-                    (shm-node-start parent))
-                 (= (shm-node-end current)
-                    (shm-node-end parent)))
-            (if (string= (shm-node-type current) (shm-node-type parent))
-                current-pair
-              (shm-workable-node parent-pair))
-          current-pair)
-      current-pair)))
+    (cond
+
+     (t (if parent
+            (if (and (= (shm-node-start current)
+                        (shm-node-start parent))
+                     (= (shm-node-end current)
+                        (shm-node-end parent)))
+                (if (string= (shm-node-type current) (shm-node-type parent))
+                    current-pair
+                  (shm-workable-node parent-pair))
+              current-pair)
+          current-pair)))))
 
 (defun shm-node-previous (node-pair)
   "Get the previous node of NODE-PAIR."
@@ -2021,8 +2044,10 @@ child, and in fact is common."
                   maybe-parent-parent-pair
                   (string= (shm-node-type-name actual-parent)
                            (shm-node-type-name maybe-parent-parent))
-                  (or (eq (shm-node-cons actual-parent) 'App)
-                      (eq (shm-node-cons actual-parent) 'InfixApp))
+                  (and shm-skip-applications
+                       (or (eq (shm-node-cons actual-parent) 'App)
+                           (eq (shm-node-cons actual-parent) 'InfixApp)
+                           (eq (shm-node-cons actual-parent) 'TyApp)))
                   (eq (shm-node-cons actual-parent)
                       (shm-node-cons maybe-parent-parent)))
              (shm-node-parent actual-parent-pair))
