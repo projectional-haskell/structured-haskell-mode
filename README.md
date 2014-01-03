@@ -159,3 +159,24 @@ it's the difference between 15ms and 30ms for a 400 line module, it
 really does not matter. We're parsing declarations and individual
 nodes. Plus the GHC tree is more annoying to traverse generically due
 to its partiality.
+
+## Reporting a bug
+
+When reporting a bug, please write in the following format:
+
+    [Any general summary/comments if desired]
+
+    Steps to reproduce:
+
+        Type blah in the buffer.
+        Hit x key.
+        See some change z.
+        Hit y key.
+
+    Expected:
+
+    What I expected to see and happen.
+
+    Actual:
+
+    What actually happened.
