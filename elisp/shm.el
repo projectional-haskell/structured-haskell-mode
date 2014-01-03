@@ -415,18 +415,27 @@ Very useful for debugging and also a bit useful for newbies."
 (defun shm/wrap-parens ()
   "Wrap the node in parentheses."
   (interactive)
-  (let ((line (line-number-at-pos))
-        (node (shm-current-node)))
-    (save-excursion
-      (goto-char (shm-node-start node))
+  (cond
+   ((region-active-p)
+    (let ((beg (region-beginning))
+          (end (region-end)))
+      (goto-char beg)
       (insert "(")
-      (goto-char (shm-node-end node))
-      (when (/= line (line-number-at-pos))
-        (indent-rigidly (shm-node-start node)
-                        (shm-node-end node)
-                        1))
-      (insert ")"))
-    (forward-char 1)))
+      (goto-char (1+ end))
+      (insert ")")
+      (goto-char (1+ beg))))
+   (t (let ((line (line-number-at-pos))
+            (node (shm-current-node)))
+        (save-excursion
+          (goto-char (shm-node-start node))
+          (insert "(")
+          (goto-char (shm-node-end node))
+          (when (/= line (line-number-at-pos))
+            (indent-rigidly (shm-node-start node)
+                            (shm-node-end node)
+                            1))
+          (insert ")"))
+        (forward-char 1)))))
 
 (defun shm/space ()
   "Insert a space but sometimes do something more clever, like
