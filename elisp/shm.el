@@ -797,7 +797,8 @@ hai = do foo bar
    self-insert-command
    (if (shm-literal-insertion)
        (shm-insert-string ")")
-     (shm/goto-parent-end))))
+     (progn (shm/reparse)
+            (shm/goto-parent-end)))))
 
 (defun shm/goto-parent-end ()
   "Set the current node overlay to the parent node, but go to the
