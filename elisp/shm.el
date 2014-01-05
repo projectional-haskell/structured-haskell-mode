@@ -487,10 +487,9 @@ Very useful for debugging and also a bit useful for newbies."
       (shm-insert-indented (lambda () (insert "let \nin undefined")))
       (forward-char 4))
      ((and shm-auto-insert-skeletons
-           (or (looking-back "[^a-zA-Z0-9_]module")
-               (and (looking-back "module")
-                    (= (line-beginning-position)
-                       (- (point) 6)))))
+           (and (looking-back "module")
+                (= (line-beginning-position)
+                   (- (point) 6))))
       (insert "  where")
       (backward-word 1)
       (forward-char -1))
