@@ -611,7 +611,14 @@ the current node to the parent."
 (defun shm/open-paren ()
   "Delimit parentheses."
   (interactive)
-  (shm-delimit "(" ")"))
+  (let ((current (shm-current-node)))
+    (cond
+     ((and current
+           (string= "ExportSpec" (shm-node-type-name current)))
+      (insert "()")
+      (forward-char -1))
+     (t
+      (shm-delimit "(" ")")))))
 
 (defun shm/open-bracket ()
   "Delimit brackets."
