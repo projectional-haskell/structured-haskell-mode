@@ -1834,9 +1834,16 @@ here."
     (let ((current (shm-actual-node)))
       (cond
        ((shm-find-overlay 'shm-quarantine)
+        (if (not (or (looking-back "[ ,[({]")
+                     (bolp)))
+            (progn (shm-insert-string " ") 1)
+          0)
         (shm-insert-string open)
         (let ((point (point)))
-          (insert close)
+          (shm-insert-string close)
+          (when (and (/= (point) (line-end-position))
+                     (not (looking-at "[]){} ,]")))
+            (shm-insert-string " "))
           (goto-char point)))
        (t
         (if (not (or (looking-back "[ ,[({]")
