@@ -1286,7 +1286,7 @@ And use our normal adjustment test there. After all, only thing
 after 'zoo' are *really* dependent."
   (let ((current (shm-current-node)))
     (when (and current
-               (< (shm-node-end current) (line-end-position)))
+               (<= (shm-node-end current) (line-end-position)))
       (goto-char (shm-node-end current)))))
 
 (defun shm-newline-indent ()
