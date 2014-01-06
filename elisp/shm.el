@@ -84,8 +84,8 @@
     (define-key map (kbd "C-M-b") 'shm/backward-node)
     (define-key map (kbd "M-a") 'shm/goto-parent)
     (define-key map (kbd ")") 'shm/close-paren)
-    (define-key map (kbd "]") 'shm/close-paren)
-    (define-key map (kbd "}") 'shm/close-paren)
+    (define-key map (kbd "]") 'shm/close-bracket)
+    (define-key map (kbd "}") 'shm/close-brace)
     (define-key map (kbd "M-}") 'shm/forward-paragraph)
     (define-key map (kbd "M-{") 'shm/backward-paragraph)
     (define-key map (kbd "C-M-SPC") 'shm/mark-node)
@@ -808,6 +808,26 @@ hai = do foo bar
    self-insert-command
    (if (shm-literal-insertion)
        (shm-insert-string ")")
+     (progn (shm/reparse)
+            (shm/goto-parent-end)))))
+
+(defun shm/close-bracket ()
+  "Either insert a close bracket or go to the end of the node."
+  (interactive)
+  (shm-with-fallback
+   self-insert-command
+   (if (shm-literal-insertion)
+       (shm-insert-string "]")
+     (progn (shm/reparse)
+            (shm/goto-parent-end)))))
+
+(defun shm/close-brace ()
+  "Either insert a close brace or go to the end of the node."
+  (interactive)
+  (shm-with-fallback
+   self-insert-command
+   (if (shm-literal-insertion)
+       (shm-insert-string "}")
      (progn (shm/reparse)
             (shm/goto-parent-end)))))
 
