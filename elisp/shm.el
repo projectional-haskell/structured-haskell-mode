@@ -553,10 +553,10 @@ the current node to the parent."
        ;; When inside a list, indent to the list's position with an
        ;; auto-inserted comma.
        ((eq 'List (shm-node-cons parent))
-        (insert ",")
+        (shm-insert-string ",")
         (shm-set-node-overlay parent-pair))
        (t
-        (insert ",")
+        (shm-insert-string ",")
         (shm-set-node-overlay parent-pair))))))
 
 (defun shm/single-quote ()
@@ -633,7 +633,7 @@ the current node to the parent."
     (cond
      ((and current
            (string= "Pat" (shm-node-type-name current)))
-      (insert "{}")
+      (shm-insert-string "{}")
       (forward-char -1))
      (t
       (shm-delimit "{" "}")))))
@@ -926,10 +926,10 @@ This is more convenient than typing out the same operator."
           (cond
            ((= (point) (shm-node-start current))
             (let ((point (point)))
-              (insert " " qop " ")
+              (shm-insert-string " " qop " ")
               (goto-char point)))
            ((= (point) (shm-node-end current))
-            (insert " " qop " "))
+            (shm-insert-string " " qop " "))
            (t (error "Please go to the start or end of the node to indicate direction."))))
          (t (error "Unable to figure out the operator.")))))
      (t (error "Not in an infix application.")))))
@@ -1497,7 +1497,7 @@ for top-level functions and things like that."
   "Insert the given string."
   (save-excursion
     (shm-appropriate-adjustment-point)
-    (shm-adjust-dependents (point) 1))
+    (shm-adjust-dependents (point) (length string)))
   (insert string)
   (shm/init t))
 
@@ -1834,26 +1834,17 @@ here."
     (let ((current (shm-actual-node)))
       (cond
        ((shm-find-overlay 'shm-quarantine)
-        (insert open)
+        (shm-insert-string open)
         (let ((point (point)))
           (insert close)
           (goto-char point)))
        (t
-        (shm-adjust-dependents
-         (point)
-         (+
-          (if (not (or (looking-back "[ ,[({]")
-                       (bolp)))
-              (progn (insert " ") 1)
-            0)
-          (length open)
-          (length close)))
-        (insert open)
+        (shm-insert-string open)
         (let ((point (point)))
-          (insert close)
+          (shm-insert-string close)
           (when (and (/= (point) (line-end-position))
                      (not (looking-at "[]){} ,]")))
-            (insert " "))
+            (shm-insert-string " "))
           (goto-char point)
           (shm/init t))))))))
 
