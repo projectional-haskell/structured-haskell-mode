@@ -614,7 +614,8 @@ the current node to the parent."
   (let ((current (shm-current-node)))
     (cond
      ((and current
-           (string= "ExportSpec" (shm-node-type-name current)))
+           (or (string= "ExportSpec" (shm-node-type-name current))
+               (string= "ImportSpec" (shm-node-type-name current))))
       (insert "()")
       (forward-char -1))
      (t
