@@ -1839,6 +1839,10 @@ here."
           (insert close)
           (goto-char point)))
        (t
+        (if (not (or (looking-back "[ ,[({]")
+                     (bolp)))
+            (progn (shm-insert-string " ") 1)
+          0)
         (shm-insert-string open)
         (let ((point (point)))
           (shm-insert-string close)
