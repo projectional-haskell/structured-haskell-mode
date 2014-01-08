@@ -1344,8 +1344,9 @@ lists."
           (newline)
           (indent-to column)))))
      ;; Indent for sum types
-     ((and parent
-           (eq 'DataDecl (shm-node-cons parent)))
+     ((or (and parent
+               (eq 'DataDecl (shm-node-cons parent)))
+          (eq 'ConDecl (shm-node-cons current)))
       (newline)
       (indent-to (shm-node-start-column current))
       (delete-char -2)
