@@ -1344,7 +1344,8 @@ lists."
       (indent-to (+ (shm-indent-spaces) (shm-node-start-column current))))
      ;; Indentation for function application.
      ((and parent
-           (eq 'App (shm-node-cons parent)))
+           (or (eq 'App (shm-node-cons parent))
+               (eq 'TyApp (shm-node-cons parent))))
       (let ((column
              (save-excursion
                (shm/goto-parent)
