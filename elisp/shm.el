@@ -493,7 +493,11 @@ Very useful for debugging and also a bit useful for newbies."
                       (string= "Stmt" (shm-node-type-name current))))))
       (delete-region (- (point) 3) (point))
       (shm-insert-indented (lambda () (insert "let \nin undefined")))
-      (forward-char 4))
+      (forward-char 4)
+      (save-excursion
+        (forward-word)
+        (forward-char 1)
+        (evaporate (point) (+ (point) (length "undefined")))))
      ((and shm-auto-insert-skeletons
            (and (looking-back "module")
                 (= (line-beginning-position)
