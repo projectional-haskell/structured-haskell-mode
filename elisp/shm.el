@@ -33,6 +33,7 @@
 
 (require 'shm-ast-documentation)
 (require 'cl)
+(require 'evaporate)
 
 
 ;; Groups
@@ -62,8 +63,8 @@
     (define-key map (kbd "M-)") 'paredit-close-round-and-newline)
     (define-key map (kbd "C-c C-^") 'shm/swing-up)
     (define-key map (kbd "C-c C-j") 'shm/swing-down)
-    (define-key map (kbd "TAB") 'shm/simple-indent)
-    (define-key map (kbd "<backtab>") 'shm/simple-indent-backtab)
+    (define-key map (kbd "TAB") 'shm/tab)
+    (define-key map (kbd "<backtab>") 'shm/backtab)
     (define-key map (kbd "RET") 'shm/simple-indent-newline-same-col)
     (define-key map (kbd "C-<return>") 'shm/simple-indent-newline-indent)
     ;; Deletion
@@ -204,12 +205,6 @@ but others may differ."
 (defcustom shm-program-name
   "structured-haskell-mode"
   "The path to call for parsing Haskell syntax."
-  :group 'shm
-  :type 'string)
-
-(defcustom shm-kill-zone-name
-  "*shm-kill-zone*"
-  "The name of the buffer to use for the kill zone."
   :group 'shm
   :type 'string)
 
@@ -453,7 +448,7 @@ Very useful for debugging and also a bit useful for newbies."
                                    (search-backward-regexp "[^a-zA-Z0-9_]")
                                    (forward-char 1)
                                    (point)))
-            (template "case  of
+            (template "case undefined of
   _ -> undefined"))
         (shm-adjust-dependents (point) (- start (point)))
         (delete-region start (point))
@@ -461,7 +456,14 @@ Very useful for debugging and also a bit useful for newbies."
         (shm-insert-indented
          (lambda ()
            (insert template)))
-        (forward-char 5)))
+        (forward-char 5)
+        (shm/reparse)
+        (save-excursion
+          (evaporate (point) (+ (point) (length "undefined")))
+          (search-forward-regexp "_" nil nil 1)
+          (evaporate (1- (point)) (point))
+          (forward-char 4)
+          (evaporate (point) (+ (point) (length "undefined"))))))
      ((and shm-auto-insert-skeletons
            (looking-back "[^a-zA-Z0-9_]if"))
       (let ((start (save-excursion (forward-char -1)
@@ -469,15 +471,23 @@ Very useful for debugging and also a bit useful for newbies."
                                    (forward-char 1)
                                    (point)))
             (template (if (looking-at "$")
-                          "if \n   then undefined\n   else undefined"
-                        "if  then undefined else undefined")))
+                          "if undefined\n   then undefined\n   else undefined"
+                        "if undefined then undefined else undefined")))
         (shm-adjust-dependents (point) (- start (point)))
         (delete-region start (point))
         (shm-adjust-dependents (point) (length (car (last (split-string template "\n")))))
         (shm-insert-indented
          (lambda ()
            (insert template)))
-        (forward-char 3)))
+        (forward-char 3)
+        (save-excursion
+          (evaporate (point) (+ (point) (length "undefined")))
+          (forward-word)
+          (forward-char 6)
+          (evaporate (point) (+ (point) (length "undefined")))
+          (forward-word)
+          (forward-char 6)
+          (evaporate (point) (+ (point) (length "undefined"))))))
      ((and shm-auto-insert-skeletons
            (looking-back "[^a-zA-Z0-9_]let")
            (let ((current (shm-current-node)))
@@ -495,6 +505,36 @@ Very useful for debugging and also a bit useful for newbies."
       (backward-word 1)
       (forward-char -1))
      (t (shm-insert-string " ")))))
+
+(defun shm/jump-to-slot ()
+  "Jump to the next skeleton slot."
+  (interactive)
+  (let ((os (sort (remove-if-not (lambda (o) (overlay-get o 'evaporate-overlay))
+                                 (overlays-in (point) (point-max)))
+                  (lambda (a b)
+                    (< (overlay-start a)
+                       (overlay-start b))))))
+    (when os
+      (if (= (overlay-start (car os))
+             (point))
+          (when (cadr os)
+            (goto-char (overlay-start (cadr os))))
+        (goto-char (overlay-start (car os)))))))
+
+(defun shm/jump-to-previous-slot ()
+  "Jump to the previous skeleton slot."
+  (interactive)
+  (let ((os (sort (remove-if-not (lambda (o) (overlay-get o 'evaporate-overlay))
+                                 (overlays-in (point-min) (point)))
+                  (lambda (a b)
+                    (> (overlay-start a)
+                       (overlay-start b))))))
+    (when os
+      (if (= (overlay-start (car os))
+             (point))
+          (when (cadr os)
+            (goto-char (overlay-start (cadr os))))
+        (goto-char (overlay-start (car os)))))))
 
 (defun shm/double-quote ()
   "Insert double quotes.
@@ -1200,6 +1240,28 @@ NODE-PAIR to use the specific node-pair (index + node)."
 
 ;; Indentation
 
+(defun shm/tab ()
+  "Either indent if at the start of a line, or jump to the next
+  slot."
+  (interactive)
+  (cond
+   ((save-excursion (goto-char (line-beginning-position))
+                    (looking-at "^[ ]*$"))
+    (shm/simple-indent))
+   (t
+    (shm/jump-to-slot))))
+
+(defun shm/backtab ()
+  "Either de-indent if at the start of a line, or jump to the previous
+  slot."
+  (interactive)
+  (cond
+   ((save-excursion (goto-char (line-beginning-position))
+                    (looking-at "^[ ]*$"))
+    (shm/simple-indent-backtab))
+   (t
+    (shm/jump-to-previous-slot))))
+
 (defun shm/simple-indent ()
   "Space out to under next visible indent point.
 Indent points are positions of non-whitespace following whitespace in
@@ -1655,7 +1717,7 @@ location. See `shm/yank' for documentation on that."
                   end))
          (result
           (unless (string= string "")
-            (with-current-buffer (get-buffer-create shm-kill-zone-name)
+            (with-temp-buffer
               (erase-buffer)
               (when multi-line
                 (insert (make-string start-col ? )))
