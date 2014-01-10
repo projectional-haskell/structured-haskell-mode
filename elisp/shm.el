@@ -482,11 +482,9 @@ Very useful for debugging and also a bit useful for newbies."
         (forward-char 3)
         (save-excursion
           (evaporate (point) (+ (point) (length "undefined")))
-          (forward-word)
-          (forward-char 6)
+          (search-forward-regexp "then ")
           (evaporate (point) (+ (point) (length "undefined")))
-          (forward-word)
-          (forward-char 6)
+          (search-forward-regexp "else ")
           (evaporate (point) (+ (point) (length "undefined"))))))
      ((and shm-auto-insert-skeletons
            (looking-back "[^a-zA-Z0-9_]let")

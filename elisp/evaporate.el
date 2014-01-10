@@ -19,13 +19,15 @@
   (let ((inhibit-modification-hooks t))
     (when changed
       (delete-region (overlay-start o)
-                     (overlay-end o)))))
+                     (overlay-end o))
+      (delete-overlay o))))
 
 (defun evaporate-insert-before-hook (o changed beg end &optional len)
   "Remove the overlay before inserting something at the start."
   (let ((inhibit-modification-hooks t))
     (when (not changed)
       (delete-region (overlay-start o)
-                     (overlay-end o)))))
+                     (overlay-end o))
+      (delete-overlay o))))
 
 (provide 'evaporate)
