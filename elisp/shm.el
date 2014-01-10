@@ -965,10 +965,10 @@ This is more convenient than typing out the same operator."
           (cond
            ((= (point) (shm-node-start current))
             (let ((point (point)))
-              (shm-insert-string " " qop " ")
+              (shm-insert-string (concat " " qop " "))
               (goto-char point)))
            ((= (point) (shm-node-end current))
-            (shm-insert-string " " qop " "))
+            (shm-insert-string (concat " " qop " ")))
            (t (error "Please go to the start or end of the node to indicate direction."))))
          (t (error "Unable to figure out the operator.")))))
      (t (error "Not in an infix application.")))))
