@@ -1508,9 +1508,16 @@ lists."
              (operand (cdr operand-pair))
              (string (buffer-substring-no-properties (shm-node-start operand)
                                                      (shm-node-end operand))))
-        (newline)
-        (indent-to (shm-node-start-column operand))
-        (insert string " ")))
+        (cond
+         ((save-excursion (goto-char (shm-node-end operand))
+                          (= (point) (line-end-position)))
+          (insert " " string)
+          (newline)
+          (indent-to (shm-node-start-column current)))
+         (t
+          (newline)
+          (indent-to (shm-node-start-column operand))
+          (insert string " ")))))
      ;; Infix operators
      ((and parent
            (eq 'InfixApp (shm-node-cons parent)))
