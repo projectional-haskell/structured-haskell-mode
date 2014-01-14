@@ -1955,14 +1955,8 @@ here."
                      (1+ (point)))))
    ;; If the delimiters aren't empty and we're in a literal, then go
    ;; ahead and elete the character.
-   ((and (not (let ((current (shm-current-node)))
-                (and current
-                     (or (string= 'Lit (shm-node-cons current))
-                         (string= 'PLit (shm-node-cons current)))
-                     (and (looking-back open)
-                          (not (save-excursion (forward-char (* -1 (length open)))
-                                               (looking-back "\\\\")))))))
-         (shm-literal-insertion))
+   ((and (shm-literal-insertion)
+         (not (= (point) (1+ (shm-node-start (shm-current-node))))))
     (shm-delete-char))
    ;; Otherwise just glide over the character.
    (t
