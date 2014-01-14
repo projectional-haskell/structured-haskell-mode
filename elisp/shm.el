@@ -1959,7 +1959,9 @@ here."
                 (and current
                      (or (string= 'Lit (shm-node-cons current))
                          (string= 'PLit (shm-node-cons current)))
-                     (looking-back open))))
+                     (and (looking-back open)
+                          (not (save-excursion (forward-char (* -1 (length open)))
+                                               (looking-back "\\\\")))))))
          (shm-literal-insertion))
     (shm-delete-char))
    ;; Otherwise just glide over the character.
@@ -1970,6 +1972,8 @@ here."
 (defun shm-delimiter-empty (open close)
   "Is the current expression delimited by OPEN and CLOSE empty?"
   (and (looking-back open)
+       (not (save-excursion (forward-char (* -1 (length open)))
+                            (looking-back "\\\\")))
        (looking-at close)))
 
 (defun shm-delete-char ()
