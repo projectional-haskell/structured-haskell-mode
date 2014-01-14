@@ -1416,6 +1416,7 @@ lists."
                (forward-sexp)
                (1+ (current-column)))))
         (cond
+
          ((and (or (= column (current-column))
                    (= column (+ (shm-node-start-column parent)
                                 (shm-indent-spaces))))
@@ -2190,18 +2191,29 @@ declaration. This assumes that declarations start at column zero
 and that the rest is always indented by one space afterwards, so
 Template Haskell uses with it all being at column zero are not
 expected to work."
-  (save-excursion
-    (let ((start (or (progn (goto-char (line-end-position))
-                            (search-backward-regexp "^[^ \n]" nil t 1))
-                     0))
-          (end (progn (goto-char (1+ (point)))
-                      (or (when (search-forward-regexp "[\n]+[^ \n]" nil t 1)
-                            (forward-char -1)
-                            (search-backward-regexp "[^\n ]" nil t)
-                            (forward-char)
-                            (point))
-                          (point-max)))))
-      (cons start end))))
+  (cond
+   ;; If we're in a block comment spanning multiple lines then let's
+   ;; see if it starts at the beginning of the line (or if any comment
+   ;; is at the beginning of the line, we don't care to treat it as a
+   ;; proper declaration.
+   ((and (shm-in-comment)
+         (save-excursion (goto-char (line-beginning-position))
+                         (shm-in-comment)))
+    nil)
+   ;; Otherwise we just do our line-based hack.
+   (t
+    (save-excursion
+      (let ((start (or (progn (goto-char (line-end-position))
+                              (search-backward-regexp "^[^ \n]" nil t 1))
+                       0))
+            (end (progn (goto-char (1+ (point)))
+                        (or (when (search-forward-regexp "[\n]+[^ \n]" nil t 1)
+                              (forward-char -1)
+                              (search-backward-regexp "[^\n ]" nil t)
+                              (forward-char)
+                              (point))
+                            (point-max)))))
+        (cons start end))))))
 
 
 ;; Internal AST information acquisition functions
