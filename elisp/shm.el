@@ -1089,6 +1089,10 @@ parse errors that are rarely useful. For example:
     ;; These kind of patterns block the parens of syntaxes that would
     ;; otherwise break everything, so, "if", "of", "case", "do",
     ;; etc. if deleted.
+    ((and (looking-back "[^A-Zaz0-9_]do ?")
+          (not (or (eolp)
+                   (looking-at "[])}]"))))
+     nil) ; do nothing
     ((looking-back " <-")
      (forward-char -3))
     ((looking-back " <- ")
