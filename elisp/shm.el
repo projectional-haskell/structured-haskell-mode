@@ -599,8 +599,10 @@ the current node to the parent."
   (interactive)
   (let ((current (shm-current-node)))
     (cond
-     ((eq (shm-node-cons current)
-          'SpliceDecl)
+     ((or (eq (shm-node-cons current)
+              'SpliceDecl)
+          (string= (shm-node-type-name current)
+                   "BangType"))
       (unless (looking-back "[ ]+")
         (insert " "))
       (unless (looking-back "::[ ]+")
