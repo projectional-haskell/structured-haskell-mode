@@ -58,6 +58,7 @@
     (define-key map (kbd ",") 'shm/comma)
     (define-key map (kbd ":") 'shm/:)
     (define-key map (kbd "SPC") 'shm/space)
+    (define-key map (kbd "C-c C-u") 'shm/insert-undefined)
     ;; Indentation
     (define-key map (kbd "C-j") 'shm/newline-indent)
     (define-key map (kbd "M-)") 'paredit-close-round-and-newline)
@@ -406,6 +407,14 @@ Very useful for debugging and also a bit useful for newbies."
       (error "No current node."))))
 
 ;;; Insertion
+
+(defun shm/insert-undefined ()
+  "Insert undefined."
+  (interactive)
+  (save-excursion
+    (let ((point (point)))
+      (shm-insert-string "undefined")
+      (evaporate point (point)))))
 
 (defun shm/wrap-parens ()
   "Wrap the node in parentheses."
