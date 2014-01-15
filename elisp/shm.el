@@ -597,20 +597,22 @@ the current node to the parent."
 (defun shm/: ()
   "Insert colon."
   (interactive)
-  (let ((current (shm-current-node)))
-    (cond
-     ((or (eq (shm-node-cons current)
-              'SpliceDecl)
-          (string= (shm-node-type-name current)
-                   "BangType")
-          (string= (shm-node-type-name current)
-                   "FieldDecl"))
-      (unless (looking-back "[ ]+")
-        (insert " "))
-      (unless (looking-back "::[ ]+")
-        (shm-insert-string ":: ")))
-     (t
-      (shm-insert-string ":")))))
+  (if (shm-literal-insertion)
+      (call-interactively 'self-insert-command)
+    (let ((current (shm-current-node)))
+      (cond
+       ((or (eq (shm-node-cons current)
+                'SpliceDecl)
+            (string= (shm-node-type-name current)
+                     "BangType")
+            (string= (shm-node-type-name current)
+                     "FieldDecl"))
+        (unless (looking-back "[ ]+")
+          (insert " "))
+        (unless (looking-back "::[ ]+")
+          (shm-insert-string ":: ")))
+       (t
+        (shm-insert-string ":"))))))
 
 (defun shm/hyphen (n)
   "The - hyphen."
