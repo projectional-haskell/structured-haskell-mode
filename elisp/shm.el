@@ -442,70 +442,23 @@ Very useful for debugging and also a bit useful for newbies."
     (cond
      ((shm-in-comment)
       (insert " "))
-     ((and shm-auto-insert-skeletons
-           (looking-back "[^a-zA-Z0-9_]case"))
-      (let ((start (save-excursion (forward-char -1)
-                                   (search-backward-regexp "[^a-zA-Z0-9_]")
-                                   (forward-char 1)
-                                   (point)))
-            (template "case undefined of
-  _ -> undefined"))
-        (shm-adjust-dependents (point) (- start (point)))
-        (delete-region start (point))
-        (shm-adjust-dependents (point) (length (car (last (split-string template "\n")))))
-        (shm-insert-indented
-         (lambda ()
-           (insert template)))
-        (forward-char 5)
-        (shm/reparse)
-        (save-excursion
-          (evaporate (point) (+ (point) (length "undefined")))
-          (search-forward-regexp "_" nil nil 1)
-          (evaporate (1- (point)) (point))
-          (forward-char 4)
-          (evaporate (point) (+ (point) (length "undefined"))))))
-     ((and shm-auto-insert-skeletons
-           (looking-back "[^a-zA-Z0-9_]if"))
-      (let ((start (save-excursion (forward-char -1)
-                                   (search-backward-regexp "[^a-zA-Z0-9_]")
-                                   (forward-char 1)
-                                   (point)))
-            (template (if (looking-at "$")
-                          "if undefined\n   then undefined\n   else undefined"
-                        "if undefined then undefined else undefined")))
-        (shm-adjust-dependents (point) (- start (point)))
-        (delete-region start (point))
-        (shm-adjust-dependents (point) (length (car (last (split-string template "\n")))))
-        (shm-insert-indented
-         (lambda ()
-           (insert template)))
-        (forward-char 3)
-        (save-excursion
-          (evaporate (point) (+ (point) (length "undefined")))
-          (search-forward-regexp "then ")
-          (evaporate (point) (+ (point) (length "undefined")))
-          (search-forward-regexp "else ")
-          (evaporate (point) (+ (point) (length "undefined"))))))
-     ((and shm-auto-insert-skeletons
-           (looking-back "[^a-zA-Z0-9_]let")
-           (let ((current (shm-current-node)))
-             (not (or (eq 'Do (shm-node-cons current))
-                      (string= "Stmt" (shm-node-type-name current))))))
-      (delete-region (- (point) 3) (point))
-      (shm-insert-indented (lambda () (insert "let \nin undefined")))
-      (forward-char 4)
-      (save-excursion
-        (forward-word)
-        (forward-char 1)
-        (evaporate (point) (+ (point) (length "undefined")))))
-     ((and shm-auto-insert-skeletons
-           (and (looking-back "module")
-                (= (line-beginning-position)
-                   (- (point) 6))
-                (looking-at "[ ]*$")))
-      (insert "  where")
-      (backward-word 1)
-      (forward-char -1))
+     (shm-auto-insert-skeletons
+      (cond
+       ((looking-back "[^a-zA-Z0-9_]case")
+        (shm-auto-insert-case))
+       ((looking-back "[^a-zA-Z0-9_]if")
+        (shm-auto-insert-if))
+       ((and (looking-back "[^a-zA-Z0-9_]let")
+             (let ((current (shm-current-node)))
+               (not (or (eq 'Do (shm-node-cons current))
+                        (string= "Stmt" (shm-node-type-name current))))))
+        (shm-auto-insert-let))
+       ((and (looking-back "module")
+             (= (line-beginning-position)
+                (- (point) 6))
+             (looking-at "[ ]*$"))
+        (shm-auto-insert-module))
+       (t (shm-insert-string " "))))
      (t (shm-insert-string " ")))))
 
 (defun shm/jump-to-slot ()
@@ -1764,6 +1717,88 @@ location. See `shm/yank' for documentation on that."
     result))
 
 
+;; Templates
+
+(defun shm-auto-insert-case ()
+  "Insert template
+
+case {undefined} of
+  {_} -> {undefined}
+"
+  (let ((start (save-excursion (forward-char -1)
+                               (search-backward-regexp "[^a-zA-Z0-9_]")
+                               (forward-char 1)
+                               (point)))
+        (template "case undefined of\n  _ -> undefined"))
+    (shm-adjust-dependents (point) (- start (point)))
+    (delete-region start (point))
+    (shm-adjust-dependents (point) (length (car (last (split-string template "\n")))))
+    (shm-insert-indented
+     (lambda ()
+       (insert template)))
+    (forward-char 5)
+    (shm/reparse)
+    (save-excursion
+      (evaporate (point) (+ (point) (length "undefined")))
+      (search-forward-regexp "_" nil nil 1)
+      (evaporate (1- (point)) (point))
+      (forward-char 4)
+      (evaporate (point) (+ (point) (length "undefined"))))))
+
+(defun shm-auto-insert-if ()
+  "Insert template
+
+if {undefined}
+   then {undefined}
+   else {undefined}
+
+or
+
+if {undefined} then {undefined} else {undefined}
+
+if inside parentheses."
+  (let ((start (save-excursion (forward-char -1)
+                               (search-backward-regexp "[^a-zA-Z0-9_]")
+                               (forward-char 1)
+                               (point)))
+        (template (if (looking-at "$")
+                      "if undefined\n   then undefined\n   else undefined"
+                    "if undefined then undefined else undefined")))
+    (shm-adjust-dependents (point) (- start (point)))
+    (delete-region start (point))
+    (shm-adjust-dependents (point) (length (car (last (split-string template "\n")))))
+    (shm-insert-indented
+     (lambda ()
+       (insert template)))
+    (forward-char 3)
+    (save-excursion
+      (evaporate (point) (+ (point) (length "undefined")))
+      (search-forward-regexp "then ")
+      (evaporate (point) (+ (point) (length "undefined")))
+      (search-forward-regexp "else ")
+      (evaporate (point) (+ (point) (length "undefined"))))))
+
+(defun shm-auto-insert-let ()
+  "Insert template
+
+let | in {undefined}"
+  (delete-region (- (point) 3) (point))
+  (shm-insert-indented (lambda () (insert "let \nin undefined")))
+  (forward-char 4)
+  (save-excursion
+    (forward-word)
+    (forward-char 1)
+    (evaporate (point) (+ (point) (length "undefined")))))
+
+(defun shm-auto-insert-module ()
+  "Insert template
+
+module | where"
+  (insert "  where")
+  (backward-word 1)
+  (forward-char -1))
+
+
 ;; Type information operations
 
 (defun shm-present-type-info (node info)
@@ -2200,11 +2235,19 @@ expected to work."
          (save-excursion (goto-char (line-beginning-position))
                          (shm-in-comment)))
     nil)
+   ((save-excursion
+      (goto-char (line-beginning-position))
+      (or (looking-at "^-}$")
+          (looking-at "^{-$")))
+    nil)
    ;; Otherwise we just do our line-based hack.
    (t
     (save-excursion
       (let ((start (or (progn (goto-char (line-end-position))
-                              (search-backward-regexp "^[^ \n]" nil t 1))
+                              (search-backward-regexp "^[^ \n]" nil t 1)
+                              (unless (or (looking-at "^-}$")
+                                          (looking-at "^{-$"))
+                                (point)))
                        0))
             (end (progn (goto-char (1+ (point)))
                         (or (when (search-forward-regexp "[\n]+[^ \n]" nil t 1)
