@@ -444,6 +444,10 @@ Very useful for debugging and also a bit useful for newbies."
       (insert " "))
      (shm-auto-insert-skeletons
       (cond
+       ((and (looking-back "[^a-zA-Z0-9_]do")
+             (or (eolp)
+                 (looking-at "[])}]")))
+        (shm-auto-insert-do))
        ((looking-back "[^a-zA-Z0-9_]case")
         (shm-auto-insert-case))
        ((looking-back "[^a-zA-Z0-9_]if")
@@ -1718,6 +1722,27 @@ location. See `shm/yank' for documentation on that."
 
 
 ;; Templates
+
+(defun shm-auto-insert-do ()
+  "Insert template
+
+do {undefined}
+   {undefined}
+"
+  (insert " ")
+  (let ((point (point))
+        (column (current-column)))
+    (insert "undefined")
+    (newline)
+    (indent-to column)
+    (let ((next-point (point)))
+      (insert "undefined")
+      (goto-char point)
+      (shm/reparse)
+      (save-excursion
+        (evaporate (point) (+ (point) (length "undefined")))
+        (goto-char next-point)
+        (evaporate (point) (+ (point) (length "undefined")))))))
 
 (defun shm-auto-insert-case ()
   "Insert template
