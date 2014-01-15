@@ -449,18 +449,23 @@ Very useful for debugging and also a bit useful for newbies."
                  (looking-at "[])}]")))
         (shm-auto-insert-do))
        ((and (looking-back " <-")
-             (eq (shm-node-cons (shm-current-node))
-                 'Do))
-        (shm-auto-insert-stmt))
+             (let ((current (shm-current-node)))
+               (when current
+                 (or (eq 'Do (shm-node-cons current))
+                     (string= "Stmt" (shm-node-type-name current))))))
+        (shm-auto-insert-stmt 'qualifier))
        ((looking-back "[^a-zA-Z0-9_]case")
         (shm-auto-insert-case))
        ((looking-back "[^a-zA-Z0-9_]if")
         (shm-auto-insert-if))
-       ((and (looking-back "[^a-zA-Z0-9_]let")
-             (let ((current (shm-current-node)))
-               (not (or (eq 'Do (shm-node-cons current))
-                        (string= "Stmt" (shm-node-type-name current))))))
-        (shm-auto-insert-let))
+       ((looking-back "[^a-zA-Z0-9_]let")
+        (cond
+         ((let ((current (shm-current-node)))
+            (not (or (eq 'Do (shm-node-cons current))
+                     (eq 'BDecls (shm-node-cons current))
+                     (string= "Stmt" (shm-node-type-name current)))))
+          (shm-auto-insert-let))
+         (t (shm-auto-insert-stmt 'let))))
        ((and (looking-back "module")
              (= (line-beginning-position)
                 (- (point) 6))
@@ -1735,19 +1740,32 @@ location. See `shm/yank' for documentation on that."
 
 ;; Templates
 
-(defun shm-auto-insert-stmt ()
+(defun shm-auto-insert-stmt (type)
   "Insert template
 
 do x <- |
    {undefined}
 "
-  (let ((column (save-excursion (back-to-indentation)
-                                (current-column))))
+  (let* ((current (shm-current-node))
+         (column (save-excursion
+                   (case type
+                     ('let (backward-word 1)
+                       (current-column))
+                     ('qualifier
+                      (cond
+                       ((eq 'Do (shm-node-cons current))
+                        (goto-char (shm-node-start current))
+                        (forward-char 2)
+                        (search-forward-regexp "[^ \n]")
+                        (1- (current-column)))
+                       (t (goto-char (shm-node-start current))
+                          (current-column))))))))
     (save-excursion
       (newline)
       (indent-to column)
       (insert "undefined")
       (forward-word -1)
+      (shm/reparse)
       (evaporate (point)
                  (progn (forward-word 1)
                         (point))))
