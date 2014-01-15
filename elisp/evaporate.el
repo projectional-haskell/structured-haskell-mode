@@ -17,7 +17,8 @@
 (defun evaporate-modification-hook (o changed beg end &optional len)
   "Remove the overlay after a modification occurs."
   (let ((inhibit-modification-hooks t))
-    (when changed
+    (when (and changed
+               (overlay-start o))
       (delete-region (overlay-start o)
                      (overlay-end o))
       (delete-overlay o))))
@@ -25,7 +26,8 @@
 (defun evaporate-insert-before-hook (o changed beg end &optional len)
   "Remove the overlay before inserting something at the start."
   (let ((inhibit-modification-hooks t))
-    (when (not changed)
+    (when (and (not changed)
+               (overlay-start o))
       (delete-region (overlay-start o)
                      (overlay-end o))
       (delete-overlay o))))
