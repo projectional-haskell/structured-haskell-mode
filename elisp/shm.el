@@ -2161,7 +2161,7 @@ then that is all well and good, but we don't want to edit a Name,
 nor a QName (the parent), we want to edit an Exp (parent-parent)
 whose constructor will be a Var."
   (let ((current (shm-node-backwards)))
-    (if current
+    (when current
         (if (and shm-current-node-overlay
                  (overlay-buffer shm-current-node-overlay)
                  (or (= (shm-node-start (cdr current))
@@ -2169,8 +2169,7 @@ whose constructor will be a Var."
                      (= (shm-node-end (cdr current))
                         (overlay-end shm-current-node-overlay))))
             (overlay-get shm-current-node-overlay 'node-pair)
-          (shm-workable-node current))
-      nil)))
+          (shm-workable-node current)))))
 
 (defun shm-current-workable-node ()
   "Returns the same as `shm-current-node' but including the index."
