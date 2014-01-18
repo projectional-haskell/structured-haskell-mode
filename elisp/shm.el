@@ -480,8 +480,8 @@ Very useful for debugging and also a bit useful for newbies."
                 (- (point) 6))
              (looking-at "[ ]*$"))
         (shm-auto-insert-module))
-       (t (shm-insert-string " "))))
-     (t (shm-insert-string " ")))))
+       (t (insert " "))))
+     (t (insert " ")))))
 
 (defun shm/jump-to-slot ()
   "Jump to the next skeleton slot."

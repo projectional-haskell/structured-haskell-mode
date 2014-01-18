@@ -1,5 +1,18 @@
 (defvar shm-tests
   (list
+   (list :name "space-reindent"
+      :start-buffer-content "main = do let x = 123
+          undefined
+
+"
+      :start-cursor 5
+      :finish-cursor 6
+      :current-node-overlay '(1 6)
+      :end-buffer-content "main  = do let x = 123
+           undefined
+
+"
+      :kbd " ")
    (list :name "goto-parent"
          :end-buffer-content "main = x
 "
