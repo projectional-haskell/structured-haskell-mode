@@ -1629,8 +1629,21 @@ separate function rather than hard-coded into this one specific
 operation."
   (let ((column (current-column))
         (line (line-beginning-position))
-        (start (point)))
-    (funcall do-insert)
+        (start (point))
+        (in-string (shm-in-string)))
+    (let ((string (with-temp-buffer
+                    (funcall do-insert)
+                    (buffer-string))))
+      (insert
+       ;; Pasting inside a string should escape double quotes and
+       ;; convert newlines to multiline strings.
+       (if in-string
+           (replace-regexp-in-string
+            "\"" "\\\\\""
+            (replace-regexp-in-string
+             "\n" "\\\\n\\\\\n\\\\"
+             string))
+         string)))
     (when (= line (line-beginning-position))
       (shm-adjust-dependents start (- (current-column)
                                       column)))
@@ -1649,7 +1662,10 @@ operation."
                            (goto-char start)
                            (search-forward-regexp "[ ]+" (line-end-position) t 1)))))
        (t (goto-char end)
-          (indent-rigidly start end column)))
+          (indent-rigidly start end
+                          (if in-string
+                              (1- column)
+                            column))))
       (setq shm-last-yanked (list start (point)))
       (goto-char start))))
 
@@ -2163,14 +2179,14 @@ nor a QName (the parent), we want to edit an Exp (parent-parent)
 whose constructor will be a Var."
   (let ((current (shm-node-backwards)))
     (when current
-        (if (and shm-current-node-overlay
-                 (overlay-buffer shm-current-node-overlay)
-                 (or (= (shm-node-start (cdr current))
-                        (overlay-start shm-current-node-overlay))
-                     (= (shm-node-end (cdr current))
-                        (overlay-end shm-current-node-overlay))))
-            (overlay-get shm-current-node-overlay 'node-pair)
-          (shm-workable-node current)))))
+      (if (and shm-current-node-overlay
+               (overlay-buffer shm-current-node-overlay)
+               (or (= (shm-node-start (cdr current))
+                      (overlay-start shm-current-node-overlay))
+                   (= (shm-node-end (cdr current))
+                      (overlay-end shm-current-node-overlay))))
+          (overlay-get shm-current-node-overlay 'node-pair)
+        (shm-workable-node current)))))
 
 (defun shm-current-workable-node ()
   "Returns the same as `shm-current-node' but including the index."
