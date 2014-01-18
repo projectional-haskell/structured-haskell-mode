@@ -1684,6 +1684,56 @@ This is used when indenting dangling expressions."
       current)))
 
 
+;; Strings
+
+(define-derived-mode shm-edit-string-mode
+  text-mode "String"
+  "Major mode for editing string content from a Haskell string.")
+
+(define-key shm-edit-string-mode-map (kbd "C-c C-c") 'shm-finish-editing-string)
+
+(defun shm/edit-string ()
+  "Edit the string at point."
+  (interactive)
+  (let ((current (shm-current-node))
+        (buffer (current-buffer))
+        (string (shm-kill-node 'buffer-substring-no-properties nil nil t)))
+    (pop-to-buffer (get-buffer-create "*shm-string*"))
+    (erase-buffer)
+    (insert
+     (replace-regexp-in-string
+      "\\\\\"" "\""
+      (replace-regexp-in-string
+       "\\\\n" "\n"
+       (replace-regexp-in-string
+        "^\"\\(.*\\)\"$" "\\1"
+        (replace-regexp-in-string
+         "\\\\\n\\\\" ""
+         string)))))
+    (shm-edit-string-mode)
+    (set (make-local-variable 'shm-string-node)
+         current)
+    (set (make-local-variable 'shm-string-buffer)
+         buffer)
+    (goto-char (point-min))))
+
+(defun shm-finish-editing-string ()
+  "Take the contents of the buffer and insert it back into the
+original node in the Haskell buffer, replacing the old one."
+  (interactive)
+  (let ((finish-string (buffer-string))
+        (buffer shm-string-buffer))
+    (kill-buffer)
+    (switch-to-buffer-other-window buffer)
+    (shm/delete)
+    (insert "\"\"")
+    (forward-char -1)
+    (save-excursion
+      (font-lock-fontify-region (line-beginning-position)
+                                (line-end-position)))
+    (shm-insert-indented (lambda () (insert finish-string)))))
+
+
 ;; Killing
 
 (defun shm-kill-node (&optional save-it node start do-not-delete)
