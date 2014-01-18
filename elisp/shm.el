@@ -1698,7 +1698,8 @@ This is used when indenting dangling expressions."
   (let ((current (shm-current-node))
         (buffer (current-buffer))
         (string (shm-kill-node 'buffer-substring-no-properties nil nil t)))
-    (pop-to-buffer (get-buffer-create "*shm-string*"))
+    (goto-char (shm-node-start current))
+    (switch-to-buffer (get-buffer-create "*shm-string*"))
     (erase-buffer)
     (insert
      (replace-regexp-in-string
@@ -1723,15 +1724,16 @@ original node in the Haskell buffer, replacing the old one."
   (interactive)
   (let ((finish-string (buffer-string))
         (buffer shm-string-buffer))
-    (kill-buffer)
-    (switch-to-buffer-other-window buffer)
+    (quit-window)
+    (switch-to-buffer buffer)
     (shm/delete)
     (insert "\"\"")
     (forward-char -1)
     (save-excursion
       (font-lock-fontify-region (line-beginning-position)
                                 (line-end-position)))
-    (shm-insert-indented (lambda () (insert finish-string)))))
+    (shm-insert-indented (lambda () (insert finish-string)))
+    (forward-char -1)))
 
 
 ;; Killing
