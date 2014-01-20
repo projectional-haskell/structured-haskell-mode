@@ -617,10 +617,9 @@ the current node to the parent."
         (unless (looking-back "[ ]+")
           (insert " "))
         (unless (looking-back "::[ ]+")
-          (shm-insert-string (concat ":: "
-                                     (if shm-auto-insert-bangs
-                                         "!"
-                                       "")))))
+          (shm-insert-string ":: a")
+          (forward-word -1)
+          (evaporate (point) (1+ (point)))))
        (t
         (shm-insert-string ":"))))))
 
