@@ -182,6 +182,12 @@ of SHM that this is a common use-case worth taking into account.")
   :group 'shm
   :type 'boolean)
 
+(defcustom shm-auto-insert-bangs
+  t
+  "Auto-insert bangs when inserting :: in record fields."
+  :group 'shm
+  :type 'boolean)
+
 (defcustom shm-skip-applications
   t
   "Skip successive applications to the top parent.
@@ -611,7 +617,10 @@ the current node to the parent."
         (unless (looking-back "[ ]+")
           (insert " "))
         (unless (looking-back "::[ ]+")
-          (shm-insert-string ":: ")))
+          (shm-insert-string (concat ":: "
+                                     (if shm-auto-insert-bangs
+                                         "!"
+                                       "")))))
        (t
         (shm-insert-string ":"))))))
 
