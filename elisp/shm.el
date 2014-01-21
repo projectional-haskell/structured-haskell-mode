@@ -785,12 +785,12 @@ hai = do foo bar
     ;; If there's some stuff trailing us, then drag that with us.
     (let ((newline-string (shm-kill-node 'buffer-substring-no-properties))
           (point (point)))
-      (shm-newline-indent)
+      (shm-newline-indent t)
       (shm-insert-indented
        (lambda ()
          (insert newline-string)))))
    ;; Otherwise just do the indent.
-   (t (shm-newline-indent))))
+   (t (shm-newline-indent nil))))
 
 (defun shm/goto-where ()
   "Either make or go to a where clause of the current right-hand-side."
@@ -1375,12 +1375,14 @@ after 'zoo' are *really* dependent."
                (<= (shm-node-end current) (line-end-position)))
       (goto-char (shm-node-end current)))))
 
-(defun shm-newline-indent ()
+(defun shm-newline-indent (dragging)
   "Go to the next logical line from the current node at the right column.
 
 This function uses the node's type to decode how to indent, and
 in some cases will insert commas and things like for tuples and
-lists."
+lists.
+
+DRAGGING indicates whether this indent will drag a node downwards."
   (let* ((current-pair (shm-current-node-pair))
          (current (cdr current-pair))
          (parent-pair (shm-node-parent current-pair))
@@ -1513,6 +1515,9 @@ lists."
              (string (buffer-substring-no-properties (shm-node-start operand)
                                                      (shm-node-end operand))))
         (cond
+         (dragging
+          (newline)
+          (indent-to (shm-node-start-column parent)))
          ((save-excursion (goto-char (shm-node-end operand))
                           (= (point) (line-end-position)))
           (insert " " string)
