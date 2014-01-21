@@ -1006,14 +1006,12 @@ will insert them back verbatim."
   (shm-with-fallback
    kill-line
    (shm/reparse)
-   (when (looking-at "[ ]+$")
-     (delete-region (point) (line-end-position)))
    (cond
-    ((save-excursion (goto-char (line-beginning-position))
-                     (looking-at "^[ ]+$"))
-     (delete-region (line-beginning-position) (line-end-position)))
+    ((looking-at "^[ ]+$")
+     (delete-region (point) (line-end-position)))
     ((= (line-end-position) (line-beginning-position))
-     (delete-backward-char 1))
+     (delete-backward-char 1)
+     (forward-char 1))
     ((and (shm-in-string)
           (not (= (point)
                   (shm-node-start (shm-current-node)))))
