@@ -162,6 +162,13 @@ to its partiality.
 
 ## Reporting a bug
 
+To get extra useful information, always run:
+
+    M-: (setq debug-on-error t)
+
+And then re-run the same thing that gave you the problem. It will give
+you a backtrace that you can paste into the issue.
+
 When reporting a bug, please write in the following format:
 
     [Any general summary/comments if desired]
