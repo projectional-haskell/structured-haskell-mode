@@ -32,8 +32,9 @@
 ;; Requirements
 
 (require 'shm-ast-documentation)
+(require 'shm-evaporate)
+
 (require 'cl)
-(require 'evaporate)
 
 
 ;; Groups
@@ -150,6 +151,12 @@ of SHM that this is a common use-case worth taking into account.")
 
 
 ;; Globals
+
+(defvar shm-string-node nil
+  "The string node that's currently being edited.")
+
+(defvar shm-string-buffer nil
+  "The buffer of the string node that's currently being edited.")
 
 (defvar shm-parsing-timer nil
   "The timer used to re-parse every so often. The idle time can
@@ -422,7 +429,7 @@ Very useful for debugging and also a bit useful for newbies."
   (save-excursion
     (let ((point (point)))
       (shm-insert-string "undefined")
-      (evaporate point (point)))))
+      (shm-evaporate point (point)))))
 
 (defun shm/wrap-parens ()
   "Wrap the node in parentheses."
@@ -494,7 +501,7 @@ Very useful for debugging and also a bit useful for newbies."
 (defun shm/jump-to-slot ()
   "Jump to the next skeleton slot."
   (interactive)
-  (let ((os (sort (remove-if-not (lambda (o) (overlay-get o 'evaporate-overlay))
+  (let ((os (sort (remove-if-not (lambda (o) (overlay-get o 'shm-evaporate-overlay))
                                  (overlays-in (point) (point-max)))
                   (lambda (a b)
                     (< (overlay-start a)
@@ -509,7 +516,7 @@ Very useful for debugging and also a bit useful for newbies."
 (defun shm/jump-to-previous-slot ()
   "Jump to the previous skeleton slot."
   (interactive)
-  (let ((os (sort (remove-if-not (lambda (o) (overlay-get o 'evaporate-overlay))
+  (let ((os (sort (remove-if-not (lambda (o) (overlay-get o 'shm-evaporate-overlay))
                                  (overlays-in (point-min) (point)))
                   (lambda (a b)
                     (> (overlay-start a)
@@ -621,7 +628,7 @@ the current node to the parent."
         (unless (looking-back "::[ ]+")
           (shm-insert-string ":: a")
           (forward-word -1)
-          (evaporate (point) (1+ (point)))))
+          (shm-evaporate (point) (1+ (point)))))
        (t
         (shm-insert-string ":"))))))
 
@@ -1018,7 +1025,7 @@ will insert them back verbatim."
     ((looking-at "^[ ]+$")
      (delete-region (point) (line-end-position)))
     ((= (line-end-position) (line-beginning-position))
-     (delete-backward-char 1)
+     (delete-char -1)
      (forward-char 1))
     ((and (shm-in-string)
           (not (= (point)
@@ -1354,7 +1361,7 @@ column, `tab-to-tab-stop' is done instead."
   "Make a newline on the current column and indent on step."
   (interactive)
   (shm/simple-indent-newline-same-col)
-  (insert (make-string haskell-indent-spaces ? )))
+  (insert (make-string (shm-indent-spaces) ? )))
 
 (defun shm-appropriate-adjustment-point ()
   "Go to the appropriate adjustment point.
@@ -1887,7 +1894,7 @@ do x <- |
         (insert "undefined")
         (forward-word -1)
         (shm/reparse)
-        (evaporate (point)
+        (shm-evaporate (point)
                    (progn (forward-word 1)
                           (point)))))
     (insert " ")))
@@ -1909,9 +1916,9 @@ do {undefined}
       (goto-char point)
       (shm/reparse)
       (save-excursion
-        (evaporate (point) (+ (point) (length "undefined")))
+        (shm-evaporate (point) (+ (point) (length "undefined")))
         (goto-char next-point)
-        (evaporate (point) (+ (point) (length "undefined")))))))
+        (shm-evaporate (point) (+ (point) (length "undefined")))))))
 
 (defun shm-auto-insert-case ()
   "Insert template
@@ -1933,11 +1940,11 @@ case {undefined} of
     (forward-char 5)
     (shm/reparse)
     (save-excursion
-      (evaporate (point) (+ (point) (length "undefined")))
+      (shm-evaporate (point) (+ (point) (length "undefined")))
       (search-forward-regexp "_" nil nil 1)
-      (evaporate (1- (point)) (point))
+      (shm-evaporate (1- (point)) (point))
       (forward-char 4)
-      (evaporate (point) (+ (point) (length "undefined"))))))
+      (shm-evaporate (point) (+ (point) (length "undefined"))))))
 
 (defun shm-auto-insert-if ()
   "Insert template
@@ -1966,11 +1973,11 @@ if inside parentheses."
        (insert template)))
     (forward-char 3)
     (save-excursion
-      (evaporate (point) (+ (point) (length "undefined")))
+      (shm-evaporate (point) (+ (point) (length "undefined")))
       (search-forward-regexp "then ")
-      (evaporate (point) (+ (point) (length "undefined")))
+      (shm-evaporate (point) (+ (point) (length "undefined")))
       (search-forward-regexp "else ")
-      (evaporate (point) (+ (point) (length "undefined"))))))
+      (shm-evaporate (point) (+ (point) (length "undefined"))))))
 
 (defun shm-auto-insert-let ()
   "Insert template
@@ -1982,7 +1989,7 @@ let | in {undefined}"
   (save-excursion
     (forward-word)
     (forward-char 1)
-    (evaporate (point) (+ (point) (length "undefined")))))
+    (shm-evaporate (point) (+ (point) (length "undefined")))))
 
 (defun shm-auto-insert-module ()
   "Insert template

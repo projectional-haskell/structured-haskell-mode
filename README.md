@@ -76,6 +76,10 @@ The following are apparently pretty good for solarized-light.
     (set-face-background 'shm-current-face "#eee8d5")
     (set-face-background 'shm-quarantine-face "lemonchiffon")
 
+## Byte-compiling
+
+    emacs -Q -L . --batch --eval "(byte-compile-disable-warning 'cl-functions)" -f batch-byte-compile *.el
+
 ## Checking it works
 
 Some users have trouble with the executable being in their PATH
