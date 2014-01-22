@@ -2615,7 +2615,6 @@ Any optimizations welcome."
                                             0)
                                           (1- (+ (point) (elt node 3)))))
                             (let ((marker (set-marker (make-marker) (point))))
-                                        ;(set-marker-insertion-type marker t)
                               marker))
                      (progn (goto-char (car start-end))
                             (forward-line (1- (elt node 4)))
@@ -2624,6 +2623,12 @@ Any optimizations welcome."
                                               start-column
                                             0)
                                           (1- (+ (point) (elt node 5)))))
+                            ;; This avoids the case of:
+                            (while (save-excursion (goto-char (line-beginning-position))
+                                                   (or (looking-at "[ ]+-- ")
+                                                       (looking-at "[ ]+$")))
+                              (forward-line -1)
+                              (goto-char (line-end-position)))
                             (let ((marker (set-marker (make-marker) (point))))
                               (set-marker-insertion-type marker t)
                               marker))))
