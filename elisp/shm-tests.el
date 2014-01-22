@@ -1,5 +1,26 @@
 (defvar shm-tests
   (list
+   (list :name "skip-trailing-comments"
+         :start-buffer-content "foo = do foo
+         let bar = 23
+             bob = 23
+         -- bar
+         -- test
+         bar
+
+"
+         :start-cursor 23
+         :finish-cursor 57
+         :current-node-overlay '(55 57)
+         :end-buffer-content "foo = do foo
+         let bar = 23
+             bob = 23
+         -- bar
+         -- test
+         bar
+
+"
+         :kbd "\206")
    (list :name "kill-with-whitespace"
          :start-buffer-content "foo = 123
 
