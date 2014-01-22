@@ -124,14 +124,10 @@ Byte-compiling:
 
 ### Run tests
 
-You can run the tests with the following command line:
+You can run the tests with the following:
 
-    emacs -l shm-ast-documentation.el \
-          -l shm.el \
-          -l shm-test.el \
-          -l shm-tests.el \
-          --eval '(shm-test/run-all)' \
-          --debug
+    (require 'shm-test')
+    M-x shm-test/run-all
 
 ### Write tests
 
