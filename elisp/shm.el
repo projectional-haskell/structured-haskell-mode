@@ -1817,7 +1817,9 @@ location. See `shm/yank' for documentation on that."
 						(line-end-position))
 					    t
 					  ;; And we should actually delete empty lines.
-					  (progn (delete-region (1- (point)) (point))
+					  (progn (if (bobp)
+                                                     (delete-region (point) (1+ (point)))
+                                                   (delete-region (1- (point)) (point)))
 						 nil)))))
 		  ;; Bring everything back one.
 		  (indent-rigidly (point-min) (point-max)

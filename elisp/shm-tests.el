@@ -1,18 +1,37 @@
 (defvar shm-tests
   (list
+   (list :name "kill-with-whitespace"
+         :start-buffer-content "foo = 123
+
+bar = 123
+
+mu = 123
+
+"
+         :start-cursor 11
+         :finish-cursor 22
+         :current-node-overlay '(22 25)
+         :end-buffer-content "foo = 123
+
+mu = 123
+
+bar = 123
+
+"
+         :kbd [67108896 14 5 23 4 14 5 return return 25])
    (list :name "space-reindent"
-      :start-buffer-content "main = do let x = 123
+         :start-buffer-content "main = do let x = 123
           undefined
 
 "
-      :start-cursor 5
-      :finish-cursor 6
-      :current-node-overlay '(1 6)
-      :end-buffer-content "main  = do let x = 123
+         :start-cursor 5
+         :finish-cursor 6
+         :current-node-overlay '(1 6)
+         :end-buffer-content "main  = do let x = 123
            undefined
 
 "
-      :kbd " ")
+         :kbd " ")
    (list :name "goto-parent"
          :end-buffer-content "main = x
 "
