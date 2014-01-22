@@ -52,6 +52,8 @@ the parsing.
 
     $ cd structured-haskell-mode
     $ cabal install
+    $ cd elisp/
+    $ make
 
 Add the elisp library to your `load-path` and require the library.
 
@@ -75,10 +77,6 @@ The following are apparently pretty good for solarized-light.
 
     (set-face-background 'shm-current-face "#eee8d5")
     (set-face-background 'shm-quarantine-face "lemonchiffon")
-
-## Byte-compiling
-
-    emacs -Q -L . --batch --eval "(byte-compile-disable-warning 'cl-functions)" -f batch-byte-compile *.el
 
 ## Checking it works
 
