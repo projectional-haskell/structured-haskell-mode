@@ -42,6 +42,10 @@ force a reparse immediately (if necessary)."
   "Test that the executable is working properly."
   (interactive)
   (let ((region (shm-decl-points)))
+    (when (get-buffer "*shm-scratch-test*")
+      (with-current-buffer
+          (switch-to-buffer "*shm-scratch-test*")
+        (erase-buffer)))
     (call-process-region (car region)
                          (cdr region)
                          shm-program-name
@@ -50,7 +54,20 @@ force a reparse immediately (if necessary)."
                          nil
                          "parse"
                          "decl")
-    (switch-to-buffer "*shm-scratch-test*")))
+    (switch-to-buffer "*shm-scratch-test*")
+    (when (save-excursion (goto-char (point-min))
+                          (looking-at "structured-haskell-mode:"))
+      (insert "\nNote: If you got a parse error for valid code
+that is using fairly new (read: couple years) a GHC extension,
+you are probably hitting the fact that haskell-src-exts doesn't
+parse a bunch of newer GHC extensions. SHM does not do any
+parsing itself, it uses HSE. There are some patches in the HSE
+repo, provided as pull requests, which you can try applying to a
+local copy of HSE and then recompile SHM with the new version.
+
+See also: https://github.com/haskell-suite/haskell-src-exts/issues/19
+
+And: https://github.com/chrisdone/structured-haskell-mode/blob/master/src/Main.hs"))))
 
 (defun shm/type-of-node ()
   (interactive)
