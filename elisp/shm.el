@@ -1,4 +1,4 @@
-;;; structured-haskell-mode --- Structured editing for Haskell
+;;; shm.el --- Structured Haskell Mode
 
 ;; Copyright (c) 2013 Chris Done. All rights reserved.
 ;; Copyright (c) 1998 Heribert Schuetz, Graeme E Moss
@@ -104,6 +104,7 @@
 (defvar shm-lighter " SHM?"
   "The lighter for structured Haskell mode.")
 
+;;;###autoload
 (define-minor-mode structured-haskell-mode
   "Structured editing for Haskell."
   :lighter shm-lighter
@@ -2720,7 +2721,7 @@ deletion. The markers will be garbage collected eventually."
 
 (provide 'shm)
 
-;;; structured-haskell-mode.el ends here
+;;; shm.el ends here
 ;; Local Variables:
 ;; byte-compile-warnings: (not cl-functions)
 ;; End:
