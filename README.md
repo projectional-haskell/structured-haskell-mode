@@ -160,9 +160,9 @@ to its partiality.
 
 ## Reporting a bug
 
-***Note:*** If you get a parse error for valid code that is using
-   fairly new (read: couple years) a GHC extension, you are probably
-   hitting the fact that
+***Note:*** If you get a parse error (e.g. via `M-x shm/test-exe`) for
+   valid code that is using fairly new (read: couple years) a GHC
+   extension, you are probably hitting the fact that
    [HSE](https://github.com/haskell-suite/haskell-src-exts/issues/19)
    doesn't parse a bunch of newer GHC extensions. SHM _does not do any
    parsing itself_, it
