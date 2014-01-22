@@ -78,6 +78,7 @@
     (define-key map (kbd "C-k") 'shm/kill-line)
     (define-key map (kbd "M-k") 'shm/kill-node)
     (define-key map (kbd "C-w") 'shm/kill-region)
+    (define-key map (kbd "M-w") 'shm/copy-region)
     (define-key map (kbd "C-M-k") 'shm/kill-node)
     (define-key map (kbd "C-y") 'shm/yank)
     (define-key map (kbd "M-y") 'shm/yank-pop)
@@ -989,6 +990,12 @@ This is more convenient than typing out the same operator."
   "Kill the region, and save it in the clipboard."
   (interactive "r")
   (shm-kill-region nil beg end nil))
+
+(defun shm/copy-region (beg end)
+  "Copy the region, and save it in the clipboard."
+  (interactive "r")
+  (save-excursion
+    (shm-kill-region 'clipboard-kill-ring-save beg end t)))
 
 (defun shm/kill-line ()
   "Kill everything possible to kill after point before the end of
