@@ -167,9 +167,9 @@ to its partiality.
    doesn't parse a bunch of newer GHC extensions. SHM _does not do any
    parsing itself_, it
    [uses HSE](https://github.com/chrisdone/structured-haskell-mode/blob/master/src/Main.hs). There
-   are some patches provided as pull requests which you can try
-   applying to a local copy of HSE and then recompile SHM with the new
-   version.
+   are some patches in the HSE repo, provided as pull requests, which
+   you can try applying to a local copy of HSE and then recompile SHM
+   with the new version.
 
 To get extra useful information, always run:
 
