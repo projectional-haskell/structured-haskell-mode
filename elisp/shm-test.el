@@ -23,7 +23,6 @@
 
 (require 'shm)
 (require 'shm-tests)
-(require 'shm-overlays)
 
 (defvar shm-test-eob nil)
 
