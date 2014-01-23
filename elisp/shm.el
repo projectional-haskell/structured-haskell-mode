@@ -5,7 +5,7 @@
 
 ;; Author:    Chris Done <chrisdone@gmail.com>
 ;; Created:   19-Oct-2013
-;; Version:   1.0.0
+;; Version:   1.0.2
 ;; Keywords:  development, haskell, structured
 ;; Stability: unstable
 
