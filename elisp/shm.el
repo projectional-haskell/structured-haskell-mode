@@ -28,17 +28,59 @@
 
 ;;; Code:
 
-
-;; Requirements
-
 (require 'shm-customizations)
 (require 'shm-ast-documentation)
 (require 'shm-evaporate)
 
 (require 'cl)
 
-
-;; Mode
+(defvar shm-current-node-overlay nil
+  "Overlay to highlight the current node.")
+
+(defvar shm-decl-asts nil
+  "This is partly an optimization and partly for more
+functionality. We could parse the whole module, but that would be
+wasteful and expensive to lookup nodes every time we want a
+node. So it's cheaper to have the granularity of lookup start at
+the declaration's point and the node's span.
+
+Second it's better because a module may have unparseable content
+in it, but that doesn't mean we don't want structured editing to
+stop working on declarations that are fine. I've found in my use
+of SHM that this is a common use-case worth taking into account.")
+
+(defvar shm-string-node nil
+  "The string node that's currently being edited.")
+
+(defvar shm-string-buffer nil
+  "The buffer of the string node that's currently being edited.")
+
+(defvar shm-lighter " SHM?"
+  "The lighter for structured Haskell mode.")
+
+(defvar shm-last-point 0
+  "When moving around, the current node overlay will update
+  according to where you are. But often you can shrink/expand the
+  scope of the current node. This variable lets us avoid the node
+  being reset by realising we haven't actually moved the point.")
+
+(defvar shm-parsing-timer nil
+  "The timer used to re-parse every so often. The idle time can
+  be configured with `shm-idle-timeout'.")
+
+(defvar shm-last-parse-start 0
+  "This is used to avoid unnecessary work, if the start of the
+  declaration hasn't changed, and the end (see
+  `shm-last-parse-end') since we last parsed, don't bother
+  re-parsing.")
+
+(defvar shm-last-parse-end 0
+  "See `shm-last-parse-start' for explanation.")
+
+(defvar shm-last-yanked (list 0 0)
+  "When yanking, some text will be inserted, when popping a
+  yank (i.e. with M-y), you need to be able to erase the previous
+  yank. This is simply a region.")
 
 (defvar shm-map
   (let ((map (make-sparse-keymap)))
@@ -119,57 +161,6 @@
                    ',fallback)
           (call-interactively ',fallback))))))
 
-(defvar shm-current-node-overlay nil
-  "Overlay to highlight the current node.")
-
-(defvar shm-decl-asts nil
-  "This is partly an optimization and partly for more
-functionality. We could parse the whole module, but that would be
-wasteful and expensive to lookup nodes every time we want a
-node. So it's cheaper to have the granularity of lookup start at
-the declaration's point and the node's span.
-
-Second it's better because a module may have unparseable content
-in it, but that doesn't mean we don't want structured editing to
-stop working on declarations that are fine. I've found in my use
-of SHM that this is a common use-case worth taking into account.")
-
-(defvar shm-string-node nil
-  "The string node that's currently being edited.")
-
-(defvar shm-string-buffer nil
-  "The buffer of the string node that's currently being edited.")
-
-(defvar shm-lighter " SHM?"
-  "The lighter for structured Haskell mode.")
-
-(defvar shm-last-point 0
-  "When moving around, the current node overlay will update
-  according to where you are. But often you can shrink/expand the
-  scope of the current node. This variable lets us avoid the node
-  being reset by realising we haven't actually moved the point.")
-
-(defvar shm-parsing-timer nil
-  "The timer used to re-parse every so often. The idle time can
-  be configured with `shm-idle-timeout'.")
-
-(defvar shm-last-parse-start 0
-  "This is used to avoid unnecessary work, if the start of the
-  declaration hasn't changed, and the end (see
-  `shm-last-parse-end') since we last parsed, don't bother
-  re-parsing.")
-
-(defvar shm-last-parse-end 0
-  "See `shm-last-parse-start' for explanation.")
-
-(defvar shm-last-yanked (list 0 0)
-  "When yanking, some text will be inserted, when popping a
-  yank (i.e. with M-y), you need to be able to erase the previous
-  yank. This is simply a region.")
-
-
-;; Internal mode functions
-
 (defun shm-mode-start ()
   "Start the minor mode."
   (set (make-local-variable 'shm-decl-asts)
@@ -215,8 +206,6 @@ state that will hopefully be garbage collected."
   (when structured-haskell-mode
     (shm/reparse)))
 
-
-;; Faces
 
 (defun shm-decl-ast (&optional reparse)
   "Return the AST representing the current declaration at point.
@@ -2205,15 +2194,6 @@ module | where"
   (backward-word 1)
   (forward-char -1))
 
-
-;; Requirements
-
-
-;; Globals
-
-
-;; Mode
-
 (define-derived-mode shm-edit-string-mode
   text-mode "String"
   "Major mode for editing string content from a Haskell string.")
@@ -2327,9 +2307,6 @@ This is more convenient than typing out the same operator."
     (buffer-substring-no-properties (shm-node-start node)
                                     (shm-node-end node))))
 
-
-;; Requirements
-
 (defun shm-present-type-info (node info)
   "Present type info to the user."
   (let ((info. (concat (shm-kill-node 'buffer-substring-no-properties node nil t)
@@ -2394,9 +2371,6 @@ This is more convenient than typing out the same operator."
                            (+ (line-beginning-position)
                               (1- (string-to-number (match-string 4 line)))))
                     (match-string 5 line))))))
-
-
-;; Requirements
 
 (defun shm/kill-region (beg end)
   "Kill the region, and save it in the clipboard."
@@ -2602,9 +2576,6 @@ the line."
                                   line-end-position)
                            (kill-region (point)
                                         line-end-position)))))))))
-
-
-;; Provide
 
 (provide 'shm)
 
