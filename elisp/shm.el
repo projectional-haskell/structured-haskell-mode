@@ -37,7 +37,6 @@
 
 (require 'cl)
 
-
 
 ;; Mode
 
@@ -167,8 +166,6 @@ of SHM that this is a common use-case worth taking into account.")
   "When yanking, some text will be inserted, when popping a
   yank (i.e. with M-y), you need to be able to erase the previous
   yank. This is simply a region.")
-
-
 
 
 ;; Internal mode functions
@@ -441,7 +438,6 @@ expected to work."
                                  (shm-decl-ast))))
     (elt vector 0)))
 
-
 (defun shm/backward-kill-word ()
   "Kill the word backwards."
   (interactive)
@@ -596,9 +592,6 @@ one active."
        (not (save-excursion (forward-char (* -1 (length open)))
                             (looking-back "\\\\")))
        (looking-at close)))
-
-
-
 
 (defun shm/mark-node ()
   "Set the active mark to the current node."
@@ -1290,10 +1283,6 @@ This is used when indenting dangling expressions."
       haskell-indent-spaces
     shm-indent-spaces))
 
-
-
-
-
 (defun shm/insert-undefined ()
   "Insert undefined."
   (interactive)
@@ -1706,9 +1695,6 @@ node."
       (when node-pair
         (shm-set-node-overlay node-pair direction)))))
 
-
-
-
 (defun shm/reparse ()
   "Re-parse the current node.
 
@@ -2078,13 +2064,6 @@ therefore the current overlay should be re-initialized."
     (setq shm-current-node-overlay nil))
   (shm-set-node-overlay))
 
-
-
-
-
-
-
-
 (defun shm-auto-insert-stmt (type)
   "Insert template
 
@@ -2229,13 +2208,8 @@ module | where"
 
 ;; Requirements
 
-
-
-
-
 
 ;; Globals
-
 
 
 ;; Mode
@@ -2356,11 +2330,6 @@ This is more convenient than typing out the same operator."
 
 ;; Requirements
 
-
-
-
-
-
 (defun shm-present-type-info (node info)
   "Present type info to the user."
   (let ((info. (concat (shm-kill-node 'buffer-substring-no-properties node nil t)
@@ -2428,11 +2397,6 @@ This is more convenient than typing out the same operator."
 
 
 ;; Requirements
-
-
-
-
-
 
 (defun shm/kill-region (beg end)
   "Kill the region, and save it in the clipboard."
@@ -2638,7 +2602,6 @@ the line."
                                   line-end-position)
                            (kill-region (point)
                                         line-end-position)))))))))
-
 
 
 ;; Provide
