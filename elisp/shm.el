@@ -1344,8 +1344,8 @@ This is used when indenting dangling expressions."
                 (- (point) 6))
              (looking-at "[ ]*$"))
         (shm-auto-insert-module))
-       (t (insert " "))))
-     (t (insert " ")))))
+       (t (shm-insert-string " "))))
+     (t (shm-insert-string " ")))))
 
 (defun shm/jump-to-slot ()
   "Jump to the next skeleton slot."
