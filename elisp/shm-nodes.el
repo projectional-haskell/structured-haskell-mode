@@ -218,7 +218,7 @@ child, and in fact is common."
              (shm-node-parent actual-parent-pair))
             (t actual-parent-pair)))))
 
-(defun shm-decl-points ()
+(defun shm-decl-points (&optional use-line-comments)
   "Get the start and end position of the current
 declaration. This assumes that declarations start at column zero
 and that the rest is always indented by one space afterwards, so
@@ -229,7 +229,8 @@ expected to work."
    ;; see if it starts at the beginning of the line (or if any comment
    ;; is at the beginning of the line, we don't care to treat it as a
    ;; proper declaration.
-   ((and (shm-in-comment)
+   ((and (not use-line-comments)
+         (shm-in-comment)
          (save-excursion (goto-char (line-beginning-position))
                          (shm-in-comment)))
     nil)
@@ -338,7 +339,9 @@ deletion. The markers will be garbage collected eventually."
       (and (eq 'font-lock-comment-face
                (get-text-property (point) 'face))
            (not (save-excursion (goto-char (line-beginning-position))
-                                (looking-at "{-"))))))
+                                (looking-at "{-"))))
+      (save-excursion (goto-char (line-beginning-position))
+                      (looking-at "^\-\- "))))
 
 (defun shm-in-string ()
   "Are we in a string?"

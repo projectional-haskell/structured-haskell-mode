@@ -21,7 +21,7 @@
   "Go forward one declaration."
   (interactive)
   (unless (/= (point)
-              (goto-char (cdr (shm-decl-points))))
+              (goto-char (cdr (shm-decl-points t))))
     (search-forward-regexp "[^\n ]" nil t 1)
     (backward-char)))
 
@@ -29,7 +29,7 @@
   "Go backward one declaration."
   (interactive)
   (unless (/= (point)
-              (goto-char (car (shm-decl-points))))
+              (goto-char (car (shm-decl-points t))))
     (search-backward-regexp "[^\n ]" nil t 1)
     (forward-char)))
 

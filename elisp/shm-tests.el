@@ -23,6 +23,21 @@
 
 (defvar shm-tests
   (list
+   (list :name "move-by-paragraphs"
+         :start-buffer-content "clockOut config project task reason = foo
+-- | Clock in or out.
+clock :: Config -> Entry -> IO ()
+
+"
+         :start-cursor 1
+         :finish-cursor 1
+         :current-node-overlay '(1 9)
+         :end-buffer-content "clockOut config project task reason = foo
+-- | Clock in or out.
+clock :: Config -> Entry -> IO ()
+
+"
+         :kbd "\375\375\375\375\375\373\373\373\373\373")
    (list :name "skip-trailing-comments"
          :start-buffer-content "foo = do foo
          let bar = 23
