@@ -12,26 +12,9 @@ category:            Development
 build-type:          Simple
 cabal-version:       >=1.8
 data-files:          elisp/shm-ast-documentation.el
-                     elisp/shm-ast.el
                      elisp/shm-customizations.el
-                     elisp/shm-deletion.el
                      elisp/shm.el
                      elisp/shm-evaporate.el
-                     elisp/shm-generic.el
-                     elisp/shm-globals.el
-                     elisp/shm-indentation.el
-                     elisp/shm-insertion.el
-                     elisp/shm-macros.el
-                     elisp/shm-navigation.el
-                     elisp/shm-nodes.el
-                     elisp/shm-overlays.el
-                     elisp/shm-skeletons.el
-                     elisp/shm-strings.el
-                     elisp/shm-test.el
-                     elisp/shm-tests.el
-                     elisp/shm-transform.el
-                     elisp/shm-types.el
-                     elisp/shm-yank-kill.el
 
 executable structured-haskell-mode
   main-is:           Main.hs
