@@ -1,6 +1,4 @@
-all:
-	rm *.elc
-	emacs -Q -L . --batch --eval "(byte-compile-disable-warning 'cl-functions)" -f batch-byte-compile \
+ELFILES = \
 	   shm-ast-documentation.el \
 	   shm-ast.el \
 	   shm-customizations.el \
@@ -22,3 +20,17 @@ all:
 	   shm-transform.el \
 	   shm-types.el \
 	   shm-yank-kill.el
+
+ELCFILES = $(ELFILES:.el=.elc)
+
+all: $(ELCFILES)
+
+%.elc: %.el
+	@emacs -Q -L . \
+		--batch \
+		--eval "(byte-compile-disable-warning 'cl-functions)" \
+		-f batch-byte-compile \
+		$<
+
+clean:
+	rm -f *.elc
