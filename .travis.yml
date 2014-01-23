@@ -13,7 +13,7 @@ install:
     fi
 
 script:
-  lsb_release -a && cabal install && cd elisp && make && make test
+  lsb_release -a && cabal update && cabal install && cd elisp && make && make test
 
 notifications:
   email: false
