@@ -116,7 +116,7 @@
 
 (defun shm-test/run (test)
   "Run the given test and validate it."
-  (message "Running %s ..." (plist-get test :name))
+  (message "Testing %s..." (plist-get test :name))
   (switch-to-buffer-other-window (get-buffer-create "*shm-test*"))
   (erase-buffer)
   (when (fboundp 'god-local-mode)
@@ -130,13 +130,49 @@
 
 (defun shm-test-validate (test)
   "Validate the given test."
-  (assert (string= (buffer-substring-no-properties (point-min) (point-max))
-                   (plist-get test :end-buffer-content)))
-  (assert (= (plist-get test :finish-cursor)
-             (point)))
-  (message "%s: OK" (plist-get test :name))
+  (let ((name (plist-get test :name)))
+    (let ((actual (buffer-substring-no-properties (point-min) (point-max)))
+          (expected (plist-get test :end-buffer-content)))
+      (unless (string= actual expected)
+        (error "\nTest failed, differing buffer contents.
+
+Original:
+
+%s
+
+Expected (quoted):
+
+%s
+
+Actual (quoted):
+
+%s\n"
+               (plist-get test :start-buffer-content)
+               (shm-test-exact-quote expected)
+               (shm-test-exact-quote actual))))
+    (let ((actual (point))
+          (expected (plist-get test :finish-cursor)))
+      (unless (= actual expected)
+        (error "\nTest failed, differing cursor positions.
+
+Expected:
+
+%d
+
+Actual:
+
+%d\n"
+               expected actual))))
   (kill-buffer)
   t)
+
+(defun shm-test-exact-quote (s)
+  "Quote a string exactly, so you can see any details or differences in whitespace."
+  (mapconcat 'identity
+             (mapcar (lambda (l)
+                       (concat "\"" l "\""))
+                     (split-string s "\n"))
+             "\n"))
 
 (provide 'shm-test)
 

@@ -256,18 +256,27 @@ zot")
 "
          :kbd [delete backspace])
    (list :name "kill-line"
-         :start-buffer-content "main = do putStrLn (foo bar mu)
-          case x y z of
-            Just p -> x
+         :start-buffer-content "main = do putStrLn (f bar mu)
 "
          :start-cursor 21
-         :finish-cursor 38
-         :current-node-overlay '(38 38)
+         :finish-cursor 21
+         :current-node-overlay '(20 22)
          :end-buffer-content "main = do putStrLn ()
-          case  of
-            Just p -> x
 "
-         :kbd "")
+         :kbd "")
+   (list :name "kill-line-rest"
+         :start-buffer-content "main = do putStrLn
+             (foo bar mu)
+          case x y z of
+            Just p -> x
+
+"
+         :start-cursor 56
+         :finish-cursor 56
+         :current-node-overlay 'nil
+         :end-buffer-content "main = do putStrLn
+             (foo bar mu)\n          \n"
+         :kbd "")
    (list :name "isearch"
          :start-buffer-content "main = do foo
           bar

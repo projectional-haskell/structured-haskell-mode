@@ -18,3 +18,6 @@ all: $(ELCFILES)
 
 clean:
 	rm -f *.elc
+
+test:
+	@emacs -Q --batch shm-test.el --eval "(progn (add-to-list 'load-path \".\") (setq-default indent-tabs-mode nil) (require 'shm-test) (shm-test/run-all))"

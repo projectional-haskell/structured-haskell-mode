@@ -11,6 +11,8 @@ for you. Given that, some assumptions about style are made in
 structured-haskell-mode and are best described by
 [this style guide](https://github.com/chrisdone/haskell-style-guide).
 
+[![Build Status](https://travis-ci.org/chrisdone/structured-haskell-mode.png)](https://travis-ci.org/chrisdone/structured-haskell-mode)
+
 ## Features
 
 Its features work by parsing the current declaration with an
