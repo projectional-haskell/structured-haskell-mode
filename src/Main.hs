@@ -95,21 +95,32 @@ genHSE x =
 
 -- | Pre-children tweaks for a given parent at index i.
 --
--- <foo { <foo = 1> }> becomes <foo <{ <foo = 1> }>>
---
 pre :: (Typeable a) => a -> Integer -> [String]
 pre x i =
-  case cast x  of
+  case cast x of
+    -- <foo { <foo = 1> }> becomes <foo <{ <foo = 1> }>>
     Just (RecUpdate SrcSpanInfo{srcInfoPoints=(start:_),srcInfoSpan=end} _ _)
       | i == 1 ->
-        [spanHSE (show "RecUpdates SrcSpanInfo")
+        [spanHSE (show "RecUpdates")
                  "RecUpdates"
                  (SrcSpan (srcSpanFilename start)
                           (srcSpanStartLine start)
                           (srcSpanStartColumn start)
                           (srcSpanEndLine end)
                           (srcSpanEndColumn end))]
-    _ -> []
+    _ -> case cast x :: Maybe (Deriving SrcSpanInfo)  of
+           -- <deriving (X,Y,Z)> becomes <deriving (<X,Y,Z>)
+           Just (Deriving _ ds@(_:_)) ->
+             [spanHSE (show "InstHeads")
+                      "InstHeads"
+                      (SrcSpan (srcSpanFilename start)
+                               (srcSpanStartLine start)
+                               (srcSpanStartColumn start)
+                               (srcSpanEndLine end)
+                               (srcSpanEndColumn end))
+             |Just (IHead (SrcSpanInfo start _) _ _) <- [listToMaybe ds]
+             ,Just (IHead (SrcSpanInfo end _) _ _) <- [listToMaybe (reverse ds)]]
+           _ -> []
 
 -- | Generate a span from a HSE SrcSpan.
 spanHSE :: String -> String -> SrcSpan -> String
