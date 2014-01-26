@@ -23,6 +23,19 @@
 
 (defvar shm-tests
   (list
+   (list :name "wrap-delimiters"
+         :start-buffer-content "main = do bar
+          mu
+          zot
+"
+         :start-cursor 8
+         :finish-cursor 9
+         :current-node-overlay '(9 44)
+         :end-buffer-content "main = [do bar
+           mu
+           zot]
+"
+         :kbd [201326624 91])
    (list :name "move-by-paragraphs"
          :start-buffer-content "clockOut config project task reason = foo
 -- | Clock in or out.

@@ -1293,13 +1293,7 @@ This is used when indenting dangling expressions."
   (interactive)
   (cond
    ((region-active-p)
-    (let ((beg (region-beginning))
-          (end (region-end)))
-      (goto-char beg)
-      (insert "(")
-      (goto-char (1+ end))
-      (insert ")")
-      (goto-char (1+ beg))))
+    (shm-wrap-delimiters "(" ")"))
    (t (let ((line (line-number-at-pos))
             (node (shm-current-node)))
         (save-excursion
@@ -1312,6 +1306,17 @@ This is used when indenting dangling expressions."
                             1))
           (insert ")"))
         (forward-char 1)))))
+
+(defun shm-wrap-delimiters (open close)
+  "Wrap the current region with the given delimiters. Called when
+the region is active."
+  (let ((beg (region-beginning))
+        (end (region-end)))
+    (goto-char beg)
+    (shm-insert-string open)
+    (goto-char (region-end))
+    (shm-insert-string close)
+    (goto-char (+ beg (length open)))))
 
 (defun shm/space ()
   "Insert a space but sometimes do something more clever, like
@@ -1557,6 +1562,8 @@ foo \"\" (bar)
 It saves one having to type spaces; it's obvious what to do
 here."
   (cond
+   ((region-active-p)
+    (shm-wrap-delimiters open close))
    ((and (shm-literal-insertion)
          (not (string= open "\"")))
     (shm-insert-string open))
@@ -2098,8 +2105,8 @@ do x <- |
         (forward-word -1)
         (shm/reparse)
         (shm-evaporate (point)
-                   (progn (forward-word 1)
-                          (point)))))
+                       (progn (forward-word 1)
+                              (point)))))
     (insert " ")))
 
 (defun shm-auto-insert-do ()
