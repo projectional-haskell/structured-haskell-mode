@@ -20,4 +20,4 @@ clean:
 	rm -f *.elc
 
 test:
-	@emacs -Q --batch shm-test.el --eval "(progn (add-to-list 'load-path \".\") (setq-default indent-tabs-mode nil) (require 'shm-test) (shm-test/run-all))"
+	@emacs -Q --batch shm-test.el --eval "(progn (add-to-list 'load-path \".\") (setq-default indent-tabs-mode nil) (transient-mark-mode 1) (require 'shm-test) (shm-test/run-all))"
