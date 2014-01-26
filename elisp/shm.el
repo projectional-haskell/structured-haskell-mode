@@ -964,10 +964,18 @@ DRAGGING indicates whether this indent will drag a node downwards."
                         "ImportDecl")))
       (newline)
       (insert "import "))
+     ;; List comprehensions
+     ((and parent
+           (eq 'QualStmt (shm-node-cons parent)))
+      (newline)
+      (indent-to (1- (shm-node-start-column parent)))
+      (insert ",")
+      (shm-set-node-overlay parent-pair))
      ;; When inside a list, indent to the list's position with an
      ;; auto-inserted comma.
      ((and parent
-           (eq 'List (shm-node-cons parent)))
+           (or (eq 'List (shm-node-cons parent))
+               (eq 'QualStmt (shm-node-cons parent))))
       (newline)
       (indent-to (shm-node-start-column parent))
       (insert ",")
