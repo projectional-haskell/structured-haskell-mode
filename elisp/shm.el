@@ -96,6 +96,7 @@ of SHM that this is a common use-case worth taking into account.")
     (define-key map (kbd ":") 'shm/:)
     (define-key map (kbd "SPC") 'shm/space)
     (define-key map (kbd "C-c C-u") 'shm/insert-undefined)
+    (define-key map (kbd "M-;") 'shm/comment)
     ;; Indentation
     (define-key map (kbd "C-j") 'shm/newline-indent)
     (define-key map (kbd "M-)") 'paredit-close-round-and-newline)
@@ -2591,6 +2592,32 @@ the line."
                                   line-end-position)
                            (kill-region (point)
                                         line-end-position)))))))))
+
+(defun shm/comment ()
+  "Comment the current node, or if there is none, or some error,
+  fall back to `comment-dwim'. If the region is active, uses
+  `comment-dwim'."
+  (interactive)
+  (if (region-active-p)
+      (call-interactively 'comment-dwim)
+    (let ((current (shm-current-node)))
+      (cond
+       ((shm-in-comment)
+        (save-excursion
+          (unless (looking-at "{-")
+            (search-backward-regexp "{" nil nil 1))
+          (delete-region (point) (+ 2 (point)))
+          (search-forward-regexp "}" nil nil 1)
+          (delete-region (- (point) 2) (point))))
+       (current
+        (save-excursion
+          (goto-char (shm-node-start current))
+          (insert "{-")
+          (goto-char (shm-node-end current))
+          (insert "-}")
+          (font-lock-fontify-region (shm-node-start current)
+                                    (shm-node-end current))))
+       (t (call-interactively 'comment-dwim))))))
 
 (provide 'shm)
 
