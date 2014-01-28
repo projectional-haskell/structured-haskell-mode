@@ -23,6 +23,15 @@
 
 (defvar shm-tests
   (list
+   (list :name "split-list"
+         :start-buffer-content "main = print [foo,bar,mu]
+"
+         :start-cursor 19
+         :finish-cursor 21
+         :current-node-overlay '(21 24)
+         :end-buffer-content "main = print [foo] [bar,mu]
+"
+         :kbd [134217848 115 104 109 47 115 112 108 105 116 45 108 105 115 116 return])
    (list :name "wrap-delimiters"
          :start-buffer-content "main = do bar
           mu

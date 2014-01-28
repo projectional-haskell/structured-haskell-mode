@@ -2317,6 +2317,25 @@ This is more convenient than typing out the same operator."
               (shm/reparse)))
       (error "No matching parent!"))))
 
+(defun shm/split-list ()
+  "Split the current list into two lists by the nearest comma."
+  (interactive)
+  (let ((current-pair (shm-current-node-pair)))
+    (while (not (eq 'List (shm-node-cons (cdr (shm-node-parent current-pair)))))
+      (setq current-pair (shm-node-parent current-pair)))
+    (let ((current (cdr current-pair)))
+      (cond
+       ((< (abs (- (point) (shm-node-start current)))
+           (abs (- (point) (shm-node-end current))))
+        (goto-char (shm-node-start current))
+        (when (looking-back ",")
+          (delete-char -1)))
+       (t
+        (goto-char (shm-node-end current))
+        (when (looking-at ",")
+          (delete-char 1))))
+      (insert "] ["))))
+
 (defun shm-get-qop-string (node)
   "Get the string of the operator, if the node is an operator."
   (when (string= (shm-node-type-name node) "QOp")
