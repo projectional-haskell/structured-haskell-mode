@@ -1,10 +1,9 @@
 {-# LANGUAGE NoMonomorphismRestriction #-}
-{-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE RecordWildCards #-}
-{-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE ExistentialQuantification #-}
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 
 -- | Take in Haskell code and output a vector of source spans and
 -- their associated node type and case.
@@ -12,19 +11,21 @@
 module Main (main) where
 
 import Control.Applicative
-import Data.Char
 import Data.Data
 import Data.Maybe
 import Language.Haskell.Exts.Annotated
-import Language.Haskell.Exts.Annotated.Fixity
 import System.Environment
-import System.IO
 
-type Parser = ParseMode -> String -> ParseResult D
 
 data D = forall a. Data a => D a
 
--- | Main entry point.
+type Parser = ParseMode -> String -> ParseResult D
+
+instance Alternative ParseResult where
+  empty = ParseFailed undefined undefined
+  ParseFailed{} <|> x = x
+  x <|> _             = x
+
 main :: IO ()
 main = do
   code <- getContents
@@ -32,50 +33,40 @@ main = do
   outputWith action typ code
 
 outputWith :: String -> String -> String -> IO ()
-outputWith action typ code =
-  case typ of
-    "decl" ->
-      output action
-             (\mode code ->
-                fmap D (fmap fix (parseDeclWithMode mode code)) <|>
-                fmap D (parseImport mode code) <|>
-                fmap D (fmap fix (parseModuleWithMode mode code)) <|>
-                fmap D (parseModulePragma mode code))
-             code
-    _ -> error "Unknown parser type."
-  where fix ast = fromMaybe ast (applyFixities baseFixities ast)
-
-instance Alternative ParseResult where
-  empty = ParseFailed undefined undefined
-  ParseFailed{} <|> x = x
-  x <|> _             = x
-
--- | Get the type of the parser.
-parserRep :: Typeable ast => ast -> String
-parserRep = show . head . typeRepArgs . typeOf
+outputWith action typ code = case typ of
+  "decl" ->
+      output action parseTopLevelElement code
+  _ -> error "Unknown parser type."
 
 -- | Output AST info for the given Haskell code.
 output :: String -> Parser -> String -> IO ()
-output action parseWithMode code = do
-  case parseWithMode parseMode code of
-    ParseFailed _ e -> error e
-    ParseOk (D ast) -> case action of
-        "check" -> return ()
-        "parse" -> putStrLn ("[" ++ concat (genHSE ast) ++ "]")
-        _       -> error "unknown action"
+output action parser code = case parser parseMode code of
+  ParseFailed _ e -> error e
+  ParseOk (D ast) -> case action of
+    "check" -> return ()
+    "parse" -> putStrLn ("[" ++ concat (genHSE ast) ++ "]")
+    _       -> error "unknown action"
+
+parseTopLevelElement :: ParseMode -> String -> ParseResult D
+parseTopLevelElement mode code =
+  D . fix <$> parseDeclWithMode mode code   <|>
+  D       <$> parseImport mode code         <|>
+  D . fix <$> parseModuleWithMode mode code <|>
+  D       <$> parseModulePragma mode code
+  
+  where
+    fix :: AppFixity ast => ast SrcSpanInfo -> ast SrcSpanInfo
+    fix ast = fromMaybe ast (applyFixities baseFixities ast)
+
 
 -- | Parse mode, includes all extensions, doesn't assume any fixities.
 parseMode :: ParseMode
-parseMode =
-  defaultParseMode { extensions = allExtensions
-                   , fixities   = Nothing
-                   }
-  where allExtensions =
-          filter (\x ->
-                   case x of
-                     DisableExtension x -> False
-                     _ -> True)
-                 knownExtensions
+parseMode = defaultParseMode { extensions = allExtensions
+                             , fixities   = Nothing
+                             }
+ where allExtensions = filter isDisabledExtention knownExtensions
+       isDisabledExtention (DisableExtension _) = False
+       isDisabledExtention _                    = True
 
 -- | Generate a list of spans from the HSE AST.
 genHSE :: Data a => a -> [String]
@@ -87,8 +78,8 @@ genHSE x =
           spanHSE (show (show (typeOf x)))
                   (showConstr (toConstr x))
                   (srcInfoSpan s) :
-          concat (map (\(i,(D d)) -> pre x i ++ genHSE d)
-                      (zip [0..] ys))
+          concatMap (\(i,D d) -> pre x i ++ genHSE d)
+                     (zip [0..] ys)
         _ ->
           concatMap (\(D d) -> genHSE d) zs
     _ -> []
@@ -124,24 +115,25 @@ pre x i =
 
 -- | Generate a span from a HSE SrcSpan.
 spanHSE :: String -> String -> SrcSpan -> String
-spanHSE typ cons (SrcSpan _ a b c d) =
-  concat ["["
-         ,unwords [unqualify typ
-                  ,cons
-                  ,show a
-                  ,show b
-                  ,show c
-                  ,show d]
-         ,"]"]
-  where unqualify = go [] where
-          go acc ('.':cs) = go [] cs
-          go acc (c:cs)   = go (c:acc) cs
-          go acc []       = reverse acc
+spanHSE typ cons SrcSpan{..} = "[" ++ spanContent ++ "]"
+  where unqualify   = dropUntilLast '.'
+        spanContent = unwords [ unqualify typ
+                              , cons
+                              , show srcSpanStartLine
+                              , show srcSpanStartColumn
+                              , show srcSpanEndLine
+                              , show srcSpanEndColumn
+                              ]
 
--- | Pretty print a source location.
-printSrcLoc :: SrcLoc -> String
-printSrcLoc SrcLoc{..} =
-  srcFilename ++ ":" ++ show srcLine ++ ":" ++ show srcColumn
+------------------------------------------------------------------------------
+-- General Utility
+
+dropUntilLast :: Char -> String -> String         
+dropUntilLast ch = go [] 
+  where
+    go _ (c:cs) | c == ch = go [] cs
+    go acc (c:cs)         = go (c:acc) cs
+    go acc []             = reverse acc
 
 --------------------------------------------------------------------------------
 -- Parsers that HSE hackage doesn't have
