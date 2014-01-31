@@ -78,8 +78,8 @@ genHSE x =
           spanHSE (show (show (typeOf x)))
                   (showConstr (toConstr x))
                   (srcInfoSpan s) :
-          concat (map (\(i,(D d)) -> pre x i ++ genHSE d)
-                      (zip [0..] ys))
+          concatMap (\(i,D d) -> pre x i ++ genHSE d)
+                     (zip [0..] ys)
         _ ->
           concatMap (\(D d) -> genHSE d) zs
     _ -> []
