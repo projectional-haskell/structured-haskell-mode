@@ -119,19 +119,22 @@ pre x i =
 
 -- | Generate a span from a HSE SrcSpan.
 spanHSE :: String -> String -> SrcSpan -> String
-spanHSE typ cons (SrcSpan _ a b c d) =
-  concat ["["
-         ,unwords [unqualify typ
-                  ,cons
-                  ,show a
-                  ,show b
-                  ,show c
-                  ,show d]
-         ,"]"]
-  where unqualify = go [] where
-          go acc ('.':cs) = go [] cs
-          go acc (c:cs)   = go (c:acc) cs
-          go acc []       = reverse acc
+spanHSE typ cons SrcSpan{..} = "[" ++ spanContent ++ "]"
+  where unqualify   = dropUntilLast '.'
+        spanContent = unwords [ unqualify typ
+                              , cons
+                              , show srcSpanStartLine
+                              , show srcSpanStartColumn
+                              , show srcSpanEndLine
+                              , show srcSpanEndColumn
+                              ]
+
+dropUntilLast :: Char -> String -> String         
+dropUntilLast ch = go [] 
+  where
+    go _ (c:cs) | c == ch = go [] cs
+    go acc (c:cs)         = go (c:acc) cs
+    go acc []             = reverse acc
 
 -- | Pretty print a source location.
 printSrcLoc :: SrcLoc -> String
