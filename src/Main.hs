@@ -26,7 +26,6 @@ instance Alternative ParseResult where
   ParseFailed{} <|> x = x
   x <|> _             = x
 
--- | Main entry point.
 main :: IO ()
 main = do
   code <- getContents
