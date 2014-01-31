@@ -28,18 +28,21 @@ main = do
   outputWith action typ code
 
 outputWith :: String -> String -> String -> IO ()
-outputWith action typ code =
-  case typ of
-    "decl" ->
-      output action
-             (\mode code ->
-                fmap D (fmap fix (parseDeclWithMode mode code)) <|>
-                fmap D (parseImport mode code) <|>
-                fmap D (fmap fix (parseModuleWithMode mode code)) <|>
-                fmap D (parseModulePragma mode code))
-             code
-    _ -> error "Unknown parser type."
-  where fix ast = fromMaybe ast (applyFixities baseFixities ast)
+outputWith action typ code = case typ of
+  "decl" ->
+      output action parseTopLevelElement code
+  _ -> error "Unknown parser type."
+
+parseTopLevelElement :: ParseMode -> String -> ParseResult D
+parseTopLevelElement mode code =
+  D . fix <$> parseDeclWithMode mode code   <|>
+  D       <$> parseImport mode code         <|>
+  D . fix <$> parseModuleWithMode mode code <|>
+  D       <$> parseModulePragma mode code
+  
+  where
+    fix :: AppFixity ast => ast SrcSpanInfo -> ast SrcSpanInfo
+    fix ast = fromMaybe ast (applyFixities baseFixities ast)
 
 instance Alternative ParseResult where
   empty = ParseFailed undefined undefined
