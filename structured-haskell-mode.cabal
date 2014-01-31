@@ -18,7 +18,7 @@ data-files:          elisp/shm-ast-documentation.el
 
 executable structured-haskell-mode
   main-is:           Main.hs
-  ghc-options:       -O2
+  ghc-options:       -O2 -Wall
   hs-source-dirs:    src
   build-depends:     base >= 4 && < 5,
                      haskell-src-exts >= 1.14.0
