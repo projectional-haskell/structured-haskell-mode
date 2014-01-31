@@ -134,6 +134,7 @@ of SHM that this is a common use-case worth taking into account.")
     ;; Splitting, slurping, barfing, etc.
     (define-key map (kbd "C-+") 'shm/add-operand)
     (define-key map (kbd "M-r") 'shm/raise)
+    (define-key map (kbd "C-c C-q") 'shm/qualify-import)
     map)
   "Structural editing operations keymap. Any key bindings in this
   map are intended to be only structural operations which operate
@@ -2637,6 +2638,28 @@ the line."
           (font-lock-fontify-region (shm-node-start current)
                                     (shm-node-end current))))
        (t (call-interactively 'comment-dwim))))))
+
+(defun shm/qualify-import ()
+  "Toggle the qualification of the import at point."
+  (interactive)
+  (save-excursion
+    (let ((points (shm-decl-points)))
+      (goto-char (car points))
+      (shm/reparse)
+      (let ((current (shm-current-node)))
+        (when (and current
+                   (string= "ImportDecl"
+                            (shm-node-type-name current)))
+          (cond
+           ((looking-at "import[\n ]+qualified[ \n]+")
+            (search-forward-regexp "qualified" (shm-node-end current) t 1)
+            (delete-region (point)
+                           (search-backward-regexp "qualified"))
+            (just-one-space 1))
+           (t
+            (search-forward-regexp "import")
+            (shm-insert-string " qualified")
+            (just-one-space 1))))))))
 
 (provide 'shm)
 

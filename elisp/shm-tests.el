@@ -23,6 +23,15 @@
 
 (defvar shm-tests
   (list
+   (list :name "qualify-import"
+         :start-buffer-content "import qualified Data.Conduit.List as CL
+"
+         :start-cursor 31
+         :finish-cursor 31
+         :current-node-overlay '(18 35)
+         :end-buffer-content "import qualified Data.Conduit.List as CL
+"
+         :kbd "")
    (list :name "split-list"
          :start-buffer-content "main = print [foo,bar,mu]
 "
