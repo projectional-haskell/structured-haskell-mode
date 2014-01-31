@@ -16,9 +16,14 @@ import Language.Haskell.Exts.Annotated
 import System.Environment
 
 
+data D = forall a. Data a => D a
+
 type Parser = ParseMode -> String -> ParseResult D
 
-data D = forall a. Data a => D a
+instance Alternative ParseResult where
+  empty = ParseFailed undefined undefined
+  ParseFailed{} <|> x = x
+  x <|> _             = x
 
 -- | Main entry point.
 main :: IO ()
@@ -43,11 +48,6 @@ parseTopLevelElement mode code =
   where
     fix :: AppFixity ast => ast SrcSpanInfo -> ast SrcSpanInfo
     fix ast = fromMaybe ast (applyFixities baseFixities ast)
-
-instance Alternative ParseResult where
-  empty = ParseFailed undefined undefined
-  ParseFailed{} <|> x = x
-  x <|> _             = x
 
 -- | Get the type of the parser.
 parserRep :: Typeable ast => ast -> String
