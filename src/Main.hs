@@ -51,13 +51,12 @@ parseTopLevelElement mode code =
 
 -- | Output AST info for the given Haskell code.
 output :: String -> Parser -> String -> IO ()
-output action parseWithMode code = do
-  case parseWithMode parseMode code of
-    ParseFailed _ e -> error e
-    ParseOk (D ast) -> case action of
-        "check" -> return ()
-        "parse" -> putStrLn ("[" ++ concat (genHSE ast) ++ "]")
-        _       -> error "unknown action"
+output action parser code = case parser parseMode code of
+  ParseFailed _ e -> error e
+  ParseOk (D ast) -> case action of
+    "check" -> return ()
+    "parse" -> putStrLn ("[" ++ concat (genHSE ast) ++ "]")
+    _       -> error "unknown action"
 
 -- | Parse mode, includes all extensions, doesn't assume any fixities.
 parseMode :: ParseMode
