@@ -65,16 +65,12 @@ output action parseWithMode code = do
 
 -- | Parse mode, includes all extensions, doesn't assume any fixities.
 parseMode :: ParseMode
-parseMode =
-  defaultParseMode { extensions = allExtensions
-                   , fixities   = Nothing
-                   }
-  where allExtensions =
-          filter (\x ->
-                   case x of
-                     DisableExtension x -> False
-                     _ -> True)
-                 knownExtensions
+parseMode = defaultParseMode { extensions = allExtensions
+                             , fixities   = Nothing
+                             }
+ where allExtensions = filter isDisabledExtention knownExtensions
+       isDisabledExtention (DisableExtension _) = False
+       isDisabledExtention _                    = True
 
 -- | Generate a list of spans from the HSE AST.
 genHSE :: Data a => a -> [String]
