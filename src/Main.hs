@@ -49,10 +49,6 @@ parseTopLevelElement mode code =
     fix :: AppFixity ast => ast SrcSpanInfo -> ast SrcSpanInfo
     fix ast = fromMaybe ast (applyFixities baseFixities ast)
 
--- | Get the type of the parser.
-parserRep :: Typeable ast => ast -> String
-parserRep = show . head . typeRepArgs . typeOf
-
 -- | Output AST info for the given Haskell code.
 output :: String -> Parser -> String -> IO ()
 output action parseWithMode code = do
@@ -135,11 +131,6 @@ dropUntilLast ch = go []
     go _ (c:cs) | c == ch = go [] cs
     go acc (c:cs)         = go (c:acc) cs
     go acc []             = reverse acc
-
--- | Pretty print a source location.
-printSrcLoc :: SrcLoc -> String
-printSrcLoc SrcLoc{..} =
-  srcFilename ++ ":" ++ show srcLine ++ ":" ++ show srcColumn
 
 --------------------------------------------------------------------------------
 -- Parsers that HSE hackage doesn't have
