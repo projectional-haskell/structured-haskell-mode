@@ -110,7 +110,7 @@ pre x i = case cast x of
 -- | Generate a span from a HSE SrcSpan.
 spanHSE :: String -> String -> SrcSpan -> String
 spanHSE typ cons SrcSpan{..} = "[" ++ spanStr ++ "]"
-  where unqualify = dropUntilLastOccurance '.'
+  where unqualify = dropUntilLastOccurrence '.'
         spanStr   = unwords [ unqualify typ
                             , cons
                             , show srcSpanStartLine
@@ -119,8 +119,8 @@ spanHSE typ cons SrcSpan{..} = "[" ++ spanStr ++ "]"
                             , show srcSpanStartColumn
                             ]
 
-dropUntilLastOccurance :: Eq a => a -> [a] -> [a]
-dropUntilLastOccurance ch = go []
+dropUntilLastOccurrence :: Eq a => a -> [a] -> [a]
+dropUntilLastOccurrence ch = go []
   where
     go _ (c:cs) | c == ch = go [] cs
     go acc (c:cs)         = go (c:acc) cs
