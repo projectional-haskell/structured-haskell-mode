@@ -10,13 +10,11 @@
 module Main (main) where
 
 import Control.Applicative
-import Data.Char
 import Data.Data
 import Data.Maybe
 import Language.Haskell.Exts.Annotated
-import Language.Haskell.Exts.Annotated.Fixity
 import System.Environment
-import System.IO
+
 
 type Parser = ParseMode -> String -> ParseResult D
 
