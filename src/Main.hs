@@ -38,6 +38,15 @@ outputWith action typ code = case typ of
       output action parseTopLevelElement code
   _ -> error "Unknown parser type."
 
+-- | Output AST info for the given Haskell code.
+output :: String -> Parser -> String -> IO ()
+output action parser code = case parser parseMode code of
+  ParseFailed _ e -> error e
+  ParseOk (D ast) -> case action of
+    "check" -> return ()
+    "parse" -> putStrLn ("[" ++ concat (genHSE ast) ++ "]")
+    _       -> error "unknown action"
+
 parseTopLevelElement :: ParseMode -> String -> ParseResult D
 parseTopLevelElement mode code =
   D . fix <$> parseDeclWithMode mode code   <|>
@@ -49,14 +58,6 @@ parseTopLevelElement mode code =
     fix :: AppFixity ast => ast SrcSpanInfo -> ast SrcSpanInfo
     fix ast = fromMaybe ast (applyFixities baseFixities ast)
 
--- | Output AST info for the given Haskell code.
-output :: String -> Parser -> String -> IO ()
-output action parser code = case parser parseMode code of
-  ParseFailed _ e -> error e
-  ParseOk (D ast) -> case action of
-    "check" -> return ()
-    "parse" -> putStrLn ("[" ++ concat (genHSE ast) ++ "]")
-    _       -> error "unknown action"
 
 -- | Parse mode, includes all extensions, doesn't assume any fixities.
 parseMode :: ParseMode
@@ -123,6 +124,9 @@ spanHSE typ cons SrcSpan{..} = "[" ++ spanContent ++ "]"
                               , show srcSpanEndLine
                               , show srcSpanEndColumn
                               ]
+
+------------------------------------------------------------------------------
+-- General Utility
 
 dropUntilLast :: Char -> String -> String         
 dropUntilLast ch = go [] 
