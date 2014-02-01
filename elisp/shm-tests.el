@@ -23,6 +23,27 @@
 
 (defvar shm-tests
   (list
+   (list :name "newline-indent-type-sig-arrows"
+         :start-buffer-content "outputWith :: Show a => String -> String -> String -> IO ()
+"
+         :start-cursor 22
+         :finish-cursor 56
+         :current-node-overlay '(37 84)
+         :end-buffer-content "outputWith :: Show a \n           => String \n           -> String -> String -> IO ()
+"
+         :kbd "
+\346
+")
+   (list :name "newline-indent-type-sig"
+         :start-buffer-content "outputWith :: String -> String -> String -> IO ()
+"
+         :start-cursor 25
+         :finish-cursor 40
+         :current-node-overlay '(40 46)
+         :end-buffer-content "outputWith :: String -> \n              String -> String -> IO ()
+"
+         :kbd "
+")
    (list :name "qualify-import"
          :start-buffer-content "import qualified Data.Conduit.List as CL
 "

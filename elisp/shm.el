@@ -771,9 +771,9 @@ hai = do foo bar
          (not (looking-at "$"))
          (looking-back " "))
     ;; If there's some stuff trailing us, then drag that with us.
-    (let ((newline-string (shm-kill-node 'buffer-substring-no-properties))
+    (let ((newline-string (shm-kill-node 'buffer-substring-no-properties nil (point)))
           (point (point)))
-      (shm-newline-indent t)
+      (shm-newline-indent t newline-string)
       (shm-insert-indented
        (lambda ()
          (insert newline-string)))))
@@ -942,7 +942,7 @@ after 'zoo' are *really* dependent."
                (<= (shm-node-end current) (line-end-position)))
       (goto-char (shm-node-end current)))))
 
-(defun shm-newline-indent (dragging)
+(defun shm-newline-indent (dragging &optional newline-string)
   "Go to the next logical line from the current node at the right column.
 
 This function uses the node's type to decode how to indent, and
@@ -966,6 +966,17 @@ DRAGGING indicates whether this indent will drag a node downwards."
                         "ImportDecl")))
       (newline)
       (insert "import "))
+     ((and (or (string= "Type" (shm-node-type-name current))
+               (string= "Context" (shm-node-type-name current)))
+           (eq 'TypeSig (shm-node-cons (shm-decl-node (point)))))
+      (let ((column (save-excursion (search-backward-regexp " :: ")
+                                    (+ 4 (current-column)))))
+        (newline)
+        (indent-to column)
+        (when (and dragging
+                   (or (string-match "^=>" newline-string)
+                       (string-match "^->" newline-string)))
+          (delete-region (- (point) 3) (point)))))
      ;; List comprehensions
      ((and parent
            (eq 'QualStmt (shm-node-cons parent)))
