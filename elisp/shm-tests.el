@@ -23,6 +23,37 @@
 
 (defvar shm-tests
   (list
+
+   (list :name "add-initial-type-constraint"
+      :start-buffer-content "fn :: a -> b
+"
+      :start-cursor 13
+      :finish-cursor 7
+      :current-node-overlay '(7 12)
+      :end-buffer-content "fn ::  => a -> b
+"
+      :kbd [41 134217848 115 104 109 47 109 111 100 tab return])
+
+(list :name "add-additional-type-constraint-no-parens"
+      :start-buffer-content "fn :: Eq a => a -> a
+"
+      :start-cursor 21
+      :finish-cursor 14
+      :current-node-overlay '(11 15)
+      :end-buffer-content "fn :: (Eq a, ) => a -> a
+"
+      :kbd [41 41 134217848 115 104 109 47 109 111 tab return])
+
+(list :name "add-addtional-type-constraint-parens"
+      :start-buffer-content "fn :: (Ord s, Eq a, Monad m) => StateT s m a
+"
+      :start-cursor 45
+      :finish-cursor 30
+      :current-node-overlay '(27 30)
+      :end-buffer-content "fn :: (Ord s, Eq a, Monad m, ) => StateT s m a
+"
+      :kbd [41 41 134217848 115 104 109 47 109 111 tab return])
+
    (list :name "newline-indent-type-sig-arrows"
          :start-buffer-content "outputWith :: Show a => String -> String -> String -> IO ()
 "
