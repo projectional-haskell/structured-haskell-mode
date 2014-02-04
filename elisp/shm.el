@@ -989,10 +989,19 @@ DRAGGING indicates whether this indent will drag a node downwards."
      ((and parent
            (or (eq 'List (shm-node-cons parent))
                (eq 'QualStmt (shm-node-cons parent))))
-      (newline)
-      (indent-to (shm-node-start-column parent))
-      (insert ",")
-      (shm-set-node-overlay parent-pair))
+      (let* ((first-item-on-line (save-excursion
+                                   (goto-char (shm-node-start current))
+                                   (search-backward-regexp "[[,][ ]*")
+                                   (= (current-column)
+                                      (shm-node-start-column parent)))))
+        (newline)
+        (indent-to (shm-node-start-column parent))
+        (insert ",")
+        (when first-item-on-line
+          (insert (make-string (- (shm-node-start-column current)
+                                  (current-column))
+                               ? )))
+        (shm-set-node-overlay parent-pair)))
      ;; Lambdas indents k spaces inwards
      ((eq 'Lambda (shm-node-cons current))
       (newline)
