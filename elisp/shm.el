@@ -1145,14 +1145,18 @@ DRAGGING indicates whether this indent will drag a node downwards."
 (defun shm-adjust-dependents (end-point n)
   "Adjust dependent lines by N characters that depend on this
 line after END-POINT."
-  (let ((line (line-number-at-pos)))
-    (when (and (not (and (looking-back "^[ ]+")
-                         (looking-at "[ ]*")))
-               (save-excursion (goto-char end-point)
-                               (forward-word)
-                               (= (line-number-at-pos) line)))
-      (shm-move-dependents n
-                           end-point))))
+  (unless (= (line-beginning-position)
+             (1- (point)))
+    (let ((line (line-number-at-pos))
+            (column (current-column)))
+        (when (and (not (< column (shm-indent-spaces)))
+                   (not (and (looking-back "^[ ]+")
+                             (looking-at "[ ]*")))
+                   (save-excursion (goto-char end-point)
+                                   (forward-word)
+                                   (= (line-number-at-pos) line)))
+          (shm-move-dependents n
+                               end-point)))))
 
 (defun shm-move-dependents (n point)
   "Move dependent-with-respect-to POINT lines N characters forwards or backwards.
