@@ -442,10 +442,12 @@ expected to work."
 (defun shm/delete ()
   "Delete the current node."
   (interactive)
-  (let ((current (shm-current-node))
-        (inhibit-read-only t))
-    (delete-region (shm-node-start current)
-                   (shm-node-end current))))
+  (shm-with-fallback
+   delete-char
+   (let ((current (shm-current-node))
+         (inhibit-read-only t))
+     (delete-region (shm-node-start current)
+                    (shm-node-end current)))))
 
 (defun shm/del ()
   "Character deletion handler.
