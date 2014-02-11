@@ -1129,6 +1129,14 @@ DRAGGING indicates whether this indent will drag a node downwards."
            (eq 'InfixApp (shm-node-cons parent)))
       (newline)
       (indent-to (+ (shm-node-start-column parent))))
+     ((eq 'Alt (shm-node-cons current))
+      (newline)
+      (indent-to (shm-node-start-column current))
+      (when shm-auto-insert-skeletons
+        (save-excursion (insert "_ -> undefined"))
+        (shm-evaporate (point) (+ (point) 1))
+        (shm-evaporate (+ (point) (length "_ -> "))
+                       (+ (point) (length "_ -> undefined")))))
      ;; Commenting out this behaviour for now
      ;; ((string= "Match" (shm-node-type-name current))
      ;;  (let ((name (cdr (shm-node-child-pair current-pair))))
@@ -1150,15 +1158,15 @@ line after END-POINT."
   (unless (= (line-beginning-position)
              (1- (point)))
     (let ((line (line-number-at-pos))
-            (column (current-column)))
-        (when (and (not (< column (shm-indent-spaces)))
-                   (not (and (looking-back "^[ ]+")
-                             (looking-at "[ ]*")))
-                   (save-excursion (goto-char end-point)
-                                   (forward-word)
-                                   (= (line-number-at-pos) line)))
-          (shm-move-dependents n
-                               end-point)))))
+          (column (current-column)))
+      (when (and (not (< column (shm-indent-spaces)))
+                 (not (and (looking-back "^[ ]+")
+                           (looking-at "[ ]*")))
+                 (save-excursion (goto-char end-point)
+                                 (forward-word)
+                                 (= (line-number-at-pos) line)))
+        (shm-move-dependents n
+                             end-point)))))
 
 (defun shm-move-dependents (n point)
   "Move dependent-with-respect-to POINT lines N characters forwards or backwards.
