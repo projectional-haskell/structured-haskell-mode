@@ -2200,9 +2200,7 @@ if inside parentheses."
                                (search-backward-regexp "[^a-zA-Z0-9_]")
                                (forward-char 1)
                                (point)))
-        (template (if (looking-at "$")
-                      "if undefined\n   then undefined\n   else undefined"
-                    "if undefined then undefined else undefined")))
+        (template "if undefined\n   then undefined\n   else undefined"))
     (shm-adjust-dependents (point) (- start (point)))
     (delete-region start (point))
     (shm-adjust-dependents (point) (length (car (last (split-string template "\n")))))
