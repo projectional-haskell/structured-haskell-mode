@@ -773,7 +773,10 @@ hai = do foo bar
          (not (looking-at "$"))
          (looking-back " "))
     ;; If there's some stuff trailing us, then drag that with us.
-    (let ((newline-string (shm-kill-node 'buffer-substring-no-properties nil (point)))
+    (let ((newline-string (shm-kill-node 'buffer-substring-no-properties
+                                         (cdr (shm-node-ancestor-at-point (shm-current-node-pair)
+                                                                          (point)))
+                                         (point)))
           (point (point)))
       (shm-newline-indent t newline-string)
       (shm-insert-indented
@@ -1008,6 +1011,17 @@ DRAGGING indicates whether this indent will drag a node downwards."
      ((eq 'Lambda (shm-node-cons current))
       (newline)
       (indent-to (+ (shm-indent-spaces) (shm-node-start-column current))))
+     ;; Indentation for RHS
+     ((and parent
+           (eq 'App (shm-node-cons parent))
+           (= (shm-node-start current)
+              (shm-node-start parent)))
+      (let ((ancestor-parent (shm-node-parent
+                              (shm-node-ancestor-at-point current-pair (point))))
+            (decl (shm-node-parent current-pair "Decl SrcSpanInfo")))
+        (newline)
+        (indent-to (+ (shm-indent-spaces)
+                      (shm-node-start-column (cdr decl))))))
      ;; Indentation for function application.
      ((and parent
            (or (eq 'App (shm-node-cons parent))
