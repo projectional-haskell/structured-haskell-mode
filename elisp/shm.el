@@ -1143,14 +1143,14 @@ DRAGGING indicates whether this indent will drag a node downwards."
            (eq 'InfixApp (shm-node-cons parent)))
       (newline)
       (indent-to (+ (shm-node-start-column parent))))
-     ((eq 'Alt (shm-node-cons current))
-      (newline)
-      (indent-to (shm-node-start-column current))
-      (when shm-auto-insert-skeletons
-        (save-excursion (insert "_ -> undefined"))
-        (shm-evaporate (point) (+ (point) 1))
-        (shm-evaporate (+ (point) (length "_ -> "))
-                       (+ (point) (length "_ -> undefined")))))
+     ;; ((eq 'Alt (shm-node-cons current))
+     ;;  (newline)
+     ;;  (indent-to (shm-node-start-column current))
+     ;;  (when shm-auto-insert-skeletons
+     ;;    (save-excursion (insert "_ -> undefined"))
+     ;;    (shm-evaporate (point) (+ (point) 1))
+     ;;    (shm-evaporate (+ (point) (length "_ -> "))
+     ;;                   (+ (point) (length "_ -> undefined")))))
      ;; Commenting out this behaviour for now
      ;; ((string= "Match" (shm-node-type-name current))
      ;;  (let ((name (cdr (shm-node-child-pair current-pair))))
