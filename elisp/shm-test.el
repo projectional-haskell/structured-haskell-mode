@@ -29,6 +29,7 @@
 (defun shm-test/run-all ()
   "Run all tests."
   (interactive)
+  (setq  shm-colon-enabled t)
   (when (remove-if-not #'identity
                        (mapcar #'shm-test/run shm-tests))
     (message "All tests passed OK.")))
