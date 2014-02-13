@@ -117,6 +117,12 @@ but others may differ."
   :group 'shm
   :type 'boolean)
 
+(defcustom shm-colon-enabled
+  nil
+  "Do special insertion of colons."
+  :group 'shm
+  :type 'boolean)
+
 (defcustom shm-idle-timeout
   0.2
   "Number of seconds before re-parsing."

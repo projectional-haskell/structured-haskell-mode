@@ -1524,7 +1524,8 @@ the current node to the parent."
 (defun shm/: ()
   "Insert colon."
   (interactive)
-  (if (shm-literal-insertion)
+  (if (or (not shm-colon-enabled)
+          (shm-literal-insertion))
       (call-interactively 'self-insert-command)
     (let ((current (shm-current-node)))
       (cond
