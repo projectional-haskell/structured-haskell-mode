@@ -2590,28 +2590,29 @@ location. See `shm/yank' for documentation on that."
          (result
           (unless (string= string "")
             (with-temp-buffer
-              (erase-buffer)
               (when multi-line
                 (insert (make-string start-col ? )))
               (insert string)
-              ;; This code de-indents code until a single line is hitting column zero.
+              ;; This code de-indents code until a single line is
+              ;; hitting column zero.
               (let ((indent-tabs-mode nil))
-		(while (progn (goto-char (point-min))
-			      (not (and (search-forward-regexp "^[^ ]" nil t 1)
-					(forward-line -1)
-					;; If there are empty lines, they
-					;; don't count as hitting column zero.
-					(if (/= (line-beginning-position)
-						(line-end-position))
-					    t
-					  ;; And we should actually delete empty lines.
-					  (progn (if (bobp)
+                (while (progn (goto-char (point-min))
+                              (not (and (search-forward-regexp "^[^ ]" nil t 1)
+                                        (forward-line -1)
+                                        ;; If there are empty lines, they
+                                        ;; don't count as hitting column zero.
+                                        (if (/= (line-beginning-position)
+                                                (line-end-position))
+                                            t
+                                          ;; And we should actually delete empty lines.
+                                          (progn (if (bobp)
                                                      (delete-region (point) (1+ (point)))
                                                    (delete-region (1- (point)) (point)))
-						 nil)))))
-		  ;; Bring everything back one.
-		  (indent-rigidly (point-min) (point-max)
-				  -1)))
+                                                 nil)))))
+                  ;; Bring everything back one.
+                  (unless (= 0 start-col)
+                    (indent-rigidly (point-min) (point-max)
+                                    -1))))
               ;; If there's an empty line at the end, then strip that
               ;; out. It's just bothersome when pasting back in.
               (goto-char (point-max))
