@@ -1292,16 +1292,18 @@ operation."
       (cond
        ((progn (goto-char start)
                (looking-at " "))
-        (let ((node (cdr (shm-find-furthest-parent-on-line (shm-current-node-pair)))))
-          (goto-char end)
-          (indent-rigidly start
-                          end
-                          (+ (shm-indent-spaces)
-                             (shm-node-indent-column node)))
-          (delete-region start
-                         (save-excursion
-                           (goto-char start)
-                           (search-forward-regexp "[ ]+" (line-end-position) t 1)))))
+        (let ((current-pair (shm-current-node-pair)))
+          (when (and (= (point-max) (point)) current-pair)
+            (let ((node (cdr (shm-find-furthest-parent-on-line current-pair))))
+              (goto-char end)
+              (indent-rigidly start
+                              end
+                              (+ (shm-indent-spaces)
+                                 (shm-node-indent-column node)))
+              (delete-region start
+                             (save-excursion
+                               (goto-char start)
+                               (search-forward-regexp "[ ]+" (line-end-position) t 1)))))))
        (t (goto-char end)
           (indent-rigidly start end
                           (if in-string
