@@ -208,7 +208,6 @@ state that will hopefully be garbage collected."
   (when structured-haskell-mode
     (shm/reparse)))
 
-
 (defun shm-decl-ast (&optional reparse)
   "Return the AST representing the current declaration at point.
 
@@ -1717,7 +1716,8 @@ node."
     (if (= (point) (shm-node-end current))
         (let ((next-pair (shm-node-next current-pair)))
           (goto-char (shm-node-start (cdr next-pair))))
-      (goto-char (shm-node-end current)))))
+      (progn (goto-char (shm-node-end current))
+             (setq shm-last-point (point))))))
 
 (defun shm/backward-node ()
   "Go backward by node, i.e. go to the previous of the current node. If
@@ -1729,7 +1729,8 @@ node."
     (if (= (point) (shm-node-start current))
         (let ((prev-pair (shm-node-previous current-pair)))
           (goto-char (shm-node-start (cdr prev-pair))))
-      (goto-char (shm-node-start current)))))
+      (progn (goto-char (shm-node-start current))
+             (setq shm-last-point (point))))))
 
 (defun shm/goto-parent (&optional node-pair direction)
   "Set the current node overlay to the parent node-pair"
