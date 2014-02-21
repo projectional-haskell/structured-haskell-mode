@@ -992,6 +992,7 @@ DRAGGING indicates whether this indent will drag a node downwards."
      ;; auto-inserted comma.
      ((and parent
            (or (eq 'List (shm-node-cons parent))
+               (eq 'Tuple (shm-node-cons parent))
                (eq 'QualStmt (shm-node-cons parent))))
       (let* ((first-item-on-line (save-excursion
                                    (goto-char (shm-node-start current))
