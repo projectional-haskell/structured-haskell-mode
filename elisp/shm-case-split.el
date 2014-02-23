@@ -24,6 +24,20 @@
 
 (require 'shm)
 
+(defun shm-case-split-insert-pattern (alts)
+  "Takes the first alt in ALTS and inserts a pattern match for
+  it."
+  (when (car alts)
+    (let ((alt (car alts)))
+      (when (> (cdr alt) 0)
+        (insert "("))
+      (insert (car alt))
+      (loop for i from 1 to (cdr alt)
+            do (progn (insert " _")
+                      (shm-evaporate (1- (point)) (point))))
+      (when (> (cdr alt) 0)
+        (insert ")")))))
+
 (defun shm-case-split-insert-alts (alts)
   "Inserts case alts for the given ALTS. It will create
 evaporating slots for each part. E.g.
