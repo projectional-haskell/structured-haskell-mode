@@ -771,6 +771,7 @@ hai = do foo bar
          ;; instead.
          (not (looking-at "$"))
          (looking-back " "))
+    (shm/reparse)
     ;; If there's some stuff trailing us, then drag that with us.
     (let ((newline-string (shm-kill-node 'buffer-substring-no-properties
                                          (cdr (shm-node-ancestor-at-point (shm-current-node-pair)
@@ -782,7 +783,9 @@ hai = do foo bar
        (lambda ()
          (insert newline-string)))))
    ;; Otherwise just do the indent.
-   (t (shm-newline-indent nil))))
+   (t (shm/reparse)
+      (shm-newline-indent nil)))
+  (shm/reparse))
 
 (defun shm/goto-where ()
   "Either make or go to a where clause of the current right-hand-side."
@@ -1030,9 +1033,24 @@ DRAGGING indicates whether this indent will drag a node downwards."
              (save-excursion
                (shm/goto-parent)
                (forward-sexp)
-               (1+ (current-column)))))
+               (1+ (current-column))))
+            (previous
+             (when (looking-back " ")
+               (save-excursion
+                 (search-backward-regexp "[ ]+"
+                                         (line-beginning-position)
+                                         t
+                                         1)
+                 (let ((prev (shm-current-workable-node)))
+                   (when (and (= (car (shm-node-parent prev))
+                                 (car parent-pair))
+                              (/= (shm-node-start parent)
+                                  (shm-node-start (cdr prev))))
+                     prev))))))
         (cond
-
+         (previous
+          (newline)
+          (indent-to (shm-node-start-column (cdr previous))))
          ((and (or (= column (current-column))
                    (= column (+ (shm-node-start-column parent)
                                 (shm-indent-spaces))))
@@ -1816,18 +1834,16 @@ then the parent is the correct one to work with."
   (let* ((parent-pair (shm-node-parent current-pair))
          (parent (cdr parent-pair))
          (current (cdr current-pair)))
-    (cond
-
-     (t (if parent
-            (if (and (= (shm-node-start current)
-                        (shm-node-start parent))
-                     (= (shm-node-end current)
-                        (shm-node-end parent)))
-                (if (string= (shm-node-type current) (shm-node-type parent))
-                    current-pair
-                  (shm-workable-node parent-pair))
-              current-pair)
-          current-pair)))))
+    (if parent
+        (if (and (= (shm-node-start current)
+                    (shm-node-start parent))
+                 (= (shm-node-end current)
+                    (shm-node-end parent)))
+            (if (string= (shm-node-type current) (shm-node-type parent))
+                current-pair
+              (shm-workable-node parent-pair))
+          current-pair)
+      current-pair)))
 
 (defun shm-node-previous (node-pair)
   "Get the previous node of NODE-PAIR."
