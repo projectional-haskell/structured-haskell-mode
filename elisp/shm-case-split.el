@@ -23,6 +23,7 @@
 ;;; Code:
 
 (require 'shm)
+(require 'haskell-process)
 
 (defun shm-case-split-insert-pattern (alts)
   "Takes the first alt in ALTS and inserts a pattern match for
@@ -137,5 +138,36 @@ Where the _ and undefineds are evaporating slots."
     (or (search-forward "| " nil t 1)
         (goto-char (point-max)))
     cons-pair))
+
+;; Backend based on haskell-process.el
+
+(defun haskell-process-get-data-type (name)
+  "Get the data type definition of the given name."
+  (let ((reply
+         (haskell-process-queue-sync-request (haskell-process)
+                                             (format ":i %s\n" name))))
+    (car (split-string reply "[\n\t ]+-- Defined "))))
+
+(defun shm/case-split (name)
+  "Do a case split on NAME at point."
+  (interactive (list (read-from-minibuffer "Type: ")))
+  (save-excursion
+    (let ((column (current-column)))
+      (insert "case undefined ")
+      (shm-evaporate (- (point) (+ 1 (length "undefined")))
+                     (- (point) 1))
+      (insert "of\n")
+      (indent-to (+ column 2))
+      (shm-case-split-insert-alts
+       (shm-case-split-alts-from-data-decl
+        (haskell-process-get-data-type name))))))
+
+(defun shm/expand-pattern (name)
+  "Expand a pattern match on a data type."
+  (interactive (list (read-from-minibuffer "Type: ")))
+  (save-excursion
+    (shm-case-split-insert-pattern
+     (shm-case-split-alts-from-data-decl
+      (haskell-process-get-data-type name)))))
 
 (provide 'shm-case-split)
