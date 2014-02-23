@@ -2113,13 +2113,17 @@ NODE-PAIR to use the specific node-pair (index + node)."
                             (nth 1 con-doc))
                   (format "“%s” (no more info)"
                           (shm-node-cons node)))
-                (save-excursion
-                  (shm-kill-node 'buffer-substring-no-properties
-                                 node
-                                 nil
-                                 t)))
+                (shm-node-string node))
       (format "Node type: “%s” (no more info)"
               (shm-node-type-name node)))))
+
+(defun shm-node-string (node)
+  "Get the string of the NODE."
+  (save-excursion
+    (shm-kill-node 'buffer-substring-no-properties
+                   node
+                   nil
+                   t)))
 
 (defun shm-delete-overlays (start end type)
   "Delete overlays of the given type. This is used for both
