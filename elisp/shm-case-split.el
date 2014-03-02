@@ -69,7 +69,10 @@ Where the _ and undefineds are evaporating slots."
 (defun shm-case-split-alts-from-data-decl (string)
   "Given a data declaration STRING, generate a list of alternatives."
   (with-temp-buffer
-    (insert string)
+    (insert (replace-regexp-in-string
+             "[a-zA-Z0-9]+-[0-9.]+:"
+             ""
+             string))
     (text-mode)
     (structured-haskell-mode)
     (setq shm-last-parse-start (point-max))
