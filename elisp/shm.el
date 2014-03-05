@@ -2379,15 +2379,29 @@ This is more convenient than typing out the same operator."
   (let* ((current-pair (shm-current-node-pair))
          (current (cdr current-pair))
          (parent-pair (shm-node-parent current-pair (shm-node-type current)))
-         (parent (cdr parent-pair)))
-    (if parent
-        (if (string= (shm-node-type current)
-                     (shm-node-type parent))
-            (let ((shm/raise-code (shm-kill-node 'buffer-substring-no-properties nil nil t)))
-              (shm-kill-node 'buffer-substring-no-properties parent)
-              (shm-insert-indented (lambda () (insert shm/raise-code)))
-              (shm/reparse)))
-      (error "No matching parent!"))))
+         (parent (cdr parent-pair))
+         (actual-parent-pair (shm-node-parent current-pair)))
+    (cond
+     (parent
+      (if (string= (shm-node-type current)
+                   (shm-node-type parent))
+          (let ((shm/raise-code (shm-kill-node 'buffer-substring-no-properties nil nil t)))
+            (shm-kill-node 'buffer-substring-no-properties parent)
+            (shm-insert-indented (lambda () (insert shm/raise-code)))
+            (shm/reparse))))
+     ((and (eq 'UnGuardedRhs (shm-node-cons (cdr actual-parent-pair)))
+           (eq 'Lambda (shm-node-cons current)))
+      (goto-char (shm-node-start current))
+      (delete-char 1)
+      (delete-region (point)
+                     (search-backward-regexp "[ ]+=[ ]+"))
+      (insert " ")
+      (search-forward-regexp "[ ]*->")
+      (delete-region (- (point) 2)
+                     (search-forward-regexp "[ ]+"))
+      (insert "= "))
+     (t
+      (error "No matching parent!")))))
 
 (defun shm/split-list ()
   "Split the current list into two lists by the nearest comma."
@@ -2737,7 +2751,7 @@ the line."
   "Modify a type signatures constraint"
   (interactive)
   (let* ((pair (shm-current-node-pair))
-         (current-node (cdr pair)))         
+         (current-node (cdr pair)))
     (if (shm-type-signature-with-constraint-p pair)
         (shm-add-additional-type-constraint current-node)
       (add-initial-type-constraint current-node))))
@@ -2751,7 +2765,7 @@ the line."
     (goto-char (shm-node-start node))
     (insert "(")
     (shm-goto-end-of-constraint node)
-    (insert ", )")            
+    (insert ", )")
     (backward-char 1)))
 
 (defun add-initial-type-constraint (node)
@@ -2786,7 +2800,7 @@ the line."
 
 (defun shm-concrete-syntax-for-node (node)
   "Get the concrete syntax of the node"
-  (buffer-substring-no-properties 
+  (buffer-substring-no-properties
    (shm-node-start (shm-current-node))
    (shm-node-end (shm-current-node))))
 
