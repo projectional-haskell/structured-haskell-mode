@@ -404,6 +404,9 @@ expected to work."
       (or (looking-at "^-}$")
           (looking-at "^{-$")))
     nil)
+   ((eq major-mode 'haskell-interactive-mode)
+    (cons haskell-interactive-mode-prompt-start
+          (point-max)))
    ;; Otherwise we just do our line-based hack.
    (t
     (save-excursion
