@@ -31,6 +31,7 @@
 (require 'shm-customizations)
 (require 'shm-ast-documentation)
 (require 'shm-evaporate)
+(require 'shm-in)
 
 (require 'cl)
 
@@ -2029,27 +2030,6 @@ deletion. The markers will be garbage collected eventually."
           (shm-node-cons n)
           (shm-node-start n)
           (shm-node-end n)))
-
-(defun shm-in-comment ()
-  "Are we currently in a comment?"
-  (or (and (eq 'font-lock-comment-delimiter-face
-               (get-text-property (point) 'face))
-           ;; This is taking liberties, but I'm not too sad about it.
-           (not (save-excursion (goto-char (line-beginning-position))
-                                (looking-at "{-"))))
-      (eq 'font-lock-doc-face
-          (get-text-property (point) 'face))
-      (and (eq 'font-lock-comment-face
-               (get-text-property (point) 'face))
-           (not (save-excursion (goto-char (line-beginning-position))
-                                (looking-at "{-"))))
-      (save-excursion (goto-char (line-beginning-position))
-                      (looking-at "^\-\- "))))
-
-(defun shm-in-string ()
-  "Are we in a string?"
-  (or (eq 'font-lock-string-face
-          (get-text-property (point) 'face))))
 
 (defun shm-find-overlay (type)
   "Find overlays at point."
