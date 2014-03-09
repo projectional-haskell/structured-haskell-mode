@@ -63,8 +63,14 @@ line after END-POINT."
                  (save-excursion (goto-char end-point)
                                  (forward-word)
                                  (= (line-number-at-pos) line)))
-        (shm-move-dependents n
-                             end-point)))))
+        (unless (save-excursion
+                  (goto-char (line-end-position))
+                  (let ((current-pair (shm-node-backwards)))
+                    (when current-pair
+                       (string= (shm-node-type-name (cdr current-pair))
+                               "Rhs"))))
+          (shm-move-dependents n
+                               end-point))))))
 
 (defun shm-move-dependents (n point)
   "Move dependent-with-respect-to POINT lines N characters forwards or backwards.
