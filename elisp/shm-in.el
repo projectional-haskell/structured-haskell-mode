@@ -38,4 +38,9 @@
   (or (eq 'font-lock-string-face
           (get-text-property (point) 'face))))
 
+(defun shm-literal-insertion ()
+  "Should a node have literal insertion?"
+  (or (shm-in-string)
+      (shm-in-comment)))
+
 (provide 'shm-in)

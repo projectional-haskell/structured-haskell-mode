@@ -21,8 +21,8 @@
 
 ;;; Code:
 
-(require 'shm)
 (require 'shm-tests)
+(require 'shm)
 
 (defvar shm-test-eob nil)
 
