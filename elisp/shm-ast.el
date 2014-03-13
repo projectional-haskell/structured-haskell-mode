@@ -339,7 +339,7 @@ NODE-PAIR to use the specific node-pair (index + node)."
     (unless no-record
       (shm-history-record (point) node-pair))))
 
-(defun shm-history-jump-to-recent ()
+(defun shm/goto-last-point ()
   "Jump to the most recent node."
   (interactive)
   (let ((stack (shm-history-stack))
