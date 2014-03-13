@@ -48,6 +48,15 @@ of SHM that this is a common use-case worth taking into account.")
 (defvar shm-last-parse-end 0
   "See `shm-last-parse-start' for explanation.")
 
+(defvar shm-history-stack nil
+  "Stack for story node history.")
+
+(defcustom shm-history-stack-max-length
+  10
+  "Maximum length of the node history stack."
+  :group 'shm
+  :type 'integer)
+
 (defun shm/reparse ()
   "Re-parse the current node.
 
@@ -307,7 +316,7 @@ whose constructor will be a Var."
           (overlay-get shm-current-node-overlay 'node-pair)
         (shm-workable-node current)))))
 
-(defun shm-set-node-overlay (&optional node-pair jump-direction)
+(defun shm-set-node-overlay (&optional node-pair jump-direction no-record)
   "Set the current overlay for the current node. Optionally pass
 NODE-PAIR to use the specific node-pair (index + node)."
   (setq shm-current-node-overlay nil)
@@ -326,7 +335,48 @@ NODE-PAIR to use the specific node-pair (index + node)."
           (when node
             (shm-current-overlay (shm-node-start node)
                                  (shm-node-end node)
-                                 node-pair)))))
+                                 node-pair)))
+    (unless no-record
+      (shm-history-record (point) node-pair))))
+
+(defun shm-history-jump-to-recent ()
+  "Jump to the most recent node."
+  (interactive)
+  (let ((stack (shm-history-stack))
+        (point (point)))
+    (when (not (ring-empty-p stack))
+      (let* ((i (if (= (point) (car (ring-ref stack 0)))
+                    1
+                  0))
+            (pair (ring-ref stack i)))
+        (when pair
+          (goto-char (car pair))
+          (shm-set-node-overlay (cdr pair) nil t)
+          (loop for j from 0 to i
+                do (ring-remove stack 0)))))))
+
+(defun shm-history-jump (point)
+  "Jump to POINT and set the current node to whatever node was
+  last current at that point."
+  (goto-char point)
+  (let ((stack (shm-history-stack)))
+    (when (not (ring-empty-p stack))
+      (let ((pair (assoc point (ring-elements stack))))
+        (when pair
+          (shm-set-node-overlay (cdr pair)))))))
+
+(defun shm-history-record (point node-pair)
+  "Record POINT and NODE in the node history."
+  (ring-insert (shm-history-stack)
+               (cons point node-pair)))
+
+(defun shm-history-stack ()
+  "Get the node history of the current buffer."
+  (if (and (local-variable-p 'shm-history-stack)
+           shm-history-stack)
+      shm-history-stack
+    (set (make-local-variable 'shm-history-stack)
+         (make-ring shm-history-stack-max-length))))
 
 (defun shm-node-backwards (&optional start type bound)
   "Get the current node searching bottom up starting from START,
