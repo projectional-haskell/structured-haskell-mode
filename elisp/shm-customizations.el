@@ -123,6 +123,13 @@ but others may differ."
   :group 'shm
   :type 'boolean)
 
+(defcustom shm-prevent-parent-deletion
+  t
+  "Prevent backspacing over parent heads that would break the
+syntax."
+  :group 'shm
+  :type 'boolean)
+
 (defcustom shm-idle-timeout
   0.2
   "Number of seconds before re-parsing."

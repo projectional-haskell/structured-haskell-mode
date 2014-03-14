@@ -283,49 +283,63 @@ parse errors that are rarely useful. For example:
     ;; These kind of patterns block the parens of syntaxes that would
     ;; otherwise break everything, so, "if", "of", "case", "do",
     ;; etc. if deleted.
-    ((and (looking-back "[^A-Zaz0-9_]do ?")
+    ((and shm-prevent-parent-deletion
+          (looking-back "[^A-Zaz0-9_]do ?")
           (not (or (eolp)
                    (looking-at "[])}]"))))
      nil) ; do nothing
-    ((and (looking-back " <-")
+    ((and shm-prevent-parent-deletion
+          (looking-back " <-")
           (not (or (eolp)
                    (looking-at "[])}]"))))
      (forward-char -3))
-    ((and (looking-back " <- ")
+    ((and shm-prevent-parent-deletion
+          (looking-back " <- ")
           (not (or (eolp)
                    (looking-at "[])}]"))))
      (forward-char -4))
-    ((looking-back "[^A-Zaz0-9_]of ?")
+    ((and shm-prevent-parent-deletion
+          (looking-back "[^A-Zaz0-9_]of ?"))
      (search-backward-regexp "[ ]*of"))
-    ((or (looking-at "of$")
-         (looking-at "of "))
+    ((and shm-prevent-parent-deletion
+          (or (looking-at "of$")
+              (looking-at "of ")))
      (forward-char -1))
-    ((looking-back "[_ ]-> ?") (forward-char -3))
-    ((looking-at "-> ?")
+    ((and shm-prevent-parent-deletion
+          (looking-back "[_ ]-> ?")) (forward-char -3))
+    ((and shm-prevent-parent-deletion
+          (looking-at "-> ?"))
      (forward-char -1))
-    ((looking-back "[^A-Zaz0-9_]then ?")
+    ((and shm-prevent-parent-deletion
+          (looking-back "[^A-Zaz0-9_]then ?"))
      (search-backward-regexp "[^ ][ ]*then")
      (unless (or (looking-at "$") (looking-at " "))
        (forward-char 1)))
-    ((looking-back "[^A-Zaz0-9_]else ?")
+    ((and shm-prevent-parent-deletion
+          (looking-back "[^A-Zaz0-9_]else ?"))
      (search-backward-regexp "[^ ][ ]*else")
      (unless (or (looking-at "$") (looking-at " "))
        (forward-char 1)))
-    ((looking-back "^module ?")
+    ((and shm-prevent-parent-deletion
+          (looking-back "^module ?"))
      (when (looking-at "[ ]*where$")
        (delete-region (line-beginning-position) (line-end-position))))
-    ((looking-back "[^A-Zaz0-9_]if ?")
+    ((and shm-prevent-parent-deletion
+          (looking-back "[^A-Zaz0-9_]if ?"))
      nil) ; do nothing
-    ((looking-back "[^A-Zaz0-9_]case ?")
+    ((and shm-prevent-parent-deletion
+          (looking-back "[^A-Zaz0-9_]case ?"))
      nil) ; do nothing
-    ((and (looking-at "= ")
-          (looking-back " "))
+    ((and shm-prevent-parent-deletion
+          (and (looking-at "= ")
+               (looking-back " ")))
      (forward-char -1))
-    ((or (and (looking-back " = ")
-              (not (looking-at "$"))
-              (not (looking-at " ")))
-         (and (looking-back "=")
-              (looking-at " ")))
+    ((and shm-prevent-parent-deletion
+          (or (and (looking-back " = ")
+                   (not (looking-at "$"))
+                   (not (looking-at " ")))
+              (and (looking-back "=")
+                   (looking-at " "))))
      (search-backward-regexp "[ ]+=[ ]*"
                              (line-beginning-position)
                              t
