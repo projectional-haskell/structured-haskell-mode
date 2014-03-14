@@ -35,8 +35,11 @@
 
 (defun shm-in-string ()
   "Are we in a string?"
-  (or (eq 'font-lock-string-face
-          (get-text-property (point) 'face))))
+  (save-excursion
+    (when (looking-at "\"")
+      (forward-char -1))
+    (eq 'font-lock-string-face
+        (get-text-property (point) 'face))))
 
 (defun shm-literal-insertion ()
   "Should a node have literal insertion?"
