@@ -22,6 +22,7 @@
 (require 'shm-in)
 (require 'shm-overlays)
 
+(require 'ring)
 (require 'cl)
 
 (defvar shm-lighter " SHM?"
