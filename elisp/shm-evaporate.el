@@ -42,8 +42,7 @@
   (let ((inhibit-modification-hooks t))
     (when (and changed
                (overlay-start o))
-      (delete-region (overlay-start o)
-                     (overlay-end o))
+      (shm-evaporate-delete-text o beg end)
       (delete-overlay o))))
 
 (defun shm-evaporate-insert-before-hook (o changed beg end &optional len)
@@ -51,9 +50,14 @@
   (let ((inhibit-modification-hooks t))
     (when (and (not changed)
                (overlay-start o))
-      (delete-region (overlay-start o)
-                     (overlay-end o))
+      (shm-evaporate-delete-text o beg end)
       (delete-overlay o))))
+
+(defun shm-evaporate-delete-text (o beg end)
+  "Delete the text associated with the evaporating slot."
+  (unless (eq this-command 'undo)
+    (delete-region (overlay-start o)
+                   (overlay-end o))))
 
 (provide 'shm-evaporate)
 
