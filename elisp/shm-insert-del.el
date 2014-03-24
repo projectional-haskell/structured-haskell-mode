@@ -284,58 +284,58 @@ parse errors that are rarely useful. For example:
     ;; These kind of patterns block the parens of syntaxes that would
     ;; otherwise break everything, so, "if", "of", "case", "do",
     ;; etc. if deleted.
-    ((and shm-prevent-parent-deletion
+    ((and (shm-prevent-parent-deletion-p)
           (looking-back "[^A-Zaz0-9_]do ?")
           (not (or (eolp)
                    (looking-at "[])}]"))))
      nil) ; do nothing
-    ((and shm-prevent-parent-deletion
+    ((and (shm-prevent-parent-deletion-p)
           (looking-back " <-")
           (not (or (eolp)
                    (looking-at "[])}]"))))
      (forward-char -3))
-    ((and shm-prevent-parent-deletion
+    ((and (shm-prevent-parent-deletion-p)
           (looking-back " <- ")
           (not (or (eolp)
                    (looking-at "[])}]"))))
      (forward-char -4))
-    ((and shm-prevent-parent-deletion
+    ((and (shm-prevent-parent-deletion-p)
           (looking-back "[^A-Zaz0-9_]of ?"))
      (search-backward-regexp "[ ]*of"))
-    ((and shm-prevent-parent-deletion
+    ((and (shm-prevent-parent-deletion-p)
           (or (looking-at "of$")
               (looking-at "of ")))
      (forward-char -1))
-    ((and shm-prevent-parent-deletion
+    ((and (shm-prevent-parent-deletion-p)
           (looking-back "[_ ]-> ?")) (forward-char -3))
-    ((and shm-prevent-parent-deletion
+    ((and (shm-prevent-parent-deletion-p)
           (looking-at "-> ?"))
      (forward-char -1))
-    ((and shm-prevent-parent-deletion
+    ((and (shm-prevent-parent-deletion-p)
           (looking-back "[^A-Zaz0-9_]then ?"))
      (search-backward-regexp "[^ ][ ]*then")
      (unless (or (looking-at "$") (looking-at " "))
        (forward-char 1)))
-    ((and shm-prevent-parent-deletion
+    ((and (shm-prevent-parent-deletion-p)
           (looking-back "[^A-Zaz0-9_]else ?"))
      (search-backward-regexp "[^ ][ ]*else")
      (unless (or (looking-at "$") (looking-at " "))
        (forward-char 1)))
-    ((and shm-prevent-parent-deletion
+    ((and (shm-prevent-parent-deletion-p)
           (looking-back "^module ?"))
      (when (looking-at "[ ]*where$")
        (delete-region (line-beginning-position) (line-end-position))))
-    ((and shm-prevent-parent-deletion
+    ((and (shm-prevent-parent-deletion-p)
           (looking-back "[^A-Zaz0-9_]if ?"))
      nil) ; do nothing
-    ((and shm-prevent-parent-deletion
+    ((and (shm-prevent-parent-deletion-p)
           (looking-back "[^A-Zaz0-9_]case ?"))
      nil) ; do nothing
-    ((and shm-prevent-parent-deletion
+    ((and (shm-prevent-parent-deletion-p)
           (and (looking-at "= ")
                (looking-back " ")))
      (forward-char -1))
-    ((and shm-prevent-parent-deletion
+    ((and (shm-prevent-parent-deletion-p)
           (or (and (looking-back " = ")
                    (not (looking-at "$"))
                    (not (looking-at " ")))
@@ -357,6 +357,11 @@ parse errors that are rarely useful. For example:
          (shm-adjust-dependents (point) -1))
        (shm-delete-char))))
   (shm/init t))
+
+(defun shm-prevent-parent-deletion-p ()
+  "Prevent parent deletion at point?"
+  (and shm-prevent-parent-deletion
+       (not (shm-in-string))))
 
 (defun shm-delete-or-glide (open close)
   "Delete the given OPEN/CLOSE delimiter, or simply glide over it
