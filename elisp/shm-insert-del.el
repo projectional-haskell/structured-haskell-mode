@@ -55,7 +55,8 @@
            (fboundp 'god-mode-self-insert))
       (god-mode-self-insert)
     (cond
-     ((shm-in-comment)
+     ((or (shm-in-comment)
+          (shm-in-string))
       (insert " "))
      (shm-auto-insert-skeletons
       (cond
