@@ -528,7 +528,34 @@ parseModulePragma mode code =
          :current-node-overlay 'nil
          :end-buffer-content "{-#  #-}
 "
-         :kbd "-#")))
+         :kbd "-#")
+   (list :name "where-clause"
+         :start-buffer-content "fn :: a -> b
+fn x = y + y
+"
+         :start-cursor 19
+         :finish-cursor 36
+         :current-node-overlay 'nil
+         :end-buffer-content "fn :: a -> b
+fn x = y + y
+  where y
+"
+         :kbd [?\M-x ?s ?h ?m ?/ ?g ?o ?t ?o ?- ?w ?h ?e ?r ?e return ?y])
+   (list :name "where-clause with indentation"
+         :start-buffer-content "fn :: a -> b
+fn x = y + y
+"
+         :start-cursor 19
+         :finish-cursor 40
+         :current-node-overlay 'nil
+         :end-buffer-content "fn :: a -> b
+fn x = y + y
+  where
+    y
+"
+         :kbd [?\M-x ?s ?h ?m ?/ ?g ?o ?t ?o ?- ?w ?h ?e ?r ?e return ?y]
+         :customizations
+         '((shm-indent-point-after-adding-where-clause t)))))
 
 (provide 'shm-tests)
 
