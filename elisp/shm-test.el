@@ -120,14 +120,21 @@
   (message "Testing %s..." (plist-get test :name))
   (switch-to-buffer-other-window (get-buffer-create "*shm-test*"))
   (erase-buffer)
+  (kill-all-local-variables)
   (when (fboundp 'god-local-mode)
     (god-local-mode -1))
+  (let ((customizations (plist-get test :customizations)))
+    (when customizations
+      (dolist (entry customizations)
+        (set (make-local-variable (car entry))
+             (cdr entry)))))
   (structured-haskell-mode 1)
   (insert (plist-get test :start-buffer-content))
   (goto-char (plist-get test :start-cursor))
   (shm/reparse)
   (execute-kbd-macro (plist-get test :kbd))
-  (shm-test-validate test))
+  (shm-test-validate test)
+  (shm-mode-stop))
 
 (defun shm-test-validate (test)
   "Validate the given test."
