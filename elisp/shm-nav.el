@@ -62,11 +62,15 @@
                         (t
                          (unless (= (line-beginning-position) (point))
                            (newline))
-                         (indent-to
-                          (+ 2
-                             (shm-node-start-column
-                              (cdr (shm-node-parent (cons i rhs))))))
-                         (insert "where ")))))))))
+                         (let ((indent (shm-node-start-column
+                                        (cdr (shm-node-parent (cons i rhs))))))
+                           (indent-to (+ 2 indent))
+                           (insert "where")
+                           (if shm-indent-point-after-adding-where-clause
+                             (progn
+                               (insert "\n")
+                               (indent-to (+ 4 indent)))
+                             (insert " ")))))))))))
 
 (defun shm/goto-parent-end ()
   "Set the current node overlay to the parent node, but go to the
