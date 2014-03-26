@@ -136,20 +136,19 @@ syntax."
   :group 'shm
   :type 'string)
 
-
 (defcustom shm-indent-point-after-adding-where-clause
   nil
   "Whether to indent point to the next line when inseting where clause, e.g.
-_|_ being a point:
+| being a point:
 
 foo x = ...
   where
-    _|_
+    |
 
-when option is t, as opposet do
+when option is t, as opposed to
 
 foo x = ...
-  where _|_
+  where |
 
 when option is nil.
 "
