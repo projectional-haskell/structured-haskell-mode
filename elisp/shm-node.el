@@ -63,6 +63,11 @@ deletion. The markers will be garbage collected eventually."
   (save-excursion (goto-char (shm-node-start n))
                   (current-column)))
 
+(defun shm-node-start-line (n)
+  "Get the starting line of N."
+  (save-excursion (goto-char (shm-node-start n))
+                  (line-number-at-pos)))
+
 (defun shm-node-indent-column (n)
   "Get the starting column of N."
   (+ (shm-node-start-column n)

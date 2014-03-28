@@ -227,9 +227,12 @@ DRAGGING indicates whether this indent will drag a node downwards."
                (eq 'TyApp (shm-node-cons parent))))
       (let ((column
              (save-excursion
-               (shm/goto-parent)
-               (forward-sexp)
-               (1+ (current-column))))
+               (if (/= (shm-node-start-line current)
+                      (shm-node-start-line parent))
+                   (shm-node-start-column current)
+                 (progn (shm/goto-parent)
+                        (forward-sexp)
+                        (1+ (current-column))))))
             (previous
              (when (looking-back " ")
                (save-excursion
