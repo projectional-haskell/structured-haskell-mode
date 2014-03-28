@@ -138,7 +138,8 @@ hai = do foo bar
       (shm-newline-indent t newline-string)
       (shm-insert-indented
        (lambda ()
-         (insert newline-string)))))
+         (insert newline-string))
+       t)))
    ;; Otherwise just do the indent.
    (t (shm/reparse)
       (shm-newline-indent nil)))

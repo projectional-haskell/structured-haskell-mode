@@ -114,7 +114,7 @@ for top-level functions and things like that."
   (insert string)
   (shm/init t))
 
-(defun shm-insert-indented (do-insert)
+(defun shm-insert-indented (do-insert &optional no-adjust-dependents)
   "Insert, indented in The Right Way. Calls DO-INSERT to do the insertion.
 
 This function assumes a certain semantic meaning towards the
@@ -175,7 +175,8 @@ operation."
              "\n" "\\\\n\\\\\n\\\\"
              string))
          string)))
-    (when (= line (line-beginning-position))
+    (when (and (= line (line-beginning-position))
+               (not no-adjust-dependents))
       (shm-adjust-dependents start (- (current-column)
                                       column)))
     (let ((end (point)))
