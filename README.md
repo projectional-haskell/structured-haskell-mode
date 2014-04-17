@@ -134,7 +134,9 @@ After that, disable and re-enable `structured-haskell-mode`.
 
 Byte-compiling:
 
-    emacs -Q --batch shm.el --eval "(progn (add-to-list 'load-path \".\") (emacs-lisp-byte-compile))"
+    make clean
+    make check
+    make
 
 ### Run tests
 
@@ -142,6 +144,11 @@ You can run the tests with the following:
 
     (require 'shm-test')
     M-x shm-test/run-all
+
+Or with make:
+
+    make clean
+    make test
 
 ### Write tests
 
