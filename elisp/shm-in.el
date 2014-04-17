@@ -41,9 +41,16 @@
     (eq 'font-lock-string-face
         (get-text-property (point) 'face))))
 
+(defun shm-in-char ()
+  "Are we in a char literal?"
+  (save-excursion
+    (and (looking-at "'")
+         (looking-back "'"))))
+
 (defun shm-literal-insertion ()
   "Should a node have literal insertion?"
   (or (shm-in-string)
+      (shm-in-char)
       (shm-in-comment)))
 
 (provide 'shm-in)
