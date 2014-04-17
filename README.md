@@ -33,7 +33,7 @@ Feature | Explanation
 ![goto-parent](http://chrisdone.com/structured-haskell-mode/gifs-nocache/goto-parent.gif) | **Going to parent**: `shm/goto-parent` (`M-a`) jumps to the start of the parent.
 ![goto-parent-end](http://chrisdone.com/structured-haskell-mode/gifs-nocache/goto-parent-end.gif) | **Going to parent end**: `shm/goto-parent-end` (`)`) jumps to the end of the parent.
 ![add-list-item](http://chrisdone.com/structured-haskell-mode/gifs-nocache/add-list-item.gif) | **Adding a list item**: `shm/newline-indent` (`C-j`) will automatically add a comma when inside a list.
-![add-operand](http://chrisdone.com/structured-haskell-mode/gifs-nocache/add-operand.gif) | **Adding operands**: `shm/add-operand` (`C-+`) will look at the current node and add another operand in the direction the cursor is leaning towards.
+![add-operand](http://chrisdone.com/structured-haskell-mode/gifs-nocache/add-operands.gif) | **Adding operands**: `shm/add-operand` (`C-+`) will look at the current node and add another operand in the direction the cursor is leaning towards.
 ![auto-re-indent](http://chrisdone.com/structured-haskell-mode/gifs-nocache/auto-re-indent.gif) | **Auto-reindenting**: Typing and deleting will automatically re-indent dependent code blocks.
 ![raise](http://chrisdone.com/structured-haskell-mode/gifs-nocache/raise.gif) | **Raising**: `shm/raise` (`M-r`) raises the current node to replace its parent. If its direct parent is not the same expression type, it continues up the tree.
 ![re-indenting](http://chrisdone.com/structured-haskell-mode/gifs-nocache/re-indenting.gif) | **Re-indenting**: `shm/newline-indent` (`C-j`) and `shm/delete-indentation` (`M-^`) allow you to bring nodes inwards or outwards relative to the parent.
