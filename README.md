@@ -29,7 +29,7 @@ in place, one is able to do all of the operations that paredit can do.
 
 Feature | Explanation
 --- | --- | ---
-![newline-indent](http://chrisdone.com/structured-haskell-mode/gifs/newline-indent-cj.gif) | **Indenting**: `shm/newline-indent` (`C-j`) takes the current node and its type into consideration giving very predictable and useful behaviour.
+![newline-indent](http://chrisdone.com/structured-haskell-mode/gifs/newline-indent.gif) | **Indenting**: `shm/newline-indent` (`C-j`) takes the current node and its type into consideration giving very predictable and useful behaviour.
 ![goto-parent](http://chrisdone.com/structured-haskell-mode/gifs/goto-parent.gif) | **Going to parent**: `shm/goto-parent` (`M-a`) jumps to the start of the parent.
 ![goto-parent-end](http://chrisdone.com/structured-haskell-mode/gifs/goto-parent-end.gif) | **Going to parent end**: `shm/goto-parent-end` (`)`) jumps to the end of the parent.
 ![add-list-item](http://chrisdone.com/structured-haskell-mode/gifs/add-list-item.gif) | **Adding a list item**: `shm/newline-indent` (`C-j`) will automatically add a comma when inside a list.
@@ -38,9 +38,19 @@ Feature | Explanation
 ![raise](http://chrisdone.com/structured-haskell-mode/gifs/raise.gif) | **Raising**: `shm/raise` (`M-r`) raises the current node to replace its parent. If its direct parent is not the same expression type, it continues up the tree.
 ![re-indenting](http://chrisdone.com/structured-haskell-mode/gifs/re-indenting.gif) | **Re-indenting**: `shm/newline-indent` (`C-j`) and `shm/delete-indentation` (`M-^`) allow you to bring nodes inwards or outwards relative to the parent.
 ![record-syntax](http://chrisdone.com/structured-haskell-mode/gifs/record-syntax.gif) | **Record syntax**: Creating new elements with record syntax, like lists (and tuples) automatically adds the right separators.
-![transposition](http://chrisdone.com/structured-haskell-mode/gifs/transposition.gif) | **Transposition**: `shm/tranpose` (`C-M-t`) will swap two sibling nodes. **Currently removed**
 ![kill-yank](http://chrisdone.com/structured-haskell-mode/gifs/kill-yank.gif) | **Copy/pasting**: `shm/kill` (`M-k`) and `shm/yank` (`C-y`) take indentation into account, and automatically normalize so that re-inserting will indent properly.
-![kill-lines](http://chrisdone.com/structured-haskell-mode/gifs/ck.gif) | **Killing lines**: `shm/kill-line` (`C-k`) and `shm/yank` (`C-y`) also take indentation into account for killing and pasting, working with multiple lines at once happily.
+![kill-lines](http://chrisdone.com/structured-haskell-mode/gifs/kill-multiple-line.gif) | **Killing lines**: `shm/kill-line` (`C-k`) and `shm/yank` (`C-y`) also take indentation into account for killing and pasting, working with multiple lines at once happily.
+![skeletons](http://chrisdone.com/structured-haskell-mode/gifs/skeletons.gif) | **Skeletons**: Typing prefixes of common syntax will auto-fill in the structure with "slots" that you can hit `TAB` to jump to, which auto-disappear when you type in them.
+![imports](http://chrisdone.com/structured-haskell-mode/gifs/imports.gif) | **Imports**: Imports have some limited support when using `C-j` to auto-create new import lines, and `C-c C-q` to qualify/unqualify.
+![multi-strings](http://chrisdone.com/structured-haskell-mode/gifs/multi-strings.gif) | **Multi-line strings**: Use `C-j` inside a string to split it into multiple lines. Use backspace at the start of a line to join it with the previous.
+![pragmas](http://chrisdone.com/structured-haskell-mode/gifs/pragmas.gif) | **Pragmas**: There is some limited support to help with typing pragmas `{-# … #-}`.
+![case-split](http://chrisdone.com/structured-haskell-mode/gifs/case-split.gif) | **Case split**: If you are using `interactive-haskell-mode`, you can get case splits for simple sum types, you can `(require 'shm-case-split)` make a keybinding for `shm/case-split`.
+
+Useful keybinding for case-split.
+
+``` lisp
+(define-key shm-map (kbd "C-c C-s") 'shm/case-split)
+```
 
 See `shm.el` for other keybindings. You might want to disable or
 change some of the bindings to suit your tastes.
