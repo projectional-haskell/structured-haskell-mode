@@ -516,4 +516,17 @@ do x <- |
      (delete-region (shm-node-start current)
                     (shm-node-end current)))))
 
+(defun shm/export ()
+  "Export the identifier at point."
+  (interactive)
+  (let ((name (shm-node-string (shm-actual-node))))
+    (save-excursion
+      (goto-char (point-min))
+      (search-forward-regexp "^module")
+      (search-forward-regexp " where")
+      (search-backward-regexp ")")
+      (shm/reparse)
+      (shm/newline-indent)
+      (insert name))))
+
 (provide 'shm-insert-del)

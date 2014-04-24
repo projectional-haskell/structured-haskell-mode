@@ -95,4 +95,9 @@ deletion. The markers will be garbage collected eventually."
           (shm-node-start n)
           (shm-node-end n)))
 
+(defun shm-node-string (n)
+  "Get the string of the region spanned by the node."
+  (buffer-substring-no-properties (shm-node-start n)
+                                  (shm-node-end n)))
+
 (provide 'shm-node)
