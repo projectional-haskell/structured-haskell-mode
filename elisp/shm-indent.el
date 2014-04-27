@@ -228,7 +228,7 @@ DRAGGING indicates whether this indent will drag a node downwards."
       (let ((column
              (save-excursion
                (if (/= (shm-node-start-line current)
-                      (shm-node-start-line parent))
+                       (shm-node-start-line parent))
                    (shm-node-start-column current)
                  (progn (shm/goto-parent)
                         (forward-sexp)
