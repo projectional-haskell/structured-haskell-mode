@@ -107,6 +107,9 @@ also space out any neccessary spacing."
                      (shm-actual-node)
                    current-node)))
       (cond
+       ((and (shm-in-string)
+             (looking-back "\\\\"))
+        (insert "\""))
        ((shm-find-overlay 'shm-quarantine)
         (insert "\"\"")
         (forward-char -1))
