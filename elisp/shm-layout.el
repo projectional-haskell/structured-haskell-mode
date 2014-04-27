@@ -58,8 +58,11 @@ line after END-POINT."
     (let ((line (line-number-at-pos))
           (column (current-column)))
       (when (and (not (< column (shm-indent-spaces)))
-                 (not (and (looking-back "^[ ]+")
-                           (looking-at "[ ]*")))
+                 ;; I don't remember what this is for. I'm removing
+                 ;; it. If it causes problems, I'll deal with it then.
+                 ;;
+                 ;; (not (and (looking-back "^[ ]+")
+                 ;;           (looking-at "[ ]*")))
                  (save-excursion (goto-char end-point)
                                  (forward-word)
                                  (= (line-number-at-pos) line)))
