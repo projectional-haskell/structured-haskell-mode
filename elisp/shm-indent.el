@@ -29,12 +29,22 @@
         (delete-indentation))
        ((looking-at "[ ]*$")
         (delete-indentation))
-       (t (let ((string (shm-kill-node 'buffer-substring-no-properties)))
+       (t
+        (let ((current (shm-current-node)))
+          (let ((old-column (current-column)))
+            (delete-region (line-beginning-position) (point))
+            (delete-backward-char 1)
+            (let ((new-column (current-column)))
+              (indent-rigidly (line-end-position)
+                              (shm-node-end current)
+                              (abs (- old-column new-column))))))
+        (when nil
+          (let ((string (shm-kill-node 'buffer-substring-no-properties)))
             (delete-indentation)
             (insert " ")
             (shm-insert-indented
              (lambda ()
-               (insert string))))))
+               (insert string)))))))
     (delete-indentation)))
 
 (defun shm/swing-down ()
@@ -81,7 +91,7 @@ hai = do
                                 nil)))
           (shm/reparse)
           (forward-char -1)
-          (newline)
+          (shm-newline)
           (indent-to (+ (shm-indent-spaces)
                         start))
           (shm-insert-indented (lambda () (insert swing-string))))))
@@ -138,7 +148,7 @@ hai = do foo bar
                  (point))))
     (let ((column (shm-node-start-column (shm-current-node))))
       (insert "\\")
-      (newline)
+      (shm-newline)
       (indent-to column)
       (insert "\\")))
    ((and (looking-at "[^])}\"]") ;; This is a cheap solution. It
@@ -147,17 +157,24 @@ hai = do foo bar
          (not (looking-at "$"))
          (looking-back " "))
     (shm/reparse)
-    ;; If there's some stuff trailing us, then drag that with us.
-    (let ((newline-string (shm-kill-node 'buffer-substring-no-properties
-                                         (cdr (shm-node-ancestor-at-point (shm-current-node-pair)
-                                                                          (point)))
-                                         (point)))
-          (point (point)))
-      (shm-newline-indent t newline-string)
-      (shm-insert-indented
-       (lambda ()
-         (insert newline-string))
-       t)))
+    (let ((newline-string (buffer-substring-no-properties (point)
+                                                          (shm-node-end (shm-current-node)))))
+      ;; If we're going to drag something, that means the *real* parent
+      ;; should encompass whatever we're going to drag, and that should
+      ;; be at or beyond the end of the line.
+      (unless (looking-at "\\(=>\\|->\\)")
+        (while (not (>= (shm-node-end (shm-current-node))
+                        (line-end-position)))
+          (shm/goto-parent)))
+      ;; If there's some stuff trailing us, then drag that with us.
+      (let* ((current (shm-current-node))
+             (old-column (shm-node-start-column current)))
+        (shm-newline-indent t
+                            newline-string)
+        (let ((new-column (current-column)))
+          (indent-rigidly (point)
+                          (shm-node-end current)
+                          (- (abs (- old-column new-column))))))))
    ;; Otherwise just do the indent.
    (t (shm/reparse)
       (shm-newline-indent nil)))
@@ -185,15 +202,16 @@ DRAGGING indicates whether this indent will drag a node downwards."
                parent
                (string= (shm-node-type-name parent)
                         "ImportDecl")))
-      (newline)
+      (shm-newline)
       (insert "import "))
      ((and (or (string= "Type" (shm-node-type-name current))
                (string= "Context" (shm-node-type-name current)))
            (eq 'TypeSig (shm-node-cons (shm-decl-node (point)))))
       (let ((column (save-excursion (search-backward-regexp " :: ")
                                     (+ 4 (current-column)))))
-        (newline)
+        (shm-newline)
         (indent-to column)
+        (message "newline-string: %s" newline-string)
         (when (and dragging
                    (or (string-match "^=>" newline-string)
                        (string-match "^->" newline-string)))
@@ -201,7 +219,7 @@ DRAGGING indicates whether this indent will drag a node downwards."
      ;; List comprehensions
      ((and parent
            (eq 'QualStmt (shm-node-cons parent)))
-      (newline)
+      (shm-newline)
       (indent-to (1- (shm-node-start-column parent)))
       (insert ",")
       (shm-set-node-overlay parent-pair))
@@ -216,7 +234,7 @@ DRAGGING indicates whether this indent will drag a node downwards."
                                    (search-backward-regexp "[[,][ ]*")
                                    (= (current-column)
                                       (shm-node-start-column parent)))))
-        (newline)
+        (shm-newline)
         (indent-to (shm-node-start-column parent))
         (insert ",")
         (when first-item-on-line
@@ -226,7 +244,7 @@ DRAGGING indicates whether this indent will drag a node downwards."
         (shm-set-node-overlay parent-pair)))
      ;; Lambdas indents k spaces inwards
      ((eq 'Lambda (shm-node-cons current))
-      (newline)
+      (shm-newline)
       (indent-to (+ (shm-indent-spaces) (shm-node-start-column current))))
      ;; Indentation for RHS
      ((and parent
@@ -236,7 +254,7 @@ DRAGGING indicates whether this indent will drag a node downwards."
       (let ((ancestor-parent (shm-node-parent
                               (shm-node-ancestor-at-point current-pair (point))))
             (decl (shm-node-parent current-pair "Decl SrcSpanInfo")))
-        (newline)
+        (shm-newline)
         (indent-to (+ (shm-indent-spaces)
                       (shm-node-start-column (cdr decl))))))
      ;; Indentation for function application.
@@ -266,23 +284,23 @@ DRAGGING indicates whether this indent will drag a node downwards."
                      prev))))))
         (cond
          (previous
-          (newline)
+          (shm-newline)
           (indent-to (shm-node-start-column (cdr previous))))
          ((and (or (= column (current-column))
                    (= column (+ (shm-node-start-column parent)
                                 (shm-indent-spaces))))
                (/= column (shm-node-start-column parent)))
-          (newline)
+          (shm-newline)
           (indent-to (+ (shm-node-start-column parent)
                         (shm-indent-spaces))))
          (t
-          (newline)
+          (shm-newline)
           (indent-to column)))))
      ;; Indent for sum types
      ((or (and parent
                (eq 'DataDecl (shm-node-cons parent)))
           (eq 'ConDecl (shm-node-cons current)))
-      (newline)
+      (shm-newline)
       (indent-to (shm-node-start-column current))
       (delete-char -2)
       (insert "| "))
@@ -300,7 +318,7 @@ DRAGGING indicates whether this indent will drag a node downwards."
       (backward-sexp)
       (let ((column (current-column)))
         (goto-char (shm-node-end current))
-        (newline)
+        (shm-newline)
         (indent-to column)
         (insert ",")
         (insert (make-string (abs (- (shm-node-start-column current)
@@ -312,16 +330,16 @@ DRAGGING indicates whether this indent will drag a node downwards."
       (cond
        ((eq shm-lambda-indent-style 'leftmost-parent)
         (let ((leftmost-parent (cdr (shm-find-furthest-parent-on-line parent-pair))))
-          (newline)
+          (shm-newline)
           (indent-to (+ (shm-indent-spaces)
                         (shm-node-indent-column leftmost-parent)))))
-       (t (newline)
+       (t (shm-newline)
           (indent-to (+ (shm-indent-spaces)
                         (shm-node-start-column parent))))))
      ;; Guards | foo = …
      ((or (string= "GuardedRhs" (shm-node-type-name current))
           (string= "GuardedAlt" (shm-node-type-name current)))
-      (newline)
+      (shm-newline)
       (indent-to (shm-node-start-column current))
       (insert "| "))
      ;; Indent after or at the = (an rhs).
@@ -330,25 +348,25 @@ DRAGGING indicates whether this indent will drag a node downwards."
                (string= "Rhs" (shm-node-type-name current))
                (string= "GuardedAlt" (shm-node-type-name parent))
                (string= "GuardedRhs" (shm-node-type-name parent))))
-      (newline)
+      (shm-newline)
       (indent-to (+ (shm-indent-spaces)
                     (shm-node-start-column (cdr (shm-node-parent parent-pair))))))
      ;; When in a field update.
      ((and parent
            (string= "FieldUpdate" (shm-node-type-name parent)))
-      (newline)
+      (shm-newline)
       (indent-to (+ (shm-node-start-column parent)
                     (shm-indent-spaces))))
      ;; When in an alt list
      ((and parent
            (string= "GuardedAlts" (shm-node-type-name current)))
-      (newline)
+      (shm-newline)
       (indent-to (+ (shm-node-start-column parent)
                     (shm-indent-spaces))))
      ;; When in a case alt.
      ((and parent
            (string= "GuardedAlts" (shm-node-type-name parent)))
-      (newline)
+      (shm-newline)
       (let ((alt (cdr (shm-node-parent parent-pair))))
         (indent-to (+ (shm-node-start-column alt)
                       (shm-indent-spaces)))))
@@ -362,24 +380,24 @@ DRAGGING indicates whether this indent will drag a node downwards."
                                                      (shm-node-end operand))))
         (cond
          (dragging
-          (newline)
+          (shm-newline)
           (indent-to (shm-node-start-column parent)))
          ((save-excursion (goto-char (shm-node-end operand))
                           (= (point) (line-end-position)))
           (insert " " string)
-          (newline)
+          (shm-newline)
           (indent-to (shm-node-start-column current)))
          (t
-          (newline)
+          (shm-newline)
           (indent-to (shm-node-start-column operand))
           (insert string " ")))))
      ;; Infix operators
      ((and parent
            (eq 'InfixApp (shm-node-cons parent)))
-      (newline)
+      (shm-newline)
       (indent-to (+ (shm-node-start-column parent))))
      ;; ((eq 'Alt (shm-node-cons current))
-     ;;  (newline)
+     ;;  (shm-newline)
      ;;  (indent-to (shm-node-start-column current))
      ;;  (when shm-auto-insert-skeletons
      ;;    (save-excursion (insert "_ -> undefined"))
@@ -389,7 +407,7 @@ DRAGGING indicates whether this indent will drag a node downwards."
      ;; Commenting out this behaviour for now
      ;; ((string= "Match" (shm-node-type-name current))
      ;;  (let ((name (cdr (shm-node-child-pair current-pair))))
-     ;;    (newline)
+     ;;    (shm-newline)
      ;;    (indent-to (shm-node-start-column current))
      ;;    (insert (buffer-substring-no-properties (shm-node-start name)
      ;;                                            (shm-node-end name))
@@ -398,7 +416,12 @@ DRAGGING indicates whether this indent will drag a node downwards."
      ;; level. Generally works reliably, but has less than favourable
      ;; indentation sometimes. It just serves as a catch-all.
      (t
-      (newline)
+      (shm-newline)
       (indent-to (shm-node-start-column current))))))
+
+(defun shm-newline ()
+  "Normal `newline' does funny business. What we want is to
+literally insert a newline and no more."
+  (insert "\n"))
 
 (provide 'shm-indent)
