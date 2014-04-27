@@ -56,7 +56,7 @@ hai = do
      ((eq (shm-node-cons current)
           'Do)
       (save-excursion
-        (let ((new-column (shm-get-swing-column)))
+        (let ((new-column (shm-get-swing-column current)))
           (goto-char (shm-node-start current))
           (forward-word 1)
           (search-forward " ")
@@ -88,10 +88,10 @@ hai = do
      (t
       (error "Don't know how to swing that kind of expression.")))))
 
-(defun shm-get-swing-column ()
+(defun shm-get-swing-column (node)
   "Get the column that a node would be newline-indented to."
   (save-excursion
-    (let ((start (shm-node-start current)))
+    (let ((start (shm-node-start node)))
       (goto-char start)
       (shm-newline-indent nil nil)
       (let ((column (current-column)))

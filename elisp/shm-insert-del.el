@@ -20,6 +20,7 @@
 (require 'shm-macros)
 (require 'shm-slot)
 (require 'shm-layout)
+(require 'shm-indent)
 
 (defun shm-post-self-insert ()
   "Self-insertion handler."
