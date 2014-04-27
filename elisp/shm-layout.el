@@ -25,7 +25,7 @@
   yank (i.e. with M-y), you need to be able to erase the previous
   yank. This is simply a region.")
 
-(defun shm-appropriate-adjustment-point ()
+(defun shm-appropriate-adjustment-point (direction)
   "Go to the appropriate adjustment point.
 
 This is called before calling `shm-adjust-dependents', because some places, e.g.
@@ -46,9 +46,17 @@ zoo| = do
 And use our normal adjustment test there. After all, only thing
 after 'zoo' are *really* dependent."
   (let ((current (shm-current-node)))
-    (when (and current
-               (<= (shm-node-end current) (line-end-position)))
-      (goto-char (shm-node-end current)))))
+    (case direction
+      ('forward
+       (when (and current
+                  (< (shm-node-end current) (line-end-position))
+                  (not (and (looking-at " ")
+                            (looking-back " "))))
+         (goto-char (shm-node-end current))))
+      ('backward
+       (when (and current
+                  (> (shm-node-start current) (line-beginning-position)))
+         (goto-char (shm-node-start current)))))))
 
 (defun shm-adjust-dependents (end-point n)
   "Adjust dependent lines by N characters that depend on this
@@ -112,7 +120,7 @@ for top-level functions and things like that."
 (defun shm-insert-string (string)
   "Insert the given string."
   (save-excursion
-    (shm-appropriate-adjustment-point)
+    (shm-appropriate-adjustment-point 'forward)
     (shm-adjust-dependents (point) (length string)))
   (insert string)
   (shm/init t))

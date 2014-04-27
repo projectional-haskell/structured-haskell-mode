@@ -25,7 +25,7 @@
 (defun shm-post-self-insert ()
   "Self-insertion handler."
   (save-excursion
-    (shm-appropriate-adjustment-point)
+    (shm-appropriate-adjustment-point 'forward)
     (forward-char -1)
     (shm-adjust-dependents (point) 1)))
 
@@ -356,10 +356,10 @@ parse errors that are rarely useful. For example:
     ;; This is the base case, we assume that we can freely delete
     ;; whatever we're looking back at, and that the node will be able
     ;; to re-parse it.
-    (t (save-excursion
-         (shm-appropriate-adjustment-point)
-         (shm-adjust-dependents (point) -1))
-       (shm-delete-char))))
+    (t (shm-delete-char)
+       (save-excursion
+         (shm-appropriate-adjustment-point 'backward)
+         (shm-adjust-dependents (point) -1)))))
   (shm/init t))
 
 (defun shm-prevent-parent-deletion-p ()
