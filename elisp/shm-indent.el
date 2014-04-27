@@ -55,12 +55,20 @@ hai = do
     (cond
      ((eq (shm-node-cons current)
           'Do)
-      (let ((swing-string
-             (shm-kill-node 'buffer-substring-no-properties
-                            current
-                            (shm-node-start (shm-node-child current-pair)))))
-        (shm/newline-indent)
-        (shm-insert-indented (lambda () (insert swing-string)))))
+      (save-excursion
+        (let ((new-column (shm-get-swing-column)))
+          (goto-char (shm-node-start current))
+          (forward-word 1)
+          (search-forward " ")
+          (let ((old-column (current-column)))
+            (insert "\n")
+            (indent-rigidly (point)
+                            (shm-node-end current)
+                            (- old-column))
+            (indent-rigidly (point)
+                            (shm-node-end current)
+                            new-column)))
+        (shm/reparse)))
      ((eq (shm-node-cons current)
           'Var)
       (let* ((next-pair (shm-node-next current-pair))
@@ -79,6 +87,16 @@ hai = do
           (shm-insert-indented (lambda () (insert swing-string))))))
      (t
       (error "Don't know how to swing that kind of expression.")))))
+
+(defun shm-get-swing-column ()
+  "Get the column that a node would be newline-indented to."
+  (save-excursion
+    (let ((start (shm-node-start current)))
+      (goto-char start)
+      (shm-newline-indent nil nil)
+      (let ((column (current-column)))
+        (delete-region start (point))
+        column))))
 
 (defun shm/swing-up ()
   "Swing the children of the current node upwards.
