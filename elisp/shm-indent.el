@@ -33,7 +33,7 @@
         (let ((current (shm-current-node)))
           (let ((old-column (current-column)))
             (delete-region (line-beginning-position) (point))
-            (delete-backward-char 1)
+            (delete-char -1)
             (let ((new-column (current-column)))
               (indent-rigidly (line-end-position)
                               (shm-node-end current)
