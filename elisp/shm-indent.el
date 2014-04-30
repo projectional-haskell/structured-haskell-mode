@@ -158,14 +158,29 @@ hai = do foo bar
          (looking-back " "))
     (shm/reparse)
     (let ((newline-string (buffer-substring-no-properties (point)
-                                                          (shm-node-end (shm-current-node)))))
+                                                          (shm-node-end (shm-current-node))))
+          ;; This is like (line-end-position), but if the line ends in
+          ;; a closing delimiter like ), then *really* the "end" of
+          ;; the thing we're dragging should be inside these
+          ;; delimiters.
+          (end-position (save-excursion
+                          (goto-char (line-end-position))
+                          (when (looking-back "[])}\"]+")
+                            (search-backward-regexp "[^])}\"]")
+                            (forward-char 1))
+                          (point))))
       ;; If we're going to drag something, that means the *real* parent
       ;; should encompass whatever we're going to drag, and that should
       ;; be at or beyond the end of the line.
       (unless (looking-at "\\(=>\\|->\\)")
-        (while (not (>= (shm-node-end (shm-current-node))
-                        (line-end-position)))
-          (shm/goto-parent)))
+        (let ((current (shm-current-node-pair)))
+          (while (and (not (>= (shm-node-end (cdr current))
+                               end-position))
+                      (/= (car current)
+                          (car (shm-node-ancestor-at-point current
+                                                           (shm-node-start (cdr current))))))
+            (shm/goto-parent)
+            (setq current (shm-current-node-pair)))))
       ;; If there's some stuff trailing us, then drag that with us.
       (let* ((current (shm-current-node))
              (old-column (shm-node-start-column current)))
