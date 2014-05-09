@@ -339,6 +339,7 @@ DRAGGING indicates whether this indent will drag a node downwards."
         (insert (make-string (abs (- (shm-node-start-column current)
                                      (1+ column)))
                              ? ))
+        (shm-auto-insert-field-prefix current parent)
         (shm/init)))
      ((and parent
            (eq 'Lambda (shm-node-cons parent)))
@@ -433,6 +434,36 @@ DRAGGING indicates whether this indent will drag a node downwards."
      (t
       (shm-newline)
       (indent-to (shm-node-start-column current))))))
+
+(defun shm-auto-insert-field-prefix (current parent)
+  "Auto insert prefixes of fields in record declarations. Example:
+
+data Person = Person
+  { personAge :: Int
+  , person|
+
+"
+  (when (string= "FieldDecl" (shm-node-type-name current))
+    (let ((cur-substr
+           (save-excursion
+             (goto-char (shm-node-start current))
+             (buffer-substring-no-properties
+              (point)
+              (or (and (let ((case-fold-search nil))
+                         (search-forward-regexp "[A-Z]"
+                                                (shm-node-end current)
+                                                t
+                                                1))
+                       (1- (point)))
+                  (point)))))
+          (type-name
+           (save-excursion
+             (goto-char (shm-node-start parent))
+             (buffer-substring-no-properties (point)
+                                             (progn (forward-word 1)
+                                                    (point))))))
+      (when (string= cur-substr (downcase type-name))
+        (insert cur-substr)))))
 
 (defun shm-newline ()
   "Normal `newline' does funny business. What we want is to
