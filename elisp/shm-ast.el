@@ -140,23 +140,24 @@ and instate this one."
   "When in a REPL, we don't typically have font locking, so we
   should manually perform a font-lock whenever we get a valid
   parse."
-  (let ((point (point))
-        (inhibit-modification-hooks t)
-        (list buffer-undo-list))
-    (let ((fontified (shm-fontify-as-mode (buffer-substring-no-properties start end)
-                                          'haskell-mode))
-          (overlays (mapcar (lambda (o)
-                              (list o
-                                    (overlay-start o)
-                                    (overlay-end o)))
-                            (overlays-in start end))))
-      (delete-region start end)
-      (insert fontified)
-      (goto-char point)
-      ;; Restore overlay positions
-      (loop for o in overlays
-            do (move-overlay (nth 0 o) (nth 1 o) (nth 2 o)))
-      (setq buffer-undo-list list))))
+  (unless (= (1+ start) end)
+    (let ((point (point))
+          (inhibit-modification-hooks t)
+          (list buffer-undo-list))
+      (let ((fontified (shm-fontify-as-mode (buffer-substring-no-properties start end)
+                                            'haskell-mode))
+            (overlays (mapcar (lambda (o)
+                                (list o
+                                      (overlay-start o)
+                                      (overlay-end o)))
+                              (overlays-in start end))))
+        (delete-region start end)
+        (insert fontified)
+        (goto-char point)
+        ;; Restore overlay positions
+        (loop for o in overlays
+              do (move-overlay (nth 0 o) (nth 1 o) (nth 2 o)))
+        (setq buffer-undo-list list)))))
 
 (defun shm-fontify-as-mode (text mode)
   "Fontify TEXT as MODE, returning the fontified text."
