@@ -112,6 +112,68 @@
       (shm-mode-start)
     (shm-mode-stop)))
 
+(defvar shm-repl-map
+  (let ((map (make-sparse-keymap)))
+    ;; Insertion
+    (define-key map (kbd "\"") 'shm/double-quote)
+    (define-key map (kbd "(") 'shm/open-paren)
+    (define-key map (kbd "M-(") 'shm/wrap-parens)
+    (define-key map (kbd "[") 'shm/open-bracket)
+    (define-key map (kbd "{") 'shm/open-brace)
+    (define-key map (kbd "-") 'shm/hyphen)
+    (define-key map (kbd "#") 'shm/hash)
+    (define-key map (kbd ",") 'shm/comma)
+    (define-key map (kbd ":") 'shm/:)
+    (define-key map (kbd "SPC") 'shm/space)
+    (define-key map (kbd "C-c C-u") 'shm/insert-undefined)
+    (define-key map (kbd "M-;") 'shm/comment)
+    ;; Navigation
+    (define-key map (kbd "C-M-f") 'shm/forward-node)
+    (define-key map (kbd "C-M-b") 'shm/backward-node)
+    (define-key map (kbd "M-a") 'shm/goto-parent)
+    (define-key map (kbd ")") 'shm/close-paren)
+    (define-key map (kbd "]") 'shm/close-bracket)
+    (define-key map (kbd "}") 'shm/close-brace)
+    (define-key map (kbd "M-}") 'shm/forward-paragraph)
+    (define-key map (kbd "M-{") 'shm/backward-paragraph)
+    (define-key map (kbd "C-M-SPC") 'shm/mark-node)
+    (define-key map (kbd "TAB") 'shm/tab)
+    (define-key map (kbd "<backtab>") 'shm/backtab)
+    ;; Killing / yanking
+    (define-key map (kbd "C-k") 'shm/kill-line)
+    (define-key map (kbd "M-k") 'shm/kill-node)
+    (define-key map (kbd "C-w") 'shm/kill-region)
+    (define-key map (kbd "M-w") 'shm/copy-region)
+    (define-key map (kbd "C-M-k") 'shm/kill-node)
+    (define-key map (kbd "C-y") 'shm/yank)
+    (define-key map (kbd "M-y") 'shm/yank-pop)
+    ;; Deletion
+    (define-key map (kbd "DEL") 'shm/del)
+    (define-key map (kbd "<deletechar>") 'shm/delete)
+    (define-key map (kbd "M-^") 'shm/delete-indentation)
+    (define-key map (kbd "M-DEL") 'shm/backward-kill-word)
+    (define-key map (kbd "C-<backspace>") 'shm/backward-kill-word)
+    ;; Splitting, slurping, barfing, etc.
+    (define-key map (kbd "C-+") 'shm/add-operand)
+    (define-key map (kbd "M-r") 'shm/raise)
+    (define-key map (kbd "C-c C-q") 'shm/qualify-import)
+    map)
+  "Structural editing operations keymap for in the REPL. This
+  differs to `shm-map' by having keybindings more appropriate for
+  a REPL, with inappropriate ones removed.")
+
+(define-minor-mode structured-haskell-repl-mode
+  "Structured editing for Haskell inside a REPL."
+  :lighter shm-lighter
+  :keymap shm-repl-map
+  (cond
+   ((eq major-mode 'haskell-interactive-mode)
+    (if structured-haskell-repl-mode
+        (shm-mode-start)
+      (shm-mode-stop)))
+   (t (structured-haskell-repl-mode -1)
+      (error "Unsupported REPL mode: %S" major-mode))))
+
 (defun shm-mode-start ()
   "Start the minor mode."
   (set (make-local-variable 'shm-decl-asts)
@@ -147,7 +209,8 @@ state that will hopefully be garbage collected."
 
 (defun shm-reparsing-timer ()
   "Re-parse the tree on the idle timer."
-  (when structured-haskell-mode
+  (when (or structured-haskell-mode
+            structured-haskell-repl-mode)
     (shm/reparse)))
 
 (defun shm/tab ()

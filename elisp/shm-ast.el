@@ -110,25 +110,58 @@ and instate this one."
                   (/= end shm-last-parse-end))
           (setq shm-last-parse-start start)
           (setq shm-last-parse-end end)
-          (let ((ast (shm-get-nodes (shm-get-ast "decl"
-                                                 start
-                                                 end)
-                                    start
-                                    end)))
-            (if ast
-                (progn (setq shm-lighter " SHM")
-                       (when pair
-                         (shm-delete-markers pair))
-                       (shm-set-decl-ast start ast)
-                       ;; Delete only quarantine overlays.
-                       (shm-delete-overlays (point-min) (point-max) 'shm-quarantine)
-                       (shm/init)
-                       ast)
-              (progn
-                (when shm-display-quarantine
-                  (shm-quarantine-overlay start end))
-                (setq shm-lighter " SHM!")
-                nil))))))))
+          (let ((parsed-ast (shm-get-ast "decl" start end)))
+            (cl-flet ((bail ()
+                         (when shm-display-quarantine
+                           (shm-quarantine-overlay start end))
+                         (setq shm-lighter " SHM!")
+                         nil))
+              (if parsed-ast
+                  (progn
+                    (when (bound-and-true-p structured-haskell-repl-mode)
+                      (shm-font-lock-region start end))
+                    (let ((ast (shm-get-nodes parsed-ast start end)))
+                      (if ast
+                          (progn (setq shm-lighter " SHM")
+                                 (when pair
+                                   (shm-delete-markers pair))
+                                 (shm-set-decl-ast start ast)
+                                 ;; Delete only quarantine overlays.
+                                 (shm-delete-overlays (point-min) (point-max) 'shm-quarantine)
+                                 (shm/init)
+                                 ast)
+                        (bail))))
+                (bail)))))))))
+
+(defun shm-font-lock-region (start end)
+  "When in a REPL, we don't typically have font locking, so we
+  should manually perform a font-lock whenever we get a valid
+  parse."
+  (let ((point (point))
+        (inhibit-modification-hooks t)
+        (list buffer-undo-list))
+    (let ((fontified (shm-fontify-as-mode (buffer-substring-no-properties start end)
+                                          'haskell-mode))
+          (overlays (mapcar (lambda (o)
+                              (list o
+                                    (overlay-start o)
+                                    (overlay-end o)))
+                            (overlays-in start end))))
+      (delete-region start end)
+      (insert fontified)
+      (goto-char point)
+      ;; Restore overlay positions
+      (loop for o in overlays
+            do (move-overlay (nth 0 o) (nth 1 o) (nth 2 o)))
+      (setq buffer-undo-list list))))
+
+(defun shm-fontify-as-mode (text mode)
+  "Fontify TEXT as MODE, returning the fontified text."
+  (with-temp-buffer
+    (funcall mode)
+    (insert text)
+    (font-lock-fontify-buffer)
+    (buffer-substring (point-min) (point-max))))
 
 (defun shm-get-ast (type start end)
   "Get the AST for the given region at START and END. Parses with TYPE.
@@ -260,6 +293,12 @@ expected to work."
       (or (looking-at "^-}$")
           (looking-at "^{-$")))
     nil)
+   ((bound-and-true-p structured-haskell-repl-mode)
+    (case major-mode
+      (haskell-interactive-mode
+       (when (boundp 'haskell-interactive-mode-prompt-start)
+         (cons haskell-interactive-mode-prompt-start
+               (line-end-position))))))
    ;; Otherwise we just do our line-based hack.
    (t
     (save-excursion
@@ -349,7 +388,7 @@ NODE-PAIR to use the specific node-pair (index + node)."
       (let* ((i (if (= (point) (car (ring-ref stack 0)))
                     1
                   0))
-            (pair (ring-ref stack i)))
+             (pair (ring-ref stack i)))
         (when pair
           (goto-char (car pair))
           (shm-set-node-overlay (cdr pair) nil t)

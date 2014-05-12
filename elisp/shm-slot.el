@@ -70,16 +70,22 @@ do {undefined}
   (let ((point (point))
         (column (current-column)))
     (insert "undefined")
-    (newline)
-    (indent-to column)
-    (let ((next-point (point)))
-      (insert "undefined")
-      (goto-char point)
+    (cond
+     ((bound-and-true-p structured-haskell-repl-mode)
+      (forward-word -1)
       (shm/reparse)
       (save-excursion
-        (shm-evaporate (point) (+ (point) (length "undefined")))
-        (goto-char next-point)
-        (shm-evaporate (point) (+ (point) (length "undefined")))))))
+        (shm-evaporate (point) (+ (point) (length "undefined")))))
+     (t (newline)
+        (indent-to column)
+        (let ((next-point (point)))
+          (insert "undefined")
+          (goto-char point)
+          (shm/reparse)
+          (save-excursion
+            (shm-evaporate (point) (+ (point) (length "undefined")))
+            (goto-char next-point)
+            (shm-evaporate (point) (+ (point) (length "undefined")))))))))
 
 (defun shm-auto-insert-case ()
   "Insert template
@@ -91,7 +97,9 @@ case {undefined} of
                                (search-backward-regexp "[^a-zA-Z0-9_]")
                                (forward-char 1)
                                (point)))
-        (template "case undefined of\n  _ -> undefined"))
+        (template (if (bound-and-true-p structured-haskell-repl-mode)
+                      "case undefined of _ -> undefined"
+                    "case undefined of\n  _ -> undefined")))
     (shm-adjust-dependents (point) (- start (point)))
     (delete-region start (point))
     (shm-adjust-dependents (point) (length (car (last (split-string template "\n")))))
@@ -123,7 +131,9 @@ if inside parentheses."
                                (search-backward-regexp "[^a-zA-Z0-9_]")
                                (forward-char 1)
                                (point)))
-        (template "if undefined\n   then undefined\n   else undefined"))
+        (template (if (bound-and-true-p structured-haskell-repl-mode)
+                      "if undefined then undefined else undefined"
+                    "if undefined\n   then undefined\n   else undefined")))
     (shm-adjust-dependents (point) (- start (point)))
     (delete-region start (point))
     (shm-adjust-dependents (point) (length (car (last (split-string template "\n")))))
@@ -143,12 +153,18 @@ if inside parentheses."
 
 let | in {undefined}"
   (delete-region (- (point) 3) (point))
-  (shm-insert-indented (lambda () (insert "let \nin undefined")))
+  ;; If needs to be nested this way. Don't change it.
+  (if (bound-and-true-p structured-haskell-repl-mode)
+      (shm-insert-indented
+       (lambda () (insert "let  in undefined")))
+    (shm-insert-indented
+     (lambda () (insert "let \nin undefined"))))
   (forward-char 4)
   (save-excursion
     (forward-word)
     (forward-char 1)
-    (shm-evaporate (point) (+ (point) (length "undefined")))))
+    (shm-evaporate (point) (+ (point) (length "undefined"))))
+  (shm/reparse))
 
 (defun shm-auto-insert-module ()
   "Insert template
