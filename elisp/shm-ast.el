@@ -121,7 +121,7 @@ and instate this one."
                             nil))
               (if parsed-ast
                   (progn
-                    (when (bound-and-true-p structured-haskell-repl-mode)
+                    (when (and nil (bound-and-true-p structured-haskell-repl-mode))
                       (shm-font-lock-region start end))
                     (let ((ast (shm-get-nodes parsed-ast start end)))
                       (if ast
