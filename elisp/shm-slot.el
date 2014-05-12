@@ -167,7 +167,11 @@ let | in {undefined}"
               (progn (shm-insert-indented
                       (lambda () (insert "let _ = undefined")))
                      (search-forward "_")
-                     (shm-evaporate (point) (1+ (point))))
+                     (shm-evaporate (1- (point)) (point))
+                     (forward-word 1)
+                     (forward-word -1)
+                     (shm-evaporate (point) (+ (point) (length "undefined")))
+                     (search-backward "_"))
             (progn (shm-insert-indented
                     (lambda () (insert "let  in undefined")))
                    (evaporate-in))))

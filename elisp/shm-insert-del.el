@@ -78,9 +78,10 @@
        ((looking-back "[^a-zA-Z0-9_]let")
         (cond
          ((let ((current (shm-current-node)))
-            (not (or (eq 'Do (shm-node-cons current))
-                     (eq 'BDecls (shm-node-cons current))
-                     (string= "Stmt" (shm-node-type-name current)))))
+            (or (not (or (eq 'Do (shm-node-cons current))
+                         (eq 'BDecls (shm-node-cons current))
+                         (string= "Stmt" (shm-node-type-name current))))
+                (bound-and-true-p structured-haskell-repl-mode)))
           (shm-auto-insert-let))
          (t (shm-auto-insert-stmt 'let))))
        ((and (looking-back "module")
