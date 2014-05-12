@@ -143,21 +143,23 @@ and instate this one."
   (unless (= (1+ start) end)
     (let ((point (point))
           (inhibit-modification-hooks t)
-          (list buffer-undo-list))
-      (let ((fontified (shm-fontify-as-mode (buffer-substring-no-properties start end)
-                                            'haskell-mode))
-            (overlays (mapcar (lambda (o)
-                                (list o
-                                      (overlay-start o)
-                                      (overlay-end o)))
-                              (overlays-in start end))))
-        (delete-region start end)
-        (insert fontified)
-        (goto-char point)
-        ;; Restore overlay positions
-        (loop for o in overlays
-              do (move-overlay (nth 0 o) (nth 1 o) (nth 2 o)))
-        (setq buffer-undo-list list)))))
+          (list buffer-undo-list)
+          (string (buffer-substring-no-properties start end)))
+      (unless (string-match "^:" string)
+       (let ((fontified (shm-fontify-as-mode string
+                                             'haskell-mode))
+             (overlays (mapcar (lambda (o)
+                                 (list o
+                                       (overlay-start o)
+                                       (overlay-end o)))
+                               (overlays-in start end))))
+         (delete-region start end)
+         (insert fontified)
+         (goto-char point)
+         ;; Restore overlay positions
+         (loop for o in overlays
+               do (move-overlay (nth 0 o) (nth 1 o) (nth 2 o)))
+         (setq buffer-undo-list list))))))
 
 (defun shm-fontify-as-mode (text mode)
   "Fontify TEXT as MODE, returning the fontified text."
@@ -301,8 +303,17 @@ expected to work."
     (case major-mode
       (haskell-interactive-mode
        (when (boundp 'haskell-interactive-mode-prompt-start)
-         (cons haskell-interactive-mode-prompt-start
-               (line-end-position))))))
+         (let ((whole-line (buffer-substring-no-properties
+                            haskell-interactive-mode-prompt-start
+                            (line-end-position))))
+           (if (string-match "^:" whole-line)
+               (cons (save-excursion
+                       (goto-char haskell-interactive-mode-prompt-start)
+                       (search-forward-regexp "[ ]+" (line-end-position) t 1)
+                       (point))
+                     (line-end-position))
+             (cons haskell-interactive-mode-prompt-start
+                   (line-end-position))))))))
    ;; Otherwise we just do our line-based hack.
    (t
     (save-excursion
