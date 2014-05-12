@@ -110,12 +110,15 @@ and instate this one."
                   (/= end shm-last-parse-end))
           (setq shm-last-parse-start start)
           (setq shm-last-parse-end end)
-          (let ((parsed-ast (shm-get-ast "decl" start end)))
+          (let ((parsed-ast (shm-get-ast (if (bound-and-true-p structured-haskell-repl-mode)
+                                             "stmt"
+                                           "decl")
+                                         start end)))
             (cl-flet ((bail ()
-                         (when shm-display-quarantine
-                           (shm-quarantine-overlay start end))
-                         (setq shm-lighter " SHM!")
-                         nil))
+                            (when shm-display-quarantine
+                              (shm-quarantine-overlay start end))
+                            (setq shm-lighter " SHM!")
+                            nil))
               (if parsed-ast
                   (progn
                     (when (bound-and-true-p structured-haskell-repl-mode)
@@ -159,9 +162,9 @@ and instate this one."
   "Fontify TEXT as MODE, returning the fontified text."
   (with-temp-buffer
     (funcall mode)
-    (insert text)
+    (insert "x=" text)
     (font-lock-fontify-buffer)
-    (buffer-substring (point-min) (point-max))))
+    (buffer-substring (+ (point-min) (length "x=")) (point-max))))
 
 (defun shm-get-ast (type start end)
   "Get the AST for the given region at START and END. Parses with TYPE.
@@ -174,7 +177,7 @@ it, that should bring down the roundtrip time significantly, I'd
 imagine."
   (let ((message-log-max nil)
         (buffer (current-buffer)))
-    (when (> end (1+ start))
+    (when (> end start)
       (with-temp-buffer
         (let ((temp-buffer (current-buffer)))
           (with-current-buffer buffer
