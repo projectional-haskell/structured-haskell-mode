@@ -154,16 +154,26 @@ if inside parentheses."
 let | in {undefined}"
   (delete-region (- (point) 3) (point))
   ;; If needs to be nested this way. Don't change it.
-  (if (bound-and-true-p structured-haskell-repl-mode)
-      (shm-insert-indented
-       (lambda () (insert "let  in undefined")))
-    (shm-insert-indented
-     (lambda () (insert "let \nin undefined"))))
-  (forward-char 4)
-  (save-excursion
-    (forward-word)
-    (forward-char 1)
-    (shm-evaporate (point) (+ (point) (length "undefined"))))
+  (cl-flet
+      ((evaporate-in ()
+                     (forward-char 4)
+                     (save-excursion
+                       (forward-word)
+                       (forward-char 1)
+                       (shm-evaporate (point) (+ (point) (length "undefined"))))))
+    (if (bound-and-true-p structured-haskell-repl-mode)
+        (let ((points (shm-decl-points)))
+          (if (= (point) (car points))
+              (progn (shm-insert-indented
+                      (lambda () (insert "let _ = undefined")))
+                     (search-forward "_")
+                     (shm-evaporate (point) (1+ (point))))
+            (progn (shm-insert-indented
+                    (lambda () (insert "let  in undefined")))
+                   (evaporate-in))))
+      (progn (shm-insert-indented
+              (lambda () (insert "let \nin undefined")))
+             (evaporate-in))))
   (shm/reparse))
 
 (defun shm-auto-insert-module ()

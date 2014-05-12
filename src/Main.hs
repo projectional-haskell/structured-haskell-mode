@@ -48,6 +48,8 @@ outputWith action typ code =
   case typ of
     "decl" ->
         output action parseTopLevel code
+    "stmt" ->
+        output action parseSomeStmt code
     _ -> error "Unknown parser type."
 
 -- | Output AST info for the given Haskell code.
@@ -78,10 +80,14 @@ parseTopLevel mode code =
   D . fix <$> parseModuleWithMode mode code <|>
   D       <$> parseModulePragma mode code
 
-  where
-    fix :: AppFixity ast => ast SrcSpanInfo -> ast SrcSpanInfo
-    fix ast = fromMaybe ast (applyFixities baseFixities ast)
+-- | Parse a do-notation statement.
+parseSomeStmt :: ParseMode -> String -> ParseResult D
+parseSomeStmt mode code =
+  D . fix <$> parseStmtWithMode mode code <|>
+  D . fix <$> parseExpWithMode mode code <|>
+  D       <$> parseImport mode code
 
+fix ast = fromMaybe ast (applyFixities baseFixities ast)
 
 -- | Parse mode, includes all extensions, doesn't assume any fixities.
 parseMode :: ParseMode
