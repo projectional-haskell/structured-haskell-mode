@@ -179,6 +179,15 @@ really does not matter. We're parsing declarations and individual
 nodes. Plus the GHC tree is more annoying to traverse generically due
 to its partiality.
 
+### How do I disable some keybindings?
+
+You can disable any keybinding in the structured-haskell-mode map by
+defining the key as `nil`:
+
+``` lisp
+(define-key shm-map (kbd "M-{") nil)
+```
+
 ## Reporting a bug
 
 ***Note:*** If you get a parse error (e.g. via `M-x shm/test-exe`) for
