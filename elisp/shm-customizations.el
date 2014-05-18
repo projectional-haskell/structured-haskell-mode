@@ -155,6 +155,14 @@ when option is nil.
   :group 'shm
   :type 'boolean)
 
+(defcustom shm-pragmas
+  '("LANGUAGE" "OPTIONS_GHC" "INCLUDE" "DEPRECATED" "WARNING"
+    "INLINE" "NOINLINE" "INLINABLE" "CONLIKE" "LINE" "RULES"
+    "SPECIALIZE" "UNPACK" "SOURCE")
+  "Pragmas supported."
+  :group 'shm
+  :type 'list)
+
 
 ;; Provide
 

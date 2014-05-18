@@ -215,7 +215,17 @@ the current node to the parent."
   (if (and (looking-back "{-")
            (looking-at "-}"))
       (progn (insert "#  #")
-             (forward-char -2))
+             (forward-char -2)
+             (let ((pragma (ido-completing-read "Pragma: "
+                                                shm-pragmas)))
+               (insert pragma
+                       " ")
+               (when (string= pragma "LANGUAGE")
+                 (insert (ido-completing-read
+                          "Language: "
+                          (remove-if (lambda (s) (string= s ""))
+                                     (split-string (shell-command-to-string "ghc --supported-languages")
+                                                   "\n")))))))
     (self-insert-command n)))
 
 (defun shm/open-paren ()
