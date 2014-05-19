@@ -146,20 +146,20 @@ and instate this one."
           (list buffer-undo-list)
           (string (buffer-substring-no-properties start end)))
       (unless (string-match "^:" string)
-       (let ((fontified (shm-fontify-as-mode string
-                                             'haskell-mode))
-             (overlays (mapcar (lambda (o)
-                                 (list o
-                                       (overlay-start o)
-                                       (overlay-end o)))
-                               (overlays-in start end))))
-         (delete-region start end)
-         (insert fontified)
-         (goto-char point)
-         ;; Restore overlay positions
-         (loop for o in overlays
-               do (move-overlay (nth 0 o) (nth 1 o) (nth 2 o)))
-         (setq buffer-undo-list list))))))
+        (let ((fontified (shm-fontify-as-mode string
+                                              'haskell-mode))
+              (overlays (mapcar (lambda (o)
+                                  (list o
+                                        (overlay-start o)
+                                        (overlay-end o)))
+                                (overlays-in start end))))
+          (delete-region start end)
+          (insert fontified)
+          (goto-char point)
+          ;; Restore overlay positions
+          (loop for o in overlays
+                do (move-overlay (nth 0 o) (nth 1 o) (nth 2 o)))
+          (setq buffer-undo-list list))))))
 
 (defun shm-fontify-as-mode (text mode)
   "Fontify TEXT as MODE, returning the fontified text."
@@ -302,16 +302,24 @@ expected to work."
    ((bound-and-true-p structured-haskell-repl-mode)
     (case major-mode
       (haskell-interactive-mode
+       ;; If the prompt start is available.
        (when (boundp 'haskell-interactive-mode-prompt-start)
-         (when (and (>= (point) haskell-interactive-mode-prompt-start)
-                    (not (= haskell-interactive-mode-prompt-start
-                            (line-end-position))))
-           (let ((whole-line (buffer-substring-no-properties
-                              haskell-interactive-mode-prompt-start
+         ;; Unless we're running code.
+         (unless (> (point)
+                    (save-excursion (goto-char haskell-interactive-mode-prompt-start)
+                                    (line-end-position)))
+           ;; When we're within the prompt and not on some output lines or whatever.
+           (when (and (>= (point) haskell-interactive-mode-prompt-start)
+                      (not (= haskell-interactive-mode-prompt-start
                               (line-end-position))))
-             (unless (string-match "^:" whole-line)
-               (cons haskell-interactive-mode-prompt-start
-                     (line-end-position)))))))))
+             (let ((whole-line (buffer-substring-no-properties
+                                haskell-interactive-mode-prompt-start
+                                (line-end-position))))
+               ;; Don't activate if we're doing a GHCi command.
+               (unless (string-match "^:" whole-line)
+                 (cons haskell-interactive-mode-prompt-start
+                       (line-end-position)))))))
+       )))
    ;; Otherwise we just do our line-based hack.
    (t
     (save-excursion
