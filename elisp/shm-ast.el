@@ -303,7 +303,9 @@ expected to work."
     (case major-mode
       (haskell-interactive-mode
        (when (boundp 'haskell-interactive-mode-prompt-start)
-         (when (>= (point) haskell-interactive-mode-prompt-start)
+         (when (and (>= (point) haskell-interactive-mode-prompt-start)
+                    (not (= haskell-interactive-mode-prompt-start
+                            (line-end-position))))
            (let ((whole-line (buffer-substring-no-properties
                               haskell-interactive-mode-prompt-start
                               (line-end-position))))
