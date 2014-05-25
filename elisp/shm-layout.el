@@ -45,18 +45,19 @@ zoo| = do
 
 And use our normal adjustment test there. After all, only thing
 after 'zoo' are *really* dependent."
-  (let ((current (shm-current-node)))
-    (case direction
-      ('forward
-       (when (and current
-                  (< (shm-node-end current) (line-end-position))
-                  (not (and (looking-at " ")
-                            (looking-back " "))))
-         (goto-char (shm-node-end current))))
-      ('backward
-       (when (and current
-                  (> (shm-node-start current) (line-beginning-position)))
-         (goto-char (shm-node-start current)))))))
+  (unless (eolp)
+    (let ((current (shm-current-node)))
+      (case direction
+        ('forward
+         (when (and current
+                    (< (shm-node-end current) (line-end-position))
+                    (not (and (looking-at " ")
+                              (looking-back " "))))
+           (goto-char (shm-node-end current))))
+        ('backward
+         (when (and current
+                    (> (shm-node-start current) (line-beginning-position)))
+           (goto-char (shm-node-start current))))))))
 
 (defun shm-adjust-dependents (end-point n)
   "Adjust dependent lines by N characters that depend on this
