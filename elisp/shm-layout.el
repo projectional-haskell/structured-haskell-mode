@@ -79,8 +79,10 @@ line after END-POINT."
                   (goto-char (line-end-position))
                   (let ((current-pair (shm-node-backwards)))
                     (when current-pair
-                      (string= (shm-node-type-name (cdr current-pair))
-                               "Rhs"))))
+                      (or (string= (shm-node-type-name (cdr current-pair))
+                                   "Rhs")
+                          (eq (shm-node-cons (cdr current-pair))
+                              'Lambda)))))
           (shm-move-dependents n
                                end-point))))))
 
