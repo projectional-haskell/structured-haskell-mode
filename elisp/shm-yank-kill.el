@@ -119,7 +119,6 @@ will insert them back verbatim."
   (let ((to-be-deleted (save-excursion (backward-word)
                                        (point))))
     (save-excursion
-      (shm-appropriate-adjustment-point 'backward)
       (shm-adjust-dependents (point) (* -1 (- (point) to-be-deleted))))
     (backward-kill-word 1)))
 
