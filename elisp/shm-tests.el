@@ -524,9 +524,9 @@ parseModulePragma mode code =
          :start-buffer-content "{}
 "
          :start-cursor 2
-         :finish-cursor 5
+         :finish-cursor 23
          :current-node-overlay 'nil
-         :end-buffer-content "{-#  #-}
+         :end-buffer-content "{-# LANGUAGE Haskell98 #-}
 "
          :kbd "-#")
    (list :name "where-clause"
