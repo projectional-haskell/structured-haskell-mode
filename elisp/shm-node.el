@@ -100,4 +100,10 @@ deletion. The markers will be garbage collected eventually."
   (buffer-substring-no-properties (shm-node-start n)
                                   (shm-node-end n)))
 
+(defun shm-node-app-p (node)
+  "Is the given node an application of some kind?"
+  (or (eq (shm-node-cons node) 'App)
+      (eq (shm-node-cons node) 'InfixApp)
+      (eq (shm-node-cons node) 'TyApp)))
+
 (provide 'shm-node)

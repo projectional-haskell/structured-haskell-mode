@@ -325,7 +325,7 @@ the line."
   (let* ((vector (shm-decl-ast))
          (current-pair (shm-current-node-pair))
          (current (cdr current-pair))
-         (parent-pair (shm-node-ancestor-at-point current-pair (point)))
+         (parent-pair (shm-node-ancestor-for-kill current-pair (point)))
          (parent (cdr parent-pair)))
     (loop for i
           from 0
@@ -352,6 +352,16 @@ the line."
                                   line-end-position)
                            (kill-region (point)
                                         line-end-position)))))))))
+
+(defun shm-node-ancestor-for-kill (current-pair point)
+  "Get the ancestor for greedy killing."
+  (let* ((current (cdr current-pair))
+         (parent-pair (shm-node-parent current-pair))
+         (parent (cdr parent-pair)))
+    (if (and (shm-node-app-p parent)
+             (< (shm-node-end current) (line-end-position)))
+        parent-pair
+      (shm-node-ancestor-at-point current-pair point))))
 
 (defun shm-kill-node (&optional save-it node start do-not-delete)
   "Kill the current node.

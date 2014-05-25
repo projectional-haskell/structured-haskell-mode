@@ -512,9 +512,7 @@ child, and in fact is common."
                   (string= (shm-node-type-name actual-parent)
                            (shm-node-type-name maybe-parent-parent))
                   (and shm-skip-applications
-                       (or (eq (shm-node-cons actual-parent) 'App)
-                           (eq (shm-node-cons actual-parent) 'InfixApp)
-                           (eq (shm-node-cons actual-parent) 'TyApp)))
+                       (shm-node-app-p actual-parent))
                   (eq (shm-node-cons actual-parent)
                       (shm-node-cons maybe-parent-parent)))
              (shm-node-parent actual-parent-pair))
