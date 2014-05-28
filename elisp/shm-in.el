@@ -24,19 +24,18 @@
                   (point))
                (/= (line-beginning-position) (point)))
       (forward-char -1))
-    (or (and (eq 'font-lock-comment-delimiter-face
+    (and (or (eq 'font-lock-comment-delimiter-face
                  (get-text-property (point) 'face))
-             ;; This is taking liberties, but I'm not too sad about it.
-             (not (save-excursion (goto-char (line-beginning-position))
-                                  (looking-at "{-"))))
-        (eq 'font-lock-doc-face
-            (get-text-property (point) 'face))
-        (and (eq 'font-lock-comment-face
+             (eq 'font-lock-doc-face
                  (get-text-property (point) 'face))
-             (not (save-excursion (goto-char (line-beginning-position))
-                                  (looking-at "{-"))))
-        (save-excursion (goto-char (line-beginning-position))
-                        (looking-at "^\-\- ")))))
+             (eq 'font-lock-comment-face
+                 (get-text-property (point) 'face))
+             (save-excursion (goto-char (line-beginning-position))
+                             (looking-at "^\-\- ")))
+         ;; Pragmas {-# SPECIALIZE .. #-} etc are not to be treated as
+         ;; comments, even though they are highlighted as such
+         (not (save-excursion (goto-char (line-beginning-position))
+                              (looking-at "{-# "))))))
 
 (defun shm-in-string ()
   "Are we in a string?"
