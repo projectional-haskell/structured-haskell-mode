@@ -456,6 +456,8 @@ here."
       (cond
        ((shm-find-overlay 'shm-quarantine)
         (if (not (or (looking-back "[ ,[({\\]")
+                     (and (looking-back "\\$")
+                          (string= "(" open))
                      (bolp)))
             (progn (shm-insert-string " ") 1)
           0)
