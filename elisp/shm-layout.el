@@ -179,16 +179,7 @@ operation."
     (let ((string (with-temp-buffer
                     (funcall do-insert)
                     (buffer-string))))
-      (insert
-       ;; Pasting inside a string should escape double quotes and
-       ;; convert newlines to multiline strings.
-       (if in-string
-           (replace-regexp-in-string
-            "\"" "\\\\\""
-            (replace-regexp-in-string
-             "\n" "\\\\n\\\\\n\\\\"
-             string))
-         string)))
+      (insert string))
     (when (and (= line (line-beginning-position))
                (not no-adjust-dependents))
       (shm-adjust-dependents start (- (current-column)
