@@ -21,19 +21,41 @@
 
 ;;; Code:
 
+(defvar shm-tests-that-dont-run-in-batch-mode
+  (list
+   (list :name "yanking"
+         :start-buffer-content "main = (case undefined of
+          _ -> undefined
+       ,putStrLn (if undefined
+                     then undefined
+                     else undefined)
+       ,23 * 45)
+"
+         :start-cursor 9
+         :finish-cursor 9
+         :current-node-overlay '(9 11)
+         :end-buffer-content "main = (23 * 45
+       ,putStrLn (if undefined
+                     then undefined
+                     else undefined)
+       ,case undefined of
+          _ -> undefined)
+"
+         :kbd "\371\371\371\371\371\371")))
+
 (defvar shm-tests
   (list
    (list :name "don't re-indent dependent rhs"
-      :start-buffer-content "foo bar baz =
+         :start-buffer-content "foo bar baz =
      bar + baz
 "
-      :start-cursor 4
-      :finish-cursor 9
-      :current-node-overlay '(1 9)
-      :end-buffer-content "foohello bar baz =
+         :start-cursor 4
+         :finish-cursor 9
+         :current-node-overlay '(1 9)
+         :end-buffer-content "foohello bar baz =
      bar + baz
 "
-      :kbd "hello")
+         :kbd "hello")
    (list :name "add-initial-type-constraint"
          :start-buffer-content "fn :: a -> b
 "

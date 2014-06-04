@@ -20,11 +20,6 @@
 (require 'shm-node)
 (require 'shm-ast)
 
-(defvar shm-last-yanked (list 0 0)
-  "When yanking, some text will be inserted, when popping a
-  yank (i.e. with M-y), you need to be able to erase the previous
-  yank. This is simply a region.")
-
 (defun shm-appropriate-adjustment-point (direction)
   "Go to the appropriate adjustment point.
 
@@ -174,22 +169,20 @@ separate function rather than hard-coded into this one specific
 operation."
   (let ((column (current-column))
         (line (line-beginning-position))
-        (start (point))
-        (in-string (shm-in-string)))
-    (let ((string (with-temp-buffer
-                    (funcall do-insert)
-                    (buffer-string))))
-      (insert string))
+        (start (point)))
+    (funcall do-insert)
     (when (and (= line (line-beginning-position))
                (not no-adjust-dependents))
       (shm-adjust-dependents start (- (current-column)
                                       column)))
+    (when (= (point) start)
+      (goto-char (region-end)))
     (let ((end (point)))
       (cond
-       ((progn (goto-char start)
-               (looking-at " "))
+       ((save-excursion (goto-char start)
+                        (looking-at " "))
         (let ((current-pair (shm-current-node-pair)))
-          (when (and (= (point-max) (point)) current-pair)
+          (when (and current-pair (= (point-max) (point)) current-pair)
             (let ((node (cdr (shm-find-furthest-parent-on-line current-pair))))
               (goto-char end)
               (indent-rigidly start
@@ -201,11 +194,8 @@ operation."
                                (goto-char start)
                                (search-forward-regexp "[ ]+" (line-end-position) t 1)))))))
        (t (goto-char end)
-          (indent-rigidly start end
-                          (if in-string
-                              (1- column)
-                            column))))
-      (setq shm-last-yanked (list start (point)))
+          (indent-rigidly start end column)))
+      (push-mark)
       (goto-char start))))
 
 (defun shm-find-furthest-parent-on-line (current)

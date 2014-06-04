@@ -110,7 +110,6 @@ will insert them back verbatim."
    yank-pop
    (if (not (eq last-command 'yank))
        (error "Previous command was not a yank (error from shm/yank-pop)"))
-   (apply #'delete-region shm-last-yanked)
    (shm-insert-indented #'yank-pop)))
 
 (defun shm/backward-kill-word ()
