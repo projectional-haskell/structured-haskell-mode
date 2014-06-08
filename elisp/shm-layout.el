@@ -170,11 +170,15 @@ operation."
   (let ((column (current-column))
         (line (line-beginning-position))
         (start (point)))
-    (insert (replace-regexp-in-string
-             "\n" "\\\\n\\\\\n\\\\"
-             (with-temp-buffer
-               (funcall do-insert)
-               (buffer-string))))
+    (let ((string
+           (with-temp-buffer
+             (funcall do-insert)
+             (buffer-string))))
+      (insert (if (shm-in-string)
+                  (replace-regexp-in-string
+                   "\n" "\\\\n\\\\\n\\\\"
+                   string)
+                string)))
     (when (and (= line (line-beginning-position))
                (not no-adjust-dependents))
       (shm-adjust-dependents start (- (current-column)
