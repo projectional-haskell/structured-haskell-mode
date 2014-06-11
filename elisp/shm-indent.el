@@ -226,7 +226,6 @@ DRAGGING indicates whether this indent will drag a node downwards."
                                     (+ 4 (current-column)))))
         (shm-newline)
         (indent-to column)
-        (message "newline-string: %s" newline-string)
         (when (and dragging
                    (or (string-match "^=>" newline-string)
                        (string-match "^->" newline-string)))
