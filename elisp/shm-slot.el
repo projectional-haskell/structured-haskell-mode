@@ -163,18 +163,20 @@ let | in {undefined}"
                        (shm-evaporate (point) (+ (point) (length "undefined"))))))
     (if (bound-and-true-p structured-haskell-repl-mode)
         (let ((points (shm-decl-points)))
-          (if (= (point) (car points))
+          (if points
+              (if (= (point) (car points))
+                (progn (shm-insert-indented
+                        (lambda () (insert "let _ = undefined")))
+                       (search-forward "_")
+                       (shm-evaporate (1- (point)) (point))
+                       (forward-word 1)
+                       (forward-word -1)
+                       (shm-evaporate (point) (+ (point) (length "undefined")))
+                       (search-backward "_"))
               (progn (shm-insert-indented
-                      (lambda () (insert "let _ = undefined")))
-                     (search-forward "_")
-                     (shm-evaporate (1- (point)) (point))
-                     (forward-word 1)
-                     (forward-word -1)
-                     (shm-evaporate (point) (+ (point) (length "undefined")))
-                     (search-backward "_"))
-            (progn (shm-insert-indented
-                    (lambda () (insert "let  in undefined")))
-                   (evaporate-in))))
+                      (lambda () (insert "let  in undefined")))
+                     (evaporate-in)))
+            (insert "let ")))
       (progn (shm-insert-indented
               (lambda () (insert "let \nin undefined")))
              (evaporate-in))))
