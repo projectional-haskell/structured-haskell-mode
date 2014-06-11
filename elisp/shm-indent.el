@@ -443,26 +443,26 @@ data Person = Person
 
 "
   (when (string= "FieldDecl" (shm-node-type-name current))
-    (let ((cur-substr
-           (save-excursion
-             (goto-char (shm-node-start current))
-             (buffer-substring-no-properties
-              (point)
-              (or (and (let ((case-fold-search nil))
-                         (search-forward-regexp "[A-Z]"
-                                                (shm-node-end current)
-                                                t
-                                                1))
-                       (1- (point)))
-                  (point)))))
-          (type-name
-           (save-excursion
-             (goto-char (shm-node-start parent))
-             (buffer-substring-no-properties (point)
-                                             (progn (forward-word 1)
-                                                    (point))))))
-      (when (string= cur-substr (downcase type-name))
-        (insert cur-substr)))))
+    (let* ((cur-substr
+            (save-excursion
+              (goto-char (shm-node-start current))
+              (buffer-substring-no-properties (point)
+                                              (progn (forward-word 1)
+                                                     (point)))))
+           (type-name
+            (save-excursion
+              (goto-char (shm-node-start parent))
+              (buffer-substring-no-properties (point)
+                                              (progn (forward-word 1)
+                                                     (point)))))
+           (prefix
+            (if (string-match "\\([A-Z]\\)\\(.*\\)"
+                              type-name)
+                (concat (downcase (match-string 1 type-name))
+                        (match-string 2 type-name))
+              type-name)))
+      (when (string-prefix-p prefix cur-substr)
+        (insert prefix)))))
 
 (defun shm-newline ()
   "Normal `newline' does funny business. What we want is to
