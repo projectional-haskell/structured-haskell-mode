@@ -419,14 +419,16 @@ one active."
 (defun shm-wrap-delimiters (open close)
   "Wrap the current region with the given delimiters. Called when
 the region is active."
-  (save-excursion
-    (let ((beg (region-beginning))
-          (end (region-end)))
+  (let ((beg (region-beginning))
+        (end (region-end)))
+    (save-excursion
       (goto-char beg)
       (save-excursion
         (goto-char end)
         (shm-insert-string close))
-      (shm-insert-string open))))
+      (shm-insert-string open))
+    (when (= (point) beg)
+      (forward-char 1))))
 
 (defun shm-delimit (open close)
   "Insert the given delimiters.
