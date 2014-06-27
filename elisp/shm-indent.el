@@ -143,6 +143,8 @@ hai = do foo bar
   with it."
   (interactive)
   (cond
+   ((not (shm-current-node))
+    (shm/simple-indent))
    ((and (shm-in-string)
          (not (= (shm-node-start (shm-current-node))
                  (point))))
