@@ -71,7 +71,9 @@
                  (when current
                    (or (eq 'Do (shm-node-cons current))
                        (string= "Stmt" (shm-node-type-name current))))))
-          (shm-auto-insert-stmt 'qualifier))
+          (if (bound-and-true-p structured-haskell-repl-mode)
+              (insert " ")
+            (shm-auto-insert-stmt 'qualifier)))
          ((looking-back "[^a-zA-Z0-9_]case")
           (shm-auto-insert-case))
          ((looking-back "[^a-zA-Z0-9_]if")
