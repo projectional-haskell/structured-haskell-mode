@@ -122,9 +122,9 @@ This is more convenient than typing out the same operator."
        ((shm-in-comment)
         (save-excursion
           (unless (looking-at "{-")
-            (search-backward-regexp "{" nil nil 1))
+            (search-backward-regexp "{-" nil nil 1))
           (delete-region (point) (+ 2 (point)))
-          (search-forward-regexp "}" nil nil 1)
+          (search-forward-regexp "-}" nil nil 1)
           (delete-region (- (point) 2) (point))))
        (current
         (save-excursion
