@@ -471,4 +471,14 @@ data Person = Person
 literally insert a newline and no more."
   (insert "\n"))
 
+(defun shm/split-line ()
+  "Split line."
+  (interactive)
+  (if (shm-literal-insertion)
+      (call-interactively 'split-line)
+    (save-excursion
+      (let ((column (current-column)))
+        (insert "\n")
+        (indent-to column)))))
+
 (provide 'shm-indent)

@@ -56,6 +56,7 @@
     (define-key map (kbd "C-c C-u") 'shm/insert-undefined)
     (define-key map (kbd "M-;") 'shm/comment)
     (define-key map (kbd "C-c C-e") 'shm/export)
+    (define-key map (kbd "C-M-o") 'shm/split-line)
     ;; Indentation
     (define-key map (kbd "C-j") 'shm/newline-indent)
     (define-key map (kbd "M-)") 'paredit-close-round-and-newline)
