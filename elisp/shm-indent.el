@@ -245,19 +245,7 @@ DRAGGING indicates whether this indent will drag a node downwards."
            (or (eq 'List (shm-node-cons parent))
                (eq 'Tuple (shm-node-cons parent))
                (eq 'QualStmt (shm-node-cons parent))))
-      (let* ((first-item-on-line (save-excursion
-                                   (goto-char (shm-node-start current))
-                                   (search-backward-regexp "[[,][ ]*")
-                                   (= (current-column)
-                                      (shm-node-start-column parent)))))
-        (shm-newline)
-        (indent-to (shm-node-start-column parent))
-        (insert ",")
-        (when first-item-on-line
-          (insert (make-string (- (shm-node-start-column current)
-                                  (current-column))
-                               ? )))
-        (shm-set-node-overlay parent-pair)))
+      (shm-newline-indent-listish current parent parent-pair))
      ;; Lambdas indents k spaces inwards
      ((eq 'Lambda (shm-node-cons current))
       (shm-newline)
@@ -387,54 +375,78 @@ DRAGGING indicates whether this indent will drag a node downwards."
       (let ((alt (cdr (shm-node-parent parent-pair))))
         (indent-to (+ (shm-node-start-column alt)
                       (shm-indent-spaces)))))
-     ;; Copy infix operators similar to making new list/tuple
-     ;; separators
-     ((and parent
-           (eq 'InfixApp (shm-node-cons parent)))
-      (let* ((operand-pair (shm-node-previous current-pair))
-             (operand (cdr operand-pair))
-             (string (buffer-substring-no-properties (shm-node-start operand)
-                                                     (shm-node-end operand))))
-        (cond
-         (dragging
-          (shm-newline)
-          (indent-to (shm-node-start-column parent)))
-         ((save-excursion (goto-char (shm-node-end operand))
-                          (= (point) (line-end-position)))
-          (insert " " string)
-          (shm-newline)
-          (indent-to (shm-node-start-column current)))
-         (t
-          (shm-newline)
-          (indent-to (shm-node-start-column operand))
-          (insert string " ")))))
      ;; Infix operators
      ((and parent
            (eq 'InfixApp (shm-node-cons parent)))
       (shm-newline)
       (indent-to (+ (shm-node-start-column parent))))
-     ;; ((eq 'Alt (shm-node-cons current))
-     ;;  (shm-newline)
-     ;;  (indent-to (shm-node-start-column current))
-     ;;  (when shm-auto-insert-skeletons
-     ;;    (save-excursion (insert "_ -> undefined"))
-     ;;    (shm-evaporate (point) (+ (point) 1))
-     ;;    (shm-evaporate (+ (point) (length "_ -> "))
-     ;;                   (+ (point) (length "_ -> undefined")))))
-     ;; Commenting out this behaviour for now
-     ;; ((string= "Match" (shm-node-type-name current))
-     ;;  (let ((name (cdr (shm-node-child-pair current-pair))))
-     ;;    (shm-newline)
-     ;;    (indent-to (shm-node-start-column current))
-     ;;    (insert (buffer-substring-no-properties (shm-node-start name)
-     ;;                                            (shm-node-end name))
-     ;;            " ")))
+     ((and parent
+           (eq 'Paren (shm-node-cons parent)))
+      (shm-newline-indent-listish current parent parent-pair))
      ;; Default indentation just copies the current node's indentation
      ;; level. Generally works reliably, but has less than favourable
      ;; indentation sometimes. It just serves as a catch-all.
      (t
       (shm-newline)
       (indent-to (shm-node-start-column current))))))
+
+(defun shm-newline-indent-listish (current parent parent-pair)
+  "Indent and insert a comma for a list-ish syntactical node."
+  (let* ((first-item-on-line (save-excursion
+                               (goto-char (shm-node-start current))
+                               (search-backward-regexp "[[,][ ]*")
+                               (= (current-column)
+                                  (shm-node-start-column parent)))))
+    (shm-newline)
+    (indent-to (shm-node-start-column parent))
+    (insert ",")
+    (when first-item-on-line
+      (insert (make-string (- (shm-node-start-column current)
+                              (current-column))
+                           ? )))
+    (shm-set-node-overlay parent-pair)))
+
+;; Copy infix operators similar to making new list/tuple
+;; separators
+;; ((and parent
+;;       (eq 'InfixApp (shm-node-cons parent)))
+;;  (let* ((operand-pair (shm-node-previous current-pair))
+;;         (operand (cdr operand-pair))
+;;         (string (buffer-substring-no-properties (shm-node-start operand)
+;;                                                 (shm-node-end operand))))
+;;    (cond
+;;     (dragging
+;;      (shm-newline)
+;;      (indent-to (shm-node-start-column parent)))
+;;     ((save-excursion (goto-char (shm-node-end operand))
+;;                      (= (point) (line-end-position)))
+;;      (insert " " string)
+;;      (shm-newline)
+;;      (indent-to (shm-node-start-column current)))
+;;     (t
+;;      (shm-newline)
+;;      (indent-to (shm-node-start-column operand))
+;;      (insert string " ")))))
+
+;; A case for shm-newline-indent which will copy a case-alt. Not
+;; determined how to best include this feature yet.
+;;
+;; ((eq 'Alt (shm-node-cons current))
+;;  (shm-newline)
+;;  (indent-to (shm-node-start-column current))
+;;  (when shm-auto-insert-skeletons
+;;    (save-excursion (insert "_ -> undefined"))
+;;    (shm-evaporate (point) (+ (point) 1))
+;;    (shm-evaporate (+ (point) (length "_ -> "))
+;;                   (+ (point) (length "_ -> undefined")))))
+;; Commenting out this behaviour for now
+;; ((string= "Match" (shm-node-type-name current))
+;;  (let ((name (cdr (shm-node-child-pair current-pair))))
+;;    (shm-newline)
+;;    (indent-to (shm-node-start-column current))
+;;    (insert (buffer-substring-no-properties (shm-node-start name)
+;;                                            (shm-node-end name))
+;;            " ")))
 
 (defun shm-auto-insert-field-prefix (current parent)
   "Auto insert prefixes of fields in record declarations. Example:
