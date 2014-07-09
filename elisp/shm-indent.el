@@ -396,10 +396,13 @@ DRAGGING indicates whether this indent will drag a node downwards."
                                (goto-char (shm-node-start current))
                                (search-backward-regexp "[[,][ ]*")
                                (= (current-column)
-                                  (shm-node-start-column parent)))))
+                                  (shm-node-start-column parent))))
+         (go-back (= (point) (shm-node-start current))))
     (shm-newline)
     (indent-to (shm-node-start-column parent))
     (insert ",")
+    (when go-back
+      (previous-line))
     (when first-item-on-line
       (insert (make-string (- (shm-node-start-column current)
                               (current-column))
