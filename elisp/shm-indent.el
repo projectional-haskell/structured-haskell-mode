@@ -264,7 +264,8 @@ DRAGGING indicates whether this indent will drag a node downwards."
      ;; Indentation for function application.
      ((and parent
            (or (eq 'App (shm-node-cons parent))
-               (eq 'TyApp (shm-node-cons parent))))
+               (eq 'TyApp (shm-node-cons parent))
+               (eq 'ConDecl (shm-node-cons parent))))
       (let ((column
              (save-excursion
                (if (/= (shm-node-start-line current)
