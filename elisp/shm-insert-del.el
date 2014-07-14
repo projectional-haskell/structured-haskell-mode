@@ -280,6 +280,9 @@ parse errors that are rarely useful. For example:
    delete-backward-char
    (let ((case-fold-search nil))
      (cond
+      ((region-active-p)
+       (delete-region (region-beginning)
+                      (region-end)))
       ;; These cases are “gliders”. They simply move over the character
       ;; backwards. These could be handled all as one regular
       ;; expression, but in the interest of clarity—for now—they are left
