@@ -23,6 +23,25 @@
 
 (defvar shm-tests-that-dont-run-in-batch-mode
   (list
+   (list :name "swinging-expr-yanking"
+         :start-buffer-content "main = do
+  x
+  z
+  y
+
+foo = undefined
+"
+         :start-cursor 8
+         :finish-cursor 17
+         :current-node-overlay '(17 31)
+         :end-buffer-content "main = a
+
+foo = do
+  x
+  z
+  y
+"
+         :kbd [134217739 97 1 14 14 6 6 6 6 6 6 delete 25])
    (list :name "yanking"
          :start-buffer-content "main = (case undefined of
           _ -> undefined
