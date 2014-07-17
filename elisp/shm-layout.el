@@ -167,18 +167,28 @@ We can actually give the option for people to pick and choose
 this underside dangling vs not. But that will be implemented as a
 separate function rather than hard-coded into this one specific
 operation."
-  (let ((column (current-column))
-        (line (line-beginning-position))
-        (start (point)))
-    (let ((string
-           (with-temp-buffer
-             (funcall do-insert)
-             (buffer-string))))
-      (insert (if (shm-in-string)
-                  (replace-regexp-in-string
-                   "\n" "\\\\n\\\\\n\\\\"
-                   string)
-                string)))
+  (let* ((column (current-column))
+         (line (line-beginning-position))
+         (start (point))
+         (string
+          (with-temp-buffer
+            (funcall do-insert)
+            (buffer-string)))
+         (swinging
+          (with-temp-buffer
+            (insert string)
+            (get-text-property (point-min) 'shm-swinging-expr)))
+         (current-node-pair
+          (when swinging
+            (shm-current-node-pair)))
+         (furthest-parent
+          (when current-node-pair
+            (shm-find-furthest-parent-on-line current-node-pair))))
+    (insert (if (shm-in-string)
+                (replace-regexp-in-string
+                 "\n" "\\\\n\\\\\n\\\\"
+                 string)
+              string))
     (when (and (= line (line-beginning-position))
                (not no-adjust-dependents))
       (shm-adjust-dependents start (- (current-column)
@@ -187,20 +197,14 @@ operation."
       (goto-char (region-end)))
     (let ((end (point)))
       (cond
-       ((save-excursion (goto-char start)
-                        (looking-at " "))
-        (let ((current-pair (shm-current-node-pair)))
-          (when (and current-pair (= (point-max) (point)) current-pair)
-            (let ((node (cdr (shm-find-furthest-parent-on-line current-pair))))
-              (goto-char end)
-              (indent-rigidly start
-                              end
-                              (+ (shm-indent-spaces)
-                                 (shm-node-indent-column node)))
-              (delete-region start
-                             (save-excursion
-                               (goto-char start)
-                               (search-forward-regexp "[ ]+" (line-end-position) t 1)))))))
+       (swinging
+        (when furthest-parent
+          (let ((node (cdr furthest-parent)))
+            (goto-char end)
+            (indent-rigidly start
+                            end
+                            (+ (shm-indent-spaces)
+                               (shm-node-indent-column node))))))
        (t (goto-char end)
           (indent-rigidly start end column)))
       (push-mark)
@@ -298,6 +302,25 @@ location. See `shm/yank' for documentation on that."
               (when (looking-at "^$")
                 (delete-region (1- (point))
                                (point)))
+              (when (> (count-lines (point-min)
+                                    (point-max))
+                       1)
+                (let* ((first-line-col (save-excursion (goto-char (point-min))
+                                                       (back-to-indentation)
+                                                       (current-column)))
+                       (second-line-col (save-excursion (goto-char (point-min))
+                                                        (forward-line)
+                                                        (back-to-indentation)
+                                                        (current-column))))
+                  (when (> first-line-col second-line-col)
+                    (goto-char (point-min))
+                    (indent-rigidly (line-beginning-position)
+                                    (line-end-position)
+                                    (- first-line-col))
+                    (put-text-property (point-min)
+                                       (point-max)
+                                       'shm-swinging-expr
+                                       t))))
               ;; Finally, the actual save.
               (funcall (if save-it save-it 'clipboard-kill-ring-save)
                        (point-min)
