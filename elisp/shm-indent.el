@@ -18,6 +18,7 @@
 ;;; Code:
 
 (require 'shm-layout)
+(require 'shm-simple-indent)
 
 (defun shm/delete-indentation ()
   "Send the node up one line."
@@ -403,7 +404,7 @@ DRAGGING indicates whether this indent will drag a node downwards."
     (indent-to (shm-node-start-column parent))
     (insert ",")
     (when go-back
-      (previous-line))
+      (forward-line -1))
     (when first-item-on-line
       (insert (make-string (- (shm-node-start-column current)
                               (current-column))
