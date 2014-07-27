@@ -114,11 +114,11 @@ and instate this one."
                                              "stmt"
                                            "decl")
                                          start end)))
-            (cl-flet ((bail ()
-                            (when shm-display-quarantine
-                              (shm-quarantine-overlay start end))
-                            (setq shm-lighter " SHM!")
-                            nil))
+            (let ((bail (lambda ()
+                          (when shm-display-quarantine
+                            (shm-quarantine-overlay start end))
+                          (setq shm-lighter " SHM!")
+                          nil)))
               (if parsed-ast
                   (progn
                     (when (bound-and-true-p structured-haskell-repl-mode)
@@ -133,8 +133,8 @@ and instate this one."
                                  (shm-delete-overlays (point-min) (point-max) 'shm-quarantine)
                                  (shm/init)
                                  ast)
-                        (bail))))
-                (bail)))))))))
+                        (funcall bail))))
+                (funcall bail)))))))))
 
 (defun shm-font-lock-region (start end)
   "When in a REPL, we don't typically have font locking, so we
