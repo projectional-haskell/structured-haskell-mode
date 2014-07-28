@@ -63,8 +63,7 @@
        (shm-auto-insert-skeletons
         (cond
          ((and (looking-back "[^a-zA-Z0-9_]do")
-               (or (eolp)
-                   (looking-at "[])}]")))
+               (shm-nothing-following-p))
           (shm-auto-insert-do))
          ((and (looking-back " <-")
                (let ((current (shm-current-node)))
@@ -74,11 +73,14 @@
           (if (bound-and-true-p structured-haskell-repl-mode)
               (insert " ")
             (shm-auto-insert-stmt 'qualifier)))
-         ((looking-back "[^a-zA-Z0-9_]case")
+         ((and (looking-back "[^a-zA-Z0-9_]case")
+               (shm-nothing-following-p))
           (shm-auto-insert-case))
-         ((looking-back "[^a-zA-Z0-9_]if")
+         ((and (looking-back "[^a-zA-Z0-9_]if")
+               (shm-nothing-following-p))
           (shm-auto-insert-if))
-         ((looking-back "[^a-zA-Z0-9_]let")
+         ((and (looking-back "[^a-zA-Z0-9_]let")
+               (shm-nothing-following-p))
           (cond
            ((let ((current (shm-current-node)))
               (and current
@@ -96,6 +98,11 @@
           (shm-auto-insert-module))
          (t (shm-insert-string " "))))
        (t (shm-insert-string " "))))))
+
+(defun shm-nothing-following-p ()
+  "Is there nothing following me (other than closing delimiters)?"
+  (or (eolp)
+      (looking-at "[])}]")))
 
 (defun shm/double-quote ()
   "Insert double quotes.
@@ -311,22 +318,19 @@ parse errors that are rarely useful. For example:
       ;; otherwise break everything, so, "if", "of", "case", "do",
       ;; etc. if deleted.
       ((and (shm-prevent-parent-deletion-p)
-            (looking-back "[^A-Zaz0-9_]do ?")
-            (not (or (eolp)
-                     (looking-at "[])}]"))))
+            (looking-back "[^A-Za-z0-9_']do ?")
+            (shm-nothing-following-p))
        nil)                             ; do nothing
       ((and (shm-prevent-parent-deletion-p)
             (looking-back " <-")
-            (not (or (eolp)
-                     (looking-at "[])}]"))))
+            (shm-nothing-following-p))
        (forward-char -3))
       ((and (shm-prevent-parent-deletion-p)
             (looking-back " <- ")
-            (not (or (eolp)
-                     (looking-at "[])}]"))))
+            (shm-nothing-following-p))
        (forward-char -4))
       ((and (shm-prevent-parent-deletion-p)
-            (looking-back "[^A-Zaz0-9_]of ?"))
+            (looking-back "[^A-Za-z0-9_]of ?"))
        (search-backward-regexp "[ ]*of"))
       ((and (shm-prevent-parent-deletion-p)
             (or (looking-at "of$")
@@ -338,12 +342,12 @@ parse errors that are rarely useful. For example:
             (looking-at "-> ?"))
        (forward-char -1))
       ((and (shm-prevent-parent-deletion-p)
-            (looking-back "[^A-Zaz0-9_]then ?"))
+            (looking-back "[^A-Za-z0-9_]then ?"))
        (search-backward-regexp "[^ ][ ]*then")
        (unless (or (looking-at "$") (looking-at " "))
          (forward-char 1)))
       ((and (shm-prevent-parent-deletion-p)
-            (looking-back "[^A-Zaz0-9_]else ?"))
+            (looking-back "[^A-Za-z0-9_]else ?"))
        (search-backward-regexp "[^ ][ ]*else")
        (unless (or (looking-at "$") (looking-at " "))
          (forward-char 1)))
@@ -352,10 +356,10 @@ parse errors that are rarely useful. For example:
        (when (looking-at "[ ]*where$")
          (delete-region (line-beginning-position) (line-end-position))))
       ((and (shm-prevent-parent-deletion-p)
-            (looking-back "[^A-Zaz0-9_]if ?"))
+            (looking-back "[^A-Za-z0-9_]if ?"))
        nil)                             ; do nothing
       ((and (shm-prevent-parent-deletion-p)
-            (looking-back "[^A-Zaz0-9_]case ?"))
+            (looking-back "[^A-Za-z0-9_]case ?"))
        nil)                             ; do nothing
       ((and (shm-prevent-parent-deletion-p)
             (and (looking-at "= ")
