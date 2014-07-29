@@ -394,21 +394,31 @@ DRAGGING indicates whether this indent will drag a node downwards."
 
 (defun shm-newline-indent-listish (current parent parent-pair)
   "Indent and insert a comma for a list-ish syntactical node."
-  (let* ((first-item-on-line (save-excursion
-                               (goto-char (shm-node-start current))
-                               (search-backward-regexp "[[,][ ]*")
-                               (= (current-column)
-                                  (shm-node-start-column parent))))
-         (go-back (= (point) (shm-node-start current))))
+  (let* ((first-item-on-line (and (not (looking-at ","))
+                                  (save-excursion
+                                    (goto-char (shm-node-start current))
+                                    (search-backward-regexp "[[,][ ]*")
+                                    (= (current-column)
+                                       (shm-node-start-column parent)))))
+         (go-back (and first-item-on-line
+                       (= (point) (shm-node-start current))))
+         (already-have-comma (looking-back ",")))
     (shm-newline)
     (indent-to (shm-node-start-column parent))
-    (insert ",")
+    ;; Don't insert duplicate commas.
+    (unless (or (looking-at ",") already-have-comma)
+      (insert ","))
     (when go-back
-      (forward-line -1))
+      (let ((column (current-column)))
+        (forward-line -1)
+        (forward-char column)))
     (when first-item-on-line
       (insert (make-string (- (shm-node-start-column current)
                               (current-column))
                            ? )))
+    (unless (or (looking-back ",")
+                (looking-at ","))
+      (insert " "))
     (shm-set-node-overlay parent-pair)))
 
 ;; Copy infix operators similar to making new list/tuple
