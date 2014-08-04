@@ -62,8 +62,7 @@
         (insert " "))
        (shm-auto-insert-skeletons
         (cond
-         ((and (looking-back "[^a-zA-Z0-9_]do")
-               (shm-nothing-following-p))
+         ((looking-back "[^a-zA-Z0-9_]do")
           (shm-auto-insert-do))
          ((and (looking-back " <-")
                (let ((current (shm-current-node)))
@@ -73,14 +72,11 @@
           (if (bound-and-true-p structured-haskell-repl-mode)
               (insert " ")
             (shm-auto-insert-stmt 'qualifier)))
-         ((and (looking-back "[^a-zA-Z0-9_]case")
-               (shm-nothing-following-p))
+         ((looking-back "[^a-zA-Z0-9_]case")
           (shm-auto-insert-case))
-         ((and (looking-back "[^a-zA-Z0-9_]if")
-               (shm-nothing-following-p))
+         ((looking-back "[^a-zA-Z0-9_]if")
           (shm-auto-insert-if))
-         ((and (looking-back "[^a-zA-Z0-9_]let")
-               (shm-nothing-following-p))
+         ((looking-back "[^a-zA-Z0-9_]let")
           (cond
            ((let ((current (shm-current-node)))
               (and current
