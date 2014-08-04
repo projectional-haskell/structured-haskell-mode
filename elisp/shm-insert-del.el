@@ -62,7 +62,8 @@
         (insert " "))
        (shm-auto-insert-skeletons
         (cond
-         ((looking-back "[^a-zA-Z0-9_]do")
+         ((and (looking-back "[^a-zA-Z0-9_]do")
+               (shm-nothing-following-p))
           (shm-auto-insert-do))
          ((and (looking-back " <-")
                (let ((current (shm-current-node)))
@@ -72,11 +73,14 @@
           (if (bound-and-true-p structured-haskell-repl-mode)
               (insert " ")
             (shm-auto-insert-stmt 'qualifier)))
-         ((looking-back "[^a-zA-Z0-9_]case")
+         ((and (looking-back "[^a-zA-Z0-9_]case")
+               (shm-nothing-following-p))
           (shm-auto-insert-case))
-         ((looking-back "[^a-zA-Z0-9_]if")
+         ((and (looking-back "[^a-zA-Z0-9_]if")
+               (shm-nothing-following-p))
           (shm-auto-insert-if))
-         ((looking-back "[^a-zA-Z0-9_]let")
+         ((and (looking-back "[^a-zA-Z0-9_]let")
+               (shm-nothing-following-p))
           (cond
            ((let ((current (shm-current-node)))
               (and current
@@ -98,7 +102,7 @@
 (defun shm-nothing-following-p ()
   "Is there nothing following me (other than closing delimiters)?"
   (or (eolp)
-      (looking-at "[])}]")))
+      (looking-at "[])},;]")))
 
 (defun shm/double-quote ()
   "Insert double quotes.
