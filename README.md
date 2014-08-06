@@ -13,7 +13,7 @@ for you. Given that, some assumptions about style are made in
 structured-haskell-mode and are best described by
 [this style guide](https://github.com/chrisdone/haskell-style-guide).
 
-[![Build Status](https://travis-ci.org/chrisdone/structured-haskell-mode.png)](https://travis-ci.org/chrisdone/structured-haskell-mode)
+[![Build Status](https://travis-ci.org/chrisdone/structured-haskell-mode.png)](https://travis-ci.org/chrisdone/structured-haskell-mode) [![Hackage](https://img.shields.io/hackage/v/ghc-server.svg?style=flat)](https://hackage.haskell.org/package/ghc-server)
 
 ## Features
 
