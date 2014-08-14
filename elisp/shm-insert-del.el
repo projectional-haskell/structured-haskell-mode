@@ -369,7 +369,7 @@ parse errors that are rarely useful. For example:
             (or (and (looking-back " = ")
                      (not (looking-at "$"))
                      (not (looking-at " ")))
-                (and (looking-back "=")
+                (and (looking-back "[\w ]=")
                      (looking-at " "))))
        (search-backward-regexp "[ ]+=[ ]*"
                                (line-beginning-position)
