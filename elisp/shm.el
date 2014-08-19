@@ -192,6 +192,8 @@ state that will hopefully be garbage collected."
   ;; Kill the timer.
   (cancel-timer shm-parsing-timer)
   (setq shm-parsing-timer nil)
+  ;; Kill self-insert hooks.
+  (remove-hook 'post-self-insert-hook 'shm-post-self-insert t)
   ;; Delete all markers.
   (mapc (lambda (pair)
           (mapc #'shm-node-delete-markers
@@ -210,6 +212,7 @@ state that will hopefully be garbage collected."
 
 (defun shm-reparsing-timer ()
   "Re-parse the tree on the idle timer."
+
   (when (or structured-haskell-mode
             structured-haskell-repl-mode)
     (shm/reparse)))
