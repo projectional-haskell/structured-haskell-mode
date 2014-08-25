@@ -59,13 +59,13 @@
     (define-key map (kbd "C-c C-e") 'shm/export)
     (define-key map (kbd "C-M-o") 'shm/split-line)
     ;; Indentation
-    (define-key map (kbd "C-j") 'shm/newline-indent)
+    (define-key map (kbd "C-j") 'shm/newline-indent-proxy)
     (define-key map (kbd "M-)") 'paredit-close-round-and-newline)
     (define-key map (kbd "C-c C-^") 'shm/swing-up)
     (define-key map (kbd "C-c C-j") 'shm/swing-down)
     (define-key map (kbd "TAB") 'shm/tab)
     (define-key map (kbd "<backtab>") 'shm/backtab)
-    (define-key map (kbd "RET") 'shm/simple-indent-newline-same-col)
+    (define-key map (kbd "RET") 'shm/ret-proxy)
     (define-key map (kbd "C-<return>") 'shm/simple-indent-newline-indent)
     ;; Deletion
     (define-key map (kbd "DEL") 'shm/del)
@@ -239,5 +239,21 @@ state that will hopefully be garbage collected."
     (shm/simple-indent-backtab))
    (t
     (shm/jump-to-previous-slot))))
+
+(defun shm/ret-proxy ()
+  "Run `shm/simple-indent-newline-same-col', or in electric mode
+  run `shm/newline-indent' (swaps behaviour)."
+  (interactive)
+  (if (bound-and-true-p electric-indent-mode)
+      (call-interactively 'shm/newline-indent)
+    (call-interactively 'shm/simple-indent-newline-same-col)))
+
+(defun shm/newline-indent-proxy ()
+  "Run `shm/newline-indent', or in electric mode
+  run `simple-indent-newline-same-col' (swaps behaviour)."
+  (interactive)
+  (if (bound-and-true-p electric-indent-mode)
+      (call-interactively 'shm/simple-indent-newline-same-col)
+    (call-interactively 'shm/newline-indent)))
 
 (provide 'shm)
