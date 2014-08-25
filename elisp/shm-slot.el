@@ -84,7 +84,7 @@ do {undefined}
       (shm/reparse)
       (save-excursion
         (shm-evaporate (point) (+ (point) (length "undefined")))))
-     (t (newline)
+     (t (insert "\n")
         (indent-to column)
         (let ((next-point (point)))
           (insert "undefined")

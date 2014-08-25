@@ -61,7 +61,7 @@
                          (search-forward-regexp "where[ \n]*"))
                         (t
                          (unless (= (line-beginning-position) (point))
-                           (newline))
+                           (insert "\n"))
                          (let ((indent (shm-node-start-column
                                         (cdr (shm-node-parent (cons i rhs))))))
                            (indent-to (+ 2 indent))

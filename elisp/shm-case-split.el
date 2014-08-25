@@ -56,7 +56,7 @@ Where the _ and undefineds are evaporating slots."
   (let ((column (current-column)))
     (loop for alt in alts
           do (progn (when (/= column (current-column))
-                      (newline)
+                      (insert "\n")
                       (indent-to column))
                     (insert (car alt))
                     (loop for i from 1 to (cdr alt)

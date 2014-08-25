@@ -531,7 +531,7 @@ do x <- |
                         (save-excursion (back-to-indentation)
                                         (point))))))
       (save-excursion
-        (newline)
+        (insert "\n")
         (indent-to column)
         (insert "undefined")
         (forward-word -1)

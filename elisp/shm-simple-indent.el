@@ -91,10 +91,10 @@ column, `tab-to-tab-stop' is done instead."
                                  "[^ ]" (line-end-position) t 1))))
                (when end (cons start (1- end)))))))
       (if start-end
-          (progn (newline)
+          (progn (insert "\n")
                  (insert (buffer-substring-no-properties
                           (car start-end) (cdr start-end))))
-        (newline)))))
+        (insert "\n")))))
 
 (defun shm/simple-indent-newline-indent ()
   "Make a newline on the current column and indent on step."
