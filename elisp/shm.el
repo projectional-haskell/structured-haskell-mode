@@ -54,6 +54,7 @@
     (define-key map (kbd ":") 'shm/:)
     (define-key map (kbd "SPC") 'shm/space)
     (define-key map (kbd "C-c C-u") 'shm/insert-undefined)
+    (define-key map (kbd "C-c C-_") 'shm/insert-underscore)
     (define-key map (kbd "M-;") 'shm/comment)
     (define-key map (kbd "C-c C-e") 'shm/export)
     (define-key map (kbd "C-M-o") 'shm/split-line)
@@ -127,6 +128,7 @@
     (define-key map (kbd ":") 'shm/:)
     (define-key map (kbd "SPC") 'shm/space)
     (define-key map (kbd "C-c C-u") 'shm/insert-undefined)
+    (define-key map (kbd "C-c C-_") 'shm/insert-underscore)
     (define-key map (kbd "M-;") 'shm/comment)
     ;; Navigation
     (define-key map (kbd "C-M-f") 'shm/forward-node)
@@ -212,7 +214,6 @@ state that will hopefully be garbage collected."
 
 (defun shm-reparsing-timer ()
   "Re-parse the tree on the idle timer."
-
   (when (or structured-haskell-mode
             structured-haskell-repl-mode)
     (shm/reparse)))

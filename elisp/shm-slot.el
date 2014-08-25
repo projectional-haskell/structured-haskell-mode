@@ -60,6 +60,14 @@
       (shm-insert-string "undefined")
       (shm-evaporate point (point)))))
 
+(defun shm/insert-underscore ()
+  "Insert underscore."
+  (interactive)
+  (save-excursion
+    (let ((point (point)))
+      (shm-insert-string "_")
+      (shm-evaporate point (point)))))
+
 (defun shm-auto-insert-do ()
   "Insert template
 
