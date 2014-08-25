@@ -508,4 +508,41 @@ literally insert a newline and no more."
         (insert "\n")
         (indent-to column)))))
 
+
+(defun shm/reformat-decl ()
+  "Re-format the current declaration by parsing and pretty
+  printing it.
+COMMENTS ARE CURRENTLY LOST."
+  (interactive)
+  (let ((start-end (shm-decl-points)))
+    (when start-end
+      (let ((original (current-buffer))
+            (orig-str (buffer-substring-no-properties (car start-end)
+                                                      (cdr start-end))))
+        (with-temp-buffer
+          (let ((temp (current-buffer)))
+            (with-current-buffer original
+              (let ((ret (call-process-region (car start-end)
+                                              (cdr start-end)
+                                              "hindent"
+                                              nil  ; delete
+                                              temp ; output
+                                              nil)))
+                (cond
+                 ((= ret 1)
+                  (error (with-current-buffer temp
+                           (let ((string (progn (goto-char (point-min))
+                                                (buffer-substring (line-beginning-position)
+                                                                  (line-end-position)))))
+                             string))))
+                 ((= ret 0)
+                  (let ((new-str (with-current-buffer temp
+                                   (buffer-string))))
+                    (when (not (string= new-str orig-str))
+                      (let ((point (point)))
+                        (delete-region (car start-end)
+                                       (cdr start-end))
+                        (insert new-str)
+                        (goto-char point))))))))))))))
+
 (provide 'shm-indent)
