@@ -106,4 +106,10 @@ deletion. The markers will be garbage collected eventually."
       (eq (shm-node-cons node) 'InfixApp)
       (eq (shm-node-cons node) 'TyApp)))
 
+(defun shm-node-paren-p (node)
+  "Is the given node a paren of some kind?"
+  (or (eq (shm-node-cons node) 'Paren)
+      (eq (shm-node-cons node) 'PParen)
+      (eq (shm-node-cons node) 'TyParen)))
+
 (provide 'shm-node)
