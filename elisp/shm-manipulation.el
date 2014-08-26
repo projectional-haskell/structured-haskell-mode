@@ -71,7 +71,8 @@ This is more convenient than typing out the same operator."
          (actual-parent-pair (shm-node-parent current-pair)))
     (cond
      ((and parent
-           (shm-node-app-p current)
+           (or (shm-node-app-p current)
+               (eq (shm-node-cons current) 'TyFun))
            (shm-node-paren-p parent))
       (let* ((grandparent-pair (shm-node-parent parent-pair (shm-node-type current)))
              (grandparent (cdr grandparent-pair)))
