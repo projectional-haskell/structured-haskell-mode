@@ -70,6 +70,13 @@ This is more convenient than typing out the same operator."
          (parent (cdr parent-pair))
          (actual-parent-pair (shm-node-parent current-pair)))
     (cond
+     ((and parent
+           (shm-node-app-p current)
+           (shm-node-paren-p parent))
+      (let* ((grandparent-pair (shm-node-parent parent-pair (shm-node-type current)))
+             (grandparent (cdr grandparent-pair)))
+        (when grandparent
+          (shm-raise-to current grandparent))))
      (parent
       (when (string= (shm-node-type current)
                      (shm-node-type parent))

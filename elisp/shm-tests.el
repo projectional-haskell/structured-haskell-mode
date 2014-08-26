@@ -440,7 +440,7 @@ zot")
          :start-cursor 37
          :finish-cursor 8
          :current-node-overlay '(8 11)
-         :end-buffer-content "main = foo bar bu
+         :end-buffer-content "main = bar bu
 "
          :kbd "\341\362\341\362")
    (list :name "kill-line"
