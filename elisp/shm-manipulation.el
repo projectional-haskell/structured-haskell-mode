@@ -71,12 +71,9 @@ This is more convenient than typing out the same operator."
          (actual-parent-pair (shm-node-parent current-pair)))
     (cond
      (parent
-      (if (string= (shm-node-type current)
-                   (shm-node-type parent))
-          (let ((shm/raise-code (shm-kill-node 'buffer-substring-no-properties nil nil t)))
-            (shm-kill-node 'buffer-substring-no-properties parent)
-            (shm-insert-indented (lambda () (insert shm/raise-code)))
-            (shm/reparse))))
+      (when (string= (shm-node-type current)
+                     (shm-node-type parent))
+        (shm-raise-to current parent)))
      ((and (eq 'UnGuardedRhs (shm-node-cons (cdr actual-parent-pair)))
            (eq 'Lambda (shm-node-cons current)))
       (goto-char (shm-node-start current))
@@ -90,6 +87,13 @@ This is more convenient than typing out the same operator."
       (insert "= "))
      (t
       (error "No matching parent!")))))
+
+(defun shm-raise-to (current parent)
+  "Raise the current node and replace PARENT."
+  (let ((shm/raise-code (shm-kill-node 'buffer-substring-no-properties current nil t)))
+    (shm-kill-node 'buffer-substring-no-properties parent)
+    (shm-insert-indented (lambda () (insert shm/raise-code)))
+    (shm/reparse)))
 
 (defun shm/split-list ()
   "Split the current list into two lists by the nearest comma."
