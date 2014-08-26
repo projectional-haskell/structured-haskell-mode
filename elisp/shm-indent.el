@@ -543,6 +543,7 @@ COMMENTS ARE CURRENTLY LOST."
                         (delete-region (car start-end)
                                        (cdr start-end))
                         (insert new-str)
-                        (goto-char point))))))))))))))
+                        (goto-char point))))
+                  (message "Formatted.")))))))))))
 
 (provide 'shm-indent)
