@@ -95,6 +95,7 @@
     ;; Splitting, slurping, barfing, etc.
     (define-key map (kbd "C-+") 'shm/add-operand)
     (define-key map (kbd "M-r") 'shm/raise)
+    (define-key map (kbd "M-s") 'shm/splice)
     (define-key map (kbd "C-c C-q") 'shm/qualify-import)
     map)
   "Structural editing operations keymap. Any key bindings in this
@@ -159,6 +160,7 @@
     ;; Splitting, slurping, barfing, etc.
     (define-key map (kbd "C-+") 'shm/add-operand)
     (define-key map (kbd "M-r") 'shm/raise)
+    (define-key map (kbd "M-s") 'shm/splice)
     (define-key map (kbd "C-c C-q") 'shm/qualify-import)
     map)
   "Structural editing operations keymap for in the REPL. This

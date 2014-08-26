@@ -443,6 +443,15 @@ zot")
          :end-buffer-content "main = bar bu
 "
          :kbd "\341\362\341\362")
+   (list :name "splice"
+      :start-buffer-content "main = foo (bar)
+"
+      :start-cursor 13
+      :finish-cursor 12
+      :current-node-overlay '(12 15)
+      :end-buffer-content "main = foo bar
+"
+      :kbd "\363")
    (list :name "kill-line"
          :start-buffer-content "main = do foo
           bar

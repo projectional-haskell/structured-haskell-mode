@@ -103,6 +103,21 @@ This is more convenient than typing out the same operator."
     (shm-insert-indented (lambda () (insert shm/raise-code)))
     (shm/reparse)))
 
+(defun shm/splice ()
+  "Splice the current children wrapped in parens into the parent.
+
+foo (a b c) -> foo a b c
+
+Only parenthesized nodes are supported at the moment."
+  (interactive)
+  (let* ((current-pair (shm-current-node-pair))
+         (current (cdr current-pair))
+         (parent-pair (shm-node-parent current-pair))
+         (parent (cdr parent-pair)))
+    (if (and parent (shm-node-paren-p parent))
+        (shm-raise-to current parent)
+      (message "Unsupported node type for splicing!"))))
+
 (defun shm/split-list ()
   "Split the current list into two lists by the nearest comma."
   (interactive)
