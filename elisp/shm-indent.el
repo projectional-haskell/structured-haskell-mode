@@ -539,11 +539,14 @@ COMMENTS ARE CURRENTLY LOST."
                   (let ((new-str (with-current-buffer temp
                                    (buffer-string))))
                     (when (not (string= new-str orig-str))
-                      (let ((point (point)))
+                      (let ((line (line-number-at-pos))
+                            (col (current-column)))
                         (delete-region (car start-end)
                                        (cdr start-end))
                         (insert new-str)
-                        (goto-char point))))
+                        (goto-char (point-min))
+                        (forward-line line)
+                        (goto-char (+ (line-beginning-position) col)))))
                   (message "Formatted.")))))))))))
 
 (provide 'shm-indent)
