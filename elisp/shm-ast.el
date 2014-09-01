@@ -623,4 +623,8 @@ node. This function will return the *actual* node at point. See
                                  (shm-decl-ast))))
     (elt vector 0)))
 
+(defun shm-current-node-string ()
+  "Get the text of the current shm node"
+  (shm-node-string (shm-current-node)))
+
 (provide 'shm-ast)

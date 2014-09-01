@@ -23,6 +23,7 @@
 ;;; Code:
 
 (require 'shm)
+(require 'shm-ast)
 (require 'haskell-process)
 
 (defun shm-case-split-insert-pattern (alts)
@@ -144,6 +145,31 @@ Where the _ and undefineds are evaporating slots."
 
 ;; Backend based on haskell-process.el
 
+(defun shm-trim-string (string)
+  "Remove white spaces in beginning and ending of STRING.
+White space here is any of: space, tab, emacs newline (line feed, ASCII 10)."
+  (replace-regexp-in-string "\\`[ \t\n]*" "" (replace-regexp-in-string "[ \t\n]*\\'" "" string)))
+
+(defun haskell-process-get-type (expr)
+  "Get the type of the given expression or name."
+  (let ((reply
+         (haskell-process-queue-sync-request (haskell-process)
+                                             (format ":t %s\n" expr))))
+    (shm-trim-string (car (last (split-string reply " :: "))))))
+
+(defun shm-cleanup-type-string-for-case (s)
+  "Remove constraints and replace polymorphic type variables with
+   () to allow shm/case-split to work in more cases."
+  (let* ((clean-s (car
+		   (last
+			(mapcar 'shm-trim-string
+				(split-string s "=>"))))))
+    (if s
+	(let ((case-fold-search nil))
+	  (replace-regexp-in-string "\\b[a-z_][A-Za-z_]*\\b" "()" clean-s))
+      s)))
+
+
 (defun haskell-process-get-data-type (name)
   "Get the data type definition of the given name."
   (let ((reply
@@ -151,19 +177,43 @@ Where the _ and undefineds are evaporating slots."
                                              (format ":i %s\n" name))))
     (car (split-string reply "[\n\t ]+-- Defined "))))
 
-(defun shm/case-split (name)
-  "Do a case split on NAME at point."
+(defun shm/case-split (name &optional expr-string)
+  "Prompt for a type then do a case split based on it."
   (interactive (list (read-from-minibuffer "Type: ")))
   (save-excursion
-    (let ((column (current-column)))
-      (insert "case undefined ")
-      (shm-evaporate (- (point) (+ 1 (length "undefined")))
-                     (- (point) 1))
+    (let ((column (current-column))
+	  (case-expr (if expr-string
+			 expr-string
+		       "undefined")))
+      (insert (concat "case " case-expr " "))
+      (if (not expr-string)
+	  (shm-evaporate (- (point) (+ 1 (length "undefined")))
+			 (- (point) 1)))
       (insert "of\n")
       (indent-to (+ column 2))
       (shm-case-split-insert-alts
        (shm-case-split-alts-from-data-decl
         (haskell-process-get-data-type name))))))
+
+(defun shm/case-split-shm-node ()
+  "Do a case split based on the current node expression type."
+  (interactive)
+  (let* ((expr (shm-current-node-string))
+	 (expr-type (haskell-process-get-type expr))
+	 (clean-expr (shm-cleanup-type-string-for-case expr-type)))
+    (if expr-type
+	(progn
+	  (shm/kill-node)
+	  (shm/case-split clean-expr expr)))))
+
+(defun shm/do-case-split (arg)
+  "Without prefix, calculate type of current node expression and replace it
+   with a case expression based on its type.  With prefix, insert a case expression based
+   on the type given at the prompt."
+  (interactive "P")
+  (if arg
+      (call-interactively 'shm/case-split)
+    (call-interactively 'shm/case-split-shm-node)))
 
 (defun shm/expand-pattern (name)
   "Expand a pattern match on a data type."
