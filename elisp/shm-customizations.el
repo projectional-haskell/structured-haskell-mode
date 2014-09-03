@@ -158,7 +158,7 @@ when option is nil.
 (defcustom shm-pragmas
   '("LANGUAGE" "OPTIONS_GHC" "INCLUDE" "DEPRECATED" "WARNING"
     "INLINE" "NOINLINE" "INLINABLE" "CONLIKE" "LINE" "RULES"
-    "SPECIALIZE" "UNPACK" "SOURCE")
+    "SPECIALIZE" "UNPACK" "SOURCE" "SCC")
   "Pragmas supported."
   :group 'shm
   :type 'list)
