@@ -225,8 +225,12 @@ state that will hopefully be garbage collected."
   slot."
   (interactive)
   (cond
-   ((save-excursion (goto-char (line-beginning-position))
-                    (looking-at "^[ ]*$"))
+   ((save-excursion
+      (save-restriction
+        (let ((n (line-beginning-position)))
+          (narrow-to-region n (point))
+          (goto-char n)
+          (looking-at "^[ ]*$"))))
     (shm/simple-indent))
    (t
     (shm/jump-to-slot))))
