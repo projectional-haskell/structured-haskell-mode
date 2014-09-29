@@ -22,12 +22,13 @@ ELFILES = shm-ast-documentation.el \
           shm-type.el \
           shm-yank-kill.el
 
+EMACS = emacs
 ELCFILES = $(ELFILES:.el=.elc)
 
 all: $(ELCFILES)
 
 %.elc: %.el
-	@emacs -Q -L . \
+	@$(EMACS) -Q -L . \
 		--batch \
 		--eval "(byte-compile-disable-warning 'cl-functions)" \
 		-f batch-byte-compile \
@@ -37,7 +38,7 @@ clean:
 	rm -f *.elc
 
 test:
-	@emacs -Q --batch shm-test.el --eval "(progn (add-to-list 'load-path \".\") (setq-default indent-tabs-mode nil) (transient-mark-mode 1) (require 'shm-test) (shm-test/run-all))"
+	@$(EMACS) -Q --batch shm-test.el --eval "(progn (add-to-list 'load-path \".\") (setq-default indent-tabs-mode nil) (transient-mark-mode 1) (require 'shm-test) (shm-test/run-all))"
 
 check:
 	sh check.sh
