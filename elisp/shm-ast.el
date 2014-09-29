@@ -323,18 +323,32 @@ expected to work."
    ;; Otherwise we just do our line-based hack.
    (t
     (save-excursion
-      (let ((start (or (progn (goto-char (line-end-position))
-                              (search-backward-regexp "^[^ \n]" nil t 1)
-                              (unless (or (looking-at "^-}$")
-                                          (looking-at "^{-$"))
-                                (point)))
+      (let ((start (or (flet
+                           ((jump ()
+                                  (search-backward-regexp "^[^ \n]" nil t 1)
+                                  (cond
+                                   ((save-excursion (goto-char (line-beginning-position))
+                                                    (looking-at "|]"))
+                                    (jump))
+                                   (t (unless (or (looking-at "^-}$")
+                                                  (looking-at "^{-$"))
+                                        (point))))))
+                         (goto-char (line-end-position))
+                         (jump))
                        0))
             (end (progn (goto-char (1+ (point)))
-                        (or (when (search-forward-regexp "[\n]+[^ \n]" nil t 1)
-                              (forward-char -1)
-                              (search-backward-regexp "[^\n ]" nil t)
-                              (forward-char)
-                              (point))
+                        (or (flet
+                                ((jump ()
+                                       (when (search-forward-regexp "[\n]+[^ \n]" nil t 1)
+                                         (cond
+                                          ((save-excursion (goto-char (line-beginning-position))
+                                                           (looking-at "|]"))
+                                           (jump))
+                                          (t (forward-char -1)
+                                             (search-backward-regexp "[^\n ]" nil t)
+                                             (forward-char)
+                                             (point))))))
+                              (jump))
                             (point-max)))))
         (cons start end))))))
 
