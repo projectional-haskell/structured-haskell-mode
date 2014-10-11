@@ -565,3 +565,7 @@ do x <- |
       (insert name))))
 
 (provide 'shm-insert-del)
+
+;; Local variables:
+;; byte-compile-warnings: (not cl-functions)
+;; End:

@@ -68,3 +68,7 @@
                        (+ (point) 1))))
 
 (provide 'shm-fold)
+
+;; Local variables:
+;; byte-compile-warnings: (not cl-functions)
+;; End:

@@ -642,3 +642,8 @@ node. This function will return the *actual* node at point. See
   (shm-node-string (shm-current-node)))
 
 (provide 'shm-ast)
+
+;; Local variables:
+;; byte-compile-warnings: (not cl-functions)
+;; byte-compile-warnings: (not cl-macros)
+;; End:
