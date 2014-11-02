@@ -140,8 +140,8 @@ pre x i =
                                (srcSpanStartColumn start)
                                (srcSpanEndLine end)
                                (srcSpanEndColumn end))
-             |Just (IHead (SrcSpanInfo start _) _ _) <- [listToMaybe ds]
-             ,Just (IHead (SrcSpanInfo end _) _ _) <- [listToMaybe (reverse ds)]]
+             |Just (IRule (SrcSpanInfo start _) _ _ _) <- [listToMaybe ds]
+             ,Just (IRule (SrcSpanInfo end _) _ _ _) <- [listToMaybe (reverse ds)]]
            _ -> []
 
 -- | Generate a span from a HSE SrcSpan.
