@@ -30,6 +30,7 @@ and then jump back to the right node."
     (structured-haskell-mode -1)
     (hindent/reformat-decl)
     (structured-haskell-mode 1)
+    (shm/reparse)
     (let ((new-current (elt (shm-decl-ast) index)))
       (goto-char (+ (shm-node-start new-current) offset)))))
 
