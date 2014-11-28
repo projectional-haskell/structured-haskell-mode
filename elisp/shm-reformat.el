@@ -27,8 +27,9 @@ and then jump back to the right node."
   (let* ((current-pair (shm-current-node-pair))
          (index (car current-pair))
          (offset (- (point) (shm-node-start (cdr current-pair)))))
+    (structured-haskell-mode -1)
     (hindent/reformat-decl)
-    (shm-decl-ast t)
+    (structured-haskell-mode 1)
     (let ((new-current (elt (shm-decl-ast) index)))
       (goto-char (+ (shm-node-start new-current) offset)))))
 
