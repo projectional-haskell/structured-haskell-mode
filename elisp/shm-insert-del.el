@@ -473,7 +473,7 @@ here."
     (let ((current (shm-actual-node)))
       (cond
        ((shm-find-overlay 'shm-quarantine)
-        (if (not (or (looking-back "[ ,[({\\]")
+        (if (not (or (looking-back "[ ,[({\\!]")
                      (and (looking-back "\\$")
                           (string= "(" open))
                      (bolp)))
