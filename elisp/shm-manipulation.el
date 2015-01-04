@@ -59,6 +59,10 @@ This is more convenient than typing out the same operator."
             (shm-insert-string (concat " " qop " ")))
            (t (error "Please go to the start or end of the node to indicate direction."))))
          (t (error "Unable to figure out the operator.")))))
+     ((string= "Type" (shm-node-type-name current))
+      (if (= (point) (shm-node-start current))
+          (save-excursion (insert " -> "))
+        (insert " -> ")))
      (t (error "Not in an infix application.")))))
 
 (defun shm/raise ()
