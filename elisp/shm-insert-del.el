@@ -29,14 +29,14 @@
     (forward-char -1)
     (shm-adjust-dependents (point) 1)))
 
-(defun shm/wrap-parens ()
+(defun shm/wrap-parens (&optional current)
   "Wrap the node in parentheses."
   (interactive)
   (cond
    ((region-active-p)
     (shm-wrap-delimiters "(" ")"))
    (t (let ((line (line-number-at-pos))
-            (node (shm-current-node)))
+            (node (or current (shm-current-node))))
         (save-excursion
           (goto-char (shm-node-start node))
           (insert "(")
@@ -487,7 +487,7 @@ here."
             (shm-insert-string " "))
           (goto-char point)))
        (t
-        (if (not (or (looking-back "[ ,[({]")
+        (if (not (or (looking-back "[ ,[({!]")
                      (bolp)))
             (progn (shm-insert-string " ") 1)
           0)
@@ -495,7 +495,7 @@ here."
         (let ((point (point)))
           (shm-insert-string close)
           (when (and (/= (point) (line-end-position))
-                     (not (looking-at "[]){} ,]")))
+                     (not (looking-at "[]){} ,!]")))
             (shm-insert-string " "))
           (goto-char point)
           (shm/init t))))))))
