@@ -68,6 +68,17 @@
       (shm-insert-string "_")
       (shm-evaporate point (point)))))
 
+(defun shm-auto-insert-lambda ()
+  "Insert template
+
+\_ -> undefined
+"
+  (save-excursion
+    (shm/insert-underscore)
+    (forward-char)
+    (insert " -> ")
+    (shm/insert-undefined)))
+
 (defun shm-auto-insert-do ()
   "Insert template
 

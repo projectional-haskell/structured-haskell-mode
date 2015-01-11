@@ -62,6 +62,8 @@
         (insert " "))
        (shm-auto-insert-skeletons
         (cond
+         ((looking-back "[[ (,]\\\\")
+          (shm-auto-insert-lambda))
          ((and (looking-back "[^a-zA-Z0-9_]do")
                (shm-nothing-following-p))
           (shm-auto-insert-do))
@@ -483,11 +485,11 @@ here."
         (let ((point (point)))
           (shm-insert-string close)
           (when (and (/= (point) (line-end-position))
-                     (not (looking-at "[]){} ,]")))
+                     (not (looking-at "[]){} ,\\]")))
             (shm-insert-string " "))
           (goto-char point)))
        (t
-        (if (not (or (looking-back "[ ,[({!]")
+        (if (not (or (looking-back "[ ,[({!\\]")
                      (bolp)))
             (progn (shm-insert-string " ") 1)
           0)
