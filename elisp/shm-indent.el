@@ -342,7 +342,7 @@ DRAGGING indicates whether this indent will drag a node downwards."
            (eq 'Lambda (shm-node-cons parent)))
       (cond
        ((eq shm-lambda-indent-style 'leftmost-parent)
-        (let ((leftmost-parent (cdr (shm-find-furthest-parent-on-line parent-pair))))
+        (let ((leftmost-parent (cdr (shm-find-furthest-parent-on-line parent-pair t))))
           (shm-newline)
           (indent-to (+ (shm-indent-spaces)
                         (shm-node-indent-column leftmost-parent)))))

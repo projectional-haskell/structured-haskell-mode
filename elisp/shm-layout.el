@@ -210,19 +210,21 @@ operation."
       (push-mark)
       (goto-char start))))
 
-(defun shm-find-furthest-parent-on-line (current)
+(defun shm-find-furthest-parent-on-line (current &optional stop-at-rhs)
   "Find the parent which starts nearest to column 0 on the
 current line.
 
 This is used when indenting dangling expressions."
-  (let ((parent (shm-node-parent current)))
-    (if parent
-        (if (= (line-beginning-position)
-               (save-excursion (goto-char (shm-node-start (cdr parent)))
-                               (line-beginning-position)))
-            (shm-find-furthest-parent-on-line parent)
-          current)
-      current)))
+  (if (string= (shm-node-type-name (cdr current)) "Decl")
+      current
+      (let ((parent (shm-node-parent current)))
+        (if parent
+            (if (= (line-beginning-position)
+                   (save-excursion (goto-char (shm-node-start (cdr parent)))
+                                   (line-beginning-position)))
+                (shm-find-furthest-parent-on-line parent stop-at-rhs)
+              current)
+          current))))
 
 (defun shm-indent-spaces ()
   "Get the number of spaces to indent."
