@@ -45,10 +45,10 @@ main =
   do code <- getContents
      args <- getArgs
      case consume options (map T.pack args) of
-       (Right (action,typ,exts),_) ->
+       Right (action,typ,exts) ->
          outputWith action typ exts code
-       (Left _err,_) ->
-         error (T.unpack (textDescription (fst (describe options []))))
+       Left _err ->
+         error (T.unpack (textDescription (describe options [])))
 
 -- | Action to perform.
 data Action = Parse | Check
