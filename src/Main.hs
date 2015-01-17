@@ -1,18 +1,27 @@
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE PatternGuards #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE ExistentialQuantification #-}
 
-{-# OPTIONS_GHC -fno-warn-orphans -fno-warn-missing-signatures #-}
+{-# OPTIONS_GHC -fno-warn-orphans -fno-warn-missing-signatures -fno-warn-type-defaults #-}
 
 -- | Take in Haskell code and output a vector of source spans and
 -- their associated node type and case.
 
 module Main (main) where
 
-import Control.Applicative
-import Data.Data
-import Data.Maybe
-import Language.Haskell.Exts.Annotated
-import System.Environment
+import           Control.Applicative
+import           Data.Data
+import           Data.List
+import           Data.Maybe
+import           Data.Monoid
+import           Data.Text (Text)
+import qualified Data.Text as T
+import qualified Data.Text.IO as T
+import           Descriptive
+import           Descriptive.Options
+import           Language.Haskell.Exts.Annotated
+import           System.Environment
 
 -- | A generic Dynamic-like constructor -- but more convenient to
 -- write and pattern match on.
@@ -34,34 +43,60 @@ instance Alternative ParseResult where
 
 --- | Main entry point.
 main :: IO ()
-main = do
-  code <- getContents
-  action:typ:_ <- getArgs
-  outputWith action typ code
+main =
+  do code <- getContents
+     args <- getArgs
+     case consume options (map T.pack args) of
+       (Right (action,typ,exts),_) ->
+         outputWith action typ exts code
+       (Left err,_) ->
+         error (T.unpack (textDescription (fst (describe options []))))
+
+-- | Action to perform.
+data Action = Parse | Check
+
+-- | Thing to parse.
+data ParseType = Decl | Stmt
+
+-- | Command line options.
+options :: Consumer [Text] Option (Action,ParseType,[Extension])
+options = (,,) <$> action <*> typ <*> exts
+  where action =
+          sumConstant Parse "parse" <|>
+          sumConstant Check "check"
+        typ =
+          sumConstant Decl "decl" <|>
+          sumConstant Stmt "stmt"
+        sumConstant sum text =
+          fmap (const sum)
+               (constant text)
+        exts =
+          fmap getExtensions
+               (many (prefix "X" "Language extension"))
 
 -- | Output some result with the given action (check/parse/etc.),
 -- parsing the given type of AST node. In the past, the type was any
 -- kind of AST node. Today, it's just a "decl" which is covered by
 -- 'parseTopLevel'.
-outputWith :: String -> String -> String -> IO ()
-outputWith action typ code =
+outputWith :: Action -> ParseType -> [Extension] -> String -> IO ()
+outputWith action typ exts code =
   case typ of
-    "decl" ->
-        output action parseTopLevel code
-    "stmt" ->
-        output action parseSomeStmt code
+    Decl -> output action parseTopLevel exts code
+    Stmt -> output action parseSomeStmt exts code
     _ -> error "Unknown parser type."
 
 -- | Output AST info for the given Haskell code.
-output :: String -> Parser -> String -> IO ()
-output action parser code =
-  case parser parseMode code of
+output :: Action -> Parser -> [Extension] -> String -> IO ()
+output action parser exts code =
+  case parser parseMode {extensions = exts} code of
     ParseFailed _ e -> error e
     ParseOk (D ast) ->
       case action of
-        "check" -> return ()
-        "parse" -> putStrLn ("[" ++ concat (genHSE ast) ++ "]")
-        _       -> error "unknown action"
+        Check -> return ()
+        Parse ->
+          putStrLn ("[" ++
+                    concat (genHSE ast) ++
+                    "]")
 
 -- | An umbrella parser to parse:
 --
@@ -87,17 +122,14 @@ parseSomeStmt mode code =
   D . fix <$> parseExpWithMode mode code <|>
   D       <$> parseImport mode code
 
+-- | Apply fixities after parsing.
 fix ast = fromMaybe ast (applyFixities baseFixities ast)
 
 -- | Parse mode, includes all extensions, doesn't assume any fixities.
 parseMode :: ParseMode
 parseMode =
-  defaultParseMode { extensions = allExtensions
-                   , fixities   = Nothing
-                   }
- where allExtensions = filter isDisabledExtention knownExtensions
-       isDisabledExtention (DisableExtension _) = False
-       isDisabledExtention _                    = True
+  defaultParseMode {extensions = defaultExtensions
+                   ,fixities = Nothing}
 
 -- | Generate a list of spans from the HSE AST.
 genHSE :: Data a => a -> [String]
@@ -183,3 +215,42 @@ parseModulePragma mode code =
     ParseOk (Module _ _ [p] _ _) -> return p
     ParseOk _ -> ParseFailed noLoc "parseModulePragma"
     ParseFailed x y -> ParseFailed x y
+
+--------------------------------------------------------------------------------
+-- Extensions stuff stolen from hlint
+
+-- | Consume an extensions list from arguments.
+getExtensions :: [Text] -> [Extension]
+getExtensions = foldl f defaultExtensions . map T.unpack
+  where f a "Haskell98" = []
+        f a ('N':'o':x)
+          | Just x <- readExtension x =
+            delete x a
+        f a x
+          | Just x <- readExtension x =
+            x :
+            delete x a
+        f a x = error $ "Unknown extension: " ++ x
+
+-- | Parse an extension.
+readExtension :: String -> Maybe Extension
+readExtension x =
+  case classifyExtension x of
+    UnknownExtension _ -> Nothing
+    x -> Just x
+
+-- | Default extensions.
+defaultExtensions :: [Extension]
+defaultExtensions =
+  [e | e@EnableExtension{} <- knownExtensions] \\
+  map EnableExtension badExtensions
+
+-- | Extensions which steal too much syntax.
+badExtensions :: [KnownExtension]
+badExtensions =
+    [Arrows -- steals proc
+    ,TransformListComp -- steals the group keyword
+    ,XmlSyntax, RegularPatterns -- steals a-b
+    ,UnboxedTuples -- breaks (#) lens operator
+    ,QuasiQuotes -- breaks [x| ...], making whitespace free list comps break
+    ]
