@@ -83,7 +83,6 @@ outputWith action typ exts code =
   case typ of
     Decl -> output action parseTopLevel exts code
     Stmt -> output action parseSomeStmt exts code
-    _ -> error "Unknown parser type."
 
 -- | Output AST info for the given Haskell code.
 output :: Action -> Parser -> [Extension] -> String -> IO ()
