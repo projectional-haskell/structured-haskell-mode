@@ -14,10 +14,8 @@ import           Control.Applicative
 import           Data.Data
 import           Data.List
 import           Data.Maybe
-import           Data.Monoid
 import           Data.Text (Text)
 import qualified Data.Text as T
-import qualified Data.Text.IO as T
 import           Descriptive
 import           Descriptive.Options
 import           Language.Haskell.Exts.Annotated
@@ -49,7 +47,7 @@ main =
      case consume options (map T.pack args) of
        (Right (action,typ,exts),_) ->
          outputWith action typ exts code
-       (Left err,_) ->
+       (Left _err,_) ->
          error (T.unpack (textDescription (fst (describe options []))))
 
 -- | Action to perform.
@@ -67,8 +65,8 @@ options = (,,) <$> action <*> typ <*> exts
         typ =
           sumConstant Decl "decl" <|>
           sumConstant Stmt "stmt"
-        sumConstant sum text =
-          fmap (const sum)
+        sumConstant sum' text =
+          fmap (const sum')
                (constant text)
         exts =
           fmap getExtensions
@@ -221,22 +219,22 @@ parseModulePragma mode code =
 -- | Consume an extensions list from arguments.
 getExtensions :: [Text] -> [Extension]
 getExtensions = foldl f defaultExtensions . map T.unpack
-  where f a "Haskell98" = []
+  where f _ "Haskell98" = []
         f a ('N':'o':x)
-          | Just x <- readExtension x =
-            delete x a
+          | Just x' <- readExtension x =
+            delete x' a
         f a x
-          | Just x <- readExtension x =
-            x :
-            delete x a
-        f a x = error $ "Unknown extension: " ++ x
+          | Just x' <- readExtension x =
+            x' :
+            delete x' a
+        f _ x = error $ "Unknown extension: " ++ x
 
 -- | Parse an extension.
 readExtension :: String -> Maybe Extension
 readExtension x =
   case classifyExtension x of
     UnknownExtension _ -> Nothing
-    x -> Just x
+    x' -> Just x'
 
 -- | Default extensions.
 defaultExtensions :: [Extension]
