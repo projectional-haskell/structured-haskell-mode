@@ -94,6 +94,7 @@
     (define-key map (kbd "C-c C-w") 'shm/goto-where)
     ;; Splitting, slurping, barfing, etc.
     (define-key map (kbd "C-+") 'shm/add-operand)
+    (define-key map (kbd "C-$") 'shm/$)
     (define-key map (kbd "M-r") 'shm/raise)
     (define-key map (kbd "M-s") 'shm/splice)
     (define-key map (kbd "C-c C-q") 'shm/qualify-import)
@@ -158,6 +159,7 @@
     (define-key map (kbd "M-DEL") 'shm/backward-kill-word)
     (define-key map (kbd "C-<backspace>") 'shm/backward-kill-word)
     ;; Splitting, slurping, barfing, etc.
+    (define-key map (kbd "C-$") 'shm/$)
     (define-key map (kbd "C-+") 'shm/add-operand)
     (define-key map (kbd "M-r") 'shm/raise)
     (define-key map (kbd "M-s") 'shm/splice)

@@ -19,6 +19,22 @@
 
 (require 'shm-layout)
 
+(defun shm/$ ()
+  "Swap parens with a dollar."
+  (interactive)
+  (let* ((current-pair (shm-current-node-pair))
+         (current (cdr current-pair)))
+    (if (eq (shm-node-cons current) 'Paren)
+        (progn (let ((child (shm-node-child current-pair)))
+                 (shm-raise-to child current)
+                 (if (looking-back " ")
+                     nil
+                   (shm-insert-string " "))
+                 (shm-insert-string "$")
+                 (if (looking-at " ")
+                     nil
+                   (shm-insert-string " ")))))))
+
 (defun shm/add-operand ()
   "When in an infix application, figure out the operator and add
 a new operand. E.g.
