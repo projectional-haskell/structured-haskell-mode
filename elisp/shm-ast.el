@@ -185,14 +185,15 @@ imagine."
         (let ((temp-buffer (current-buffer)))
           (with-current-buffer buffer
             (condition-case e
-                (call-process-region start
-                                     end
-                                     shm-program-name
-                                     nil
-                                     temp-buffer
-                                     nil
-                                     "parse"
-                                     type)
+                (apply #'call-process-region
+                       (list start
+                             end
+                             shm-program-name
+                             nil
+                             temp-buffer
+                             nil
+                             "parse"
+                             type))
               ((file-error)
                (error "Unable to find structured-haskell-mode executable! See README for help.")))))
         (read (buffer-string))))))
@@ -207,24 +208,25 @@ parses."
     (with-temp-buffer
       (let ((temp-buffer (current-buffer)))
         (with-current-buffer buffer
-          (call-process-region start
-                               end
-                               shm-program-name
-                               nil
-                               temp-buffer
-                               nil
-                               "check"
-                               ;; In other words, always parse with
-                               ;; the more generic “decl” when
-                               ;; something starts at column 0,
-                               ;; because HSE distinguishes between a
-                               ;; “declaration” and an import, a
-                               ;; module declaration and a language
-                               ;; pragma.
-                               (if (save-excursion (goto-char start)
-                                                   (= (point) (line-beginning-position)))
-                                   "decl"
-                                 type))))
+          (apply #'call-process-region
+           (list start
+                 end
+                 shm-program-name
+                 nil
+                 temp-buffer
+                 nil
+                 "check"
+                 ;; In other words, always parse with
+                 ;; the more generic “decl” when
+                 ;; something starts at column 0,
+                 ;; because HSE distinguishes between a
+                 ;; “declaration” and an import, a
+                 ;; module declaration and a language
+                 ;; pragma.
+                 (if (save-excursion (goto-char start)
+                                     (= (point) (line-beginning-position)))
+                     "decl"
+                   type)))))
       (string= "" (buffer-string)))))
 
 (defun shm-get-nodes (ast start end)
