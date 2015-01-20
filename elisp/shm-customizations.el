@@ -87,6 +87,14 @@ but others may differ."
   :group 'shm
   :type 'string)
 
+(defcustom shm-language-extensions
+  (if (boundp 'haskell-language-extensions)
+      haskell-language-extensions
+    2)
+  "Language extensions in use. Should be in format: -XFoo, -XNoFoo etc."
+  :group 'shm
+  :type '(repeat 'string))
+
 (defcustom shm-lambda-indent-style
   nil
   "Specify a particular style for indenting lambdas?"

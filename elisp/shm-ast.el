@@ -211,29 +211,35 @@ parses."
         (with-current-buffer buffer
           (apply #'call-process-region
                  (append (list start
-                        end
-                        shm-program-name
-                        nil
-                        temp-buffer
-                        nil
-                        "check"
-                        ;; In other words, always parse with
-                        ;; the more generic “decl” when
-                        ;; something starts at column 0,
-                        ;; because HSE distinguishes between a
-                        ;; “declaration” and an import, a
-                        ;; module declaration and a language
-                        ;; pragma.
-                        (if (save-excursion (goto-char start)
-                                            (= (point) (line-beginning-position)))
-                            "decl"
-                          type))
+                               end
+                               shm-program-name
+                               nil
+                               temp-buffer
+                               nil
+                               "check"
+                               ;; In other words, always parse with
+                               ;; the more generic “decl” when
+                               ;; something starts at column 0,
+                               ;; because HSE distinguishes between a
+                               ;; “declaration” and an import, a
+                               ;; module declaration and a language
+                               ;; pragma.
+                               (if (save-excursion (goto-char start)
+                                                   (= (point) (line-beginning-position)))
+                                   "decl"
+                                 type))
                          (shm-extra-arguments)))))
       (string= "" (buffer-string)))))
 
 (defun shm-extra-arguments ()
   "Extra arguments to pass to the structured-haskell-mode process."
-  '())
+  (shm-language-extensions))
+
+(defun shm-language-extensions ()
+  "Get the number of spaces to indent."
+  (if (boundp 'haskell-language-extensions)
+      haskell-language-extensions
+    shm-language-extensions))
 
 (defun shm-get-nodes (ast start end)
   "Get the nodes of the given AST.
