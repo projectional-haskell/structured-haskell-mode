@@ -98,8 +98,17 @@
                   (- (point) 6))
                (looking-at "[ ]*$"))
           (shm-auto-insert-module))
-         (t (shm-insert-string " "))))
+         (t (shm-insert-string " ")))
+        )
        (t (shm-insert-string " "))))))
+
+(defun shm-auto-insert-lambda ()
+  "Lambda insertion."
+  (save-excursion
+    (shm/insert-underscore)
+    (forward-char)
+    (insert " -> ")
+    (shm/insert-undefined)))
 
 (defun shm-nothing-following-p ()
   "Is there nothing following me (other than closing delimiters)?"
