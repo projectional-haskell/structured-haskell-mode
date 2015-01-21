@@ -90,7 +90,7 @@ but others may differ."
 (defcustom shm-language-extensions
   (if (boundp 'haskell-language-extensions)
       haskell-language-extensions
-    2)
+    '())
   "Language extensions in use. Should be in format: -XFoo, -XNoFoo etc."
   :group 'shm
   :type '(repeat 'string))
