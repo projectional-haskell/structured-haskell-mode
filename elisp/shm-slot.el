@@ -55,16 +55,29 @@
 (defun shm/insert-undefined ()
   "Insert undefined."
   (interactive)
-  (save-excursion
-    (let ((point (point)))
-      (shm-insert-string "undefined")
-      (shm-evaporate point (point)))))
+  (let ((point (point)) (bumped nil))
+    (when (and (looking-back "[^[({;, ]")
+               (not (bolp)))
+      (shm-insert-string " ")
+      (setq point (1+ point)))
+    (when (and (looking-at "[^])},; ]+_*")
+               (not (eolp)))
+      (shm-insert-string " ")
+      (forward-char -1))
+    (shm-insert-string "undefined")
+    (shm-evaporate point (point))
+    (goto-char point)))
 
 (defun shm/insert-underscore ()
   "Insert underscore."
   (interactive)
   (save-excursion
     (let ((point (point)))
+      (when (looking-back "[a-zA-Z0-9]+_*")
+        (shm-insert-string " "))
+      (when (looking-at "[a-zA-Z0-9]+_*")
+        (shm-insert-string " ")
+        (forward-char -1))
       (shm-insert-string "_")
       (shm-evaporate point (point)))))
 
