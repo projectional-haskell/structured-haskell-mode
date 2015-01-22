@@ -60,14 +60,11 @@ data ParseType = Decl | Stmt
 options :: Consumer [Text] (Option ()) (Action,ParseType,[Extension])
 options = (,,) <$> action <*> typ <*> exts
   where action =
-          sumConstant Parse "parse" "Parse and spit out spans" <|>
-          sumConstant Check "check" "Just check the syntax"
+          constant "parse" "Parse and spit out spans" Parse <|>
+          constant "check" "Just check the syntax" Check
         typ =
-          sumConstant Decl "decl" "Parse a declaration" <|>
-          sumConstant Stmt "stmt" "Parse a statement"
-        sumConstant sum' text desc =
-          fmap (const sum')
-               (constant text desc)
+          constant "decl" "Parse a declaration" Decl <|>
+          constant "stmt" "Parse a statement" Stmt
         exts =
           fmap getExtensions
                (many (prefix "X" "Language extension"))
