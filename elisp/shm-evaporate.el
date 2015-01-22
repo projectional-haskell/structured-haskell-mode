@@ -26,6 +26,14 @@
   "Face for text that will evaporate when modified/overwritten."
   :group 'shm-evaporate)
 
+(defun shm-evaporate-before-p ()
+  "Before an evaporating piece of code at point?"
+  (let ((os (remove-if-not
+             (lambda (o)
+               (overlay-get o 'shm-evaporate-overlay))
+             (overlays-in (point) (1+ (point))))))
+    (not (null os))))
+
 (defun shm-evaporate (beg end)
   "Make the region evaporate when typed over."
   (interactive "r")
