@@ -45,9 +45,9 @@ main =
   do code <- getContents
      args <- getArgs
      case consume options (map T.pack args) of
-       Right (action,typ,exts) ->
+       Succeeded (action,typ,exts) ->
          outputWith action typ exts code
-       Left _err ->
+       _ ->
          error (T.unpack (textDescription (describe options [])))
 
 -- | Action to perform.
@@ -57,17 +57,17 @@ data Action = Parse | Check
 data ParseType = Decl | Stmt
 
 -- | Command line options.
-options :: Consumer [Text] Option (Action,ParseType,[Extension])
+options :: Consumer [Text] (Option ()) (Action,ParseType,[Extension])
 options = (,,) <$> action <*> typ <*> exts
   where action =
-          sumConstant Parse "parse" <|>
-          sumConstant Check "check"
+          sumConstant Parse "parse" "Parse and spit out spans" <|>
+          sumConstant Check "check" "Just check the syntax"
         typ =
-          sumConstant Decl "decl" <|>
-          sumConstant Stmt "stmt"
-        sumConstant sum' text =
+          sumConstant Decl "decl" "Parse a declaration" <|>
+          sumConstant Stmt "stmt" "Parse a statement"
+        sumConstant sum' text desc =
           fmap (const sum')
-               (constant text)
+               (constant text desc)
         exts =
           fmap getExtensions
                (many (prefix "X" "Language extension"))
