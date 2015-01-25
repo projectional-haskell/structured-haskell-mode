@@ -99,7 +99,7 @@ will insert them back verbatim."
      (when (looking-back "[a-zA-Z0-9]+_*")
        (shm-insert-string " "))
      (when (and (looking-at "[a-zA-Z0-9]+_*")
-                (not shm-evaporate-before-p))
+                (not (shm-evaporate-before-p)))
        (shm-insert-string " ")
        (forward-char -1)))
    (shm-insert-indented #'clipboard-yank)))
