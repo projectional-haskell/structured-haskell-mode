@@ -331,11 +331,10 @@ expected to work."
                                 (line-end-position))))
                ;; Don't activate if we're doing a GHCi command.
                (unless (and (string-match "^:" whole-line)
-                            (not (string-match "^:t[^ ]* " whole-line))
-                            (not (string-match "^:k[^ ]* " whole-line)))
+                            (not (string-match "^:[tk] " whole-line)))
                  (cons (save-excursion
                          (goto-char haskell-interactive-mode-prompt-start)
-                         (when (looking-at ":[kt][^ ]* ")
+                         (when (looking-at ":[kt] ")
                            (search-forward " " (point-max) t 1))
                          (point))
                        (line-end-position))))))))))
