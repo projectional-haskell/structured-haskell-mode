@@ -57,7 +57,7 @@ data Action = Parse | Check
 data ParseType = Decl | Stmt
 
 -- | Command line options.
-options :: Consumer [Text] (Option ()) (Action,ParseType,[Extension])
+options :: Monad m => Consumer [Text] (Option ()) m (Action,ParseType,[Extension])
 options = (,,) <$> action <*> typ <*> exts
   where action =
           constant "parse" "Parse and spit out spans" Parse <|>
