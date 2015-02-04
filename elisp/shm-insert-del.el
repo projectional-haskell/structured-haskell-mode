@@ -481,10 +481,11 @@ here."
     (shm-insert-string open))
    (t
     (shm/reparse)
-    (let ((current (shm-actual-node)))
+    (let ((current (shm-actual-node))
+          (looking-back-regexp "\\(\\(^\\|\\W\\)'\\|[ ,[({\\!]\\)"))
       (cond
        ((shm-find-overlay 'shm-quarantine)
-        (if (not (or (looking-back "[ ,[({\\!]")
+        (if (not (or (looking-back looking-back-regexp)
                      (and (looking-back "\\$")
                           (string= "(" open))
                      (bolp)))
@@ -498,7 +499,7 @@ here."
             (shm-insert-string " "))
           (goto-char point)))
        (t
-        (if (not (or (looking-back "[ ,[({!\\]")
+        (if (not (or (looking-back looking-back-regexp)
                      (bolp)))
             (progn (shm-insert-string " ") 1)
           0)
