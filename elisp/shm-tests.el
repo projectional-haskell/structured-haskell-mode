@@ -64,6 +64,17 @@ foo = do
 
 (defvar shm-tests
   (list
+(list :name "inserting after '"
+      :start-buffer-content "x = [foo'
+    ,()]
+"
+      :start-cursor 6
+      :finish-cursor 22
+      :current-node-overlay '(19 24)
+      :end-buffer-content "x = [foo' []
+    ,('[])]
+"
+      :kbd "[,('[")
    (list :name "don't re-indent dependent rhs"
          :start-buffer-content "foo bar baz =
      bar + baz
@@ -444,14 +455,14 @@ zot")
 "
          :kbd "\341\362\341\362")
    (list :name "splice"
-      :start-buffer-content "main = foo (bar)
+         :start-buffer-content "main = foo (bar)
 "
-      :start-cursor 13
-      :finish-cursor 12
-      :current-node-overlay '(12 15)
-      :end-buffer-content "main = foo bar
+         :start-cursor 13
+         :finish-cursor 12
+         :current-node-overlay '(12 15)
+         :end-buffer-content "main = foo bar
 "
-      :kbd "\363")
+         :kbd "\363")
    (list :name "kill-line"
          :start-buffer-content "main = do foo
           bar
