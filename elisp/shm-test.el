@@ -44,6 +44,8 @@
   (structured-haskell-mode t)
   (when (fboundp 'god-local-mode)
     (god-local-mode -1))
+  (when (fboundp 'electric-indent-mode)
+    (electric-indent-mode -1))
   (erase-buffer)
   (insert "\n")
   (setq shm-test-eob (set-marker (make-marker) (point)))
@@ -123,6 +125,8 @@
   (kill-all-local-variables)
   (when (fboundp 'god-local-mode)
     (god-local-mode -1))
+  (when (fboundp 'electric-indent-mode)
+    (electric-indent-mode -1))
   (let ((customizations (plist-get test :customizations)))
     (when customizations
       (dolist (entry customizations)
