@@ -1,5 +1,5 @@
 name:                structured-haskell-mode
-version:             1.0.14
+version:             1.0.15
 synopsis:            Structured editing Emacs mode for Haskell
 description:         Structured editing Emacs mode for Haskell.
 homepage:            https://github.com/chrisdone/structured-haskell-mode
