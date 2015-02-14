@@ -42,6 +42,6 @@ executable structured-haskell-mode
   ghc-options:       -O2 -Wall
   hs-source-dirs:    src
   build-depends:     base >= 4 && < 5
-                   , haskell-src-exts == 1.15.*
+                   , haskell-src-exts == 1.16.*
                    , text
                    , descriptive >= 0.7 && < 0.8
