@@ -45,3 +45,5 @@ executable structured-haskell-mode
                    , haskell-src-exts == 1.16.*
                    , text
                    , descriptive >= 0.7 && < 0.9
+                   , applicative-quoters
+                   , ghc-prim

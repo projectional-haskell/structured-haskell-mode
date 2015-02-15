@@ -1,6 +1,9 @@
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE PatternGuards #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE ExtendedDefaultRules #-}
 {-# LANGUAGE ExistentialQuantification #-}
 
 {-# OPTIONS_GHC -fno-warn-orphans -fno-warn-missing-signatures -fno-warn-type-defaults #-}
@@ -11,6 +14,7 @@
 module Main (main) where
 
 import           Control.Applicative
+import           Control.Applicative.QQ.Idiom
 import           Data.Data
 import           Data.List
 import           Data.Maybe
@@ -18,6 +22,7 @@ import           Data.Text (Text)
 import qualified Data.Text as T
 import           Descriptive
 import           Descriptive.Options
+import           GHC.Tuple
 import           Language.Haskell.Exts.Annotated
 import           System.Environment
 
@@ -58,7 +63,7 @@ data ParseType = Decl | Stmt
 
 -- | Command line options.
 options :: Monad m => Consumer [Text] (Option ()) m (Action,ParseType,[Extension])
-options = (,,) <$> action <*> typ <*> exts
+options = [i|(,,) action typ exts|]
   where action =
           constant "parse" "Parse and spit out spans" Parse <|>
           constant "check" "Just check the syntax" Check
@@ -82,15 +87,16 @@ outputWith action typ exts code =
 -- | Output AST info for the given Haskell code.
 output :: Action -> Parser -> [Extension] -> String -> IO ()
 output action parser exts code =
-  case parser parseMode {extensions = exts} code of
+  case parser mode code of
     ParseFailed _ e -> error e
     ParseOk (D ast) ->
       case action of
         Check -> return ()
         Parse ->
           putStrLn ("[" ++
-                    concat (genHSE ast) ++
+                    concat (genHSE mode ast) ++
                     "]")
+  where mode = parseMode {extensions = exts}
 
 -- | An umbrella parser to parse:
 --
@@ -126,8 +132,8 @@ parseMode =
                    ,fixities = Nothing}
 
 -- | Generate a list of spans from the HSE AST.
-genHSE :: Data a => a -> [String]
-genHSE x =
+genHSE :: Data a => ParseMode -> a -> [String]
+genHSE mode x =
   case gmapQ D x of
     zs@(D y:ys) ->
       case cast y of
@@ -135,10 +141,11 @@ genHSE x =
           spanHSE (show (show (typeOf x)))
                   (showConstr (toConstr x))
                   (srcInfoSpan s) :
-          concatMap (\(i,D d) -> pre x i ++ genHSE d)
-                    (zip [0..] ys)
+          concatMap (\(i,D d) -> pre x i ++ genHSE mode d)
+                    (zip [0..] ys) ++
+              post mode x
         _ ->
-          concatMap (\(D d) -> genHSE d) zs
+          concatMap (\(D d) -> genHSE mode d) zs
     _ -> []
 
 -- | Pre-children tweaks for a given parent at index i.
@@ -169,6 +176,42 @@ pre x i =
              |Just (IRule _ _ _ (IHCon (SrcSpanInfo start _) _)) <- [listToMaybe ds]
              ,Just (IRule _ _ _ (IHCon (SrcSpanInfo end _) _)) <- [listToMaybe (reverse ds)]]
            _ -> []
+
+-- | Post-node tweaks for a parent, e.g. adding more children.
+post :: (Typeable a) => ParseMode -> a ->  [String]
+post mode x =
+  case cast x of
+    Just (QuasiQuote (base :: SrcSpanInfo) qname content) ->
+      case parseExpWithMode mode content of
+        ParseOk ex -> genHSE mode (fmap (redelta qname base) ex)
+        ParseFailed _ e -> error e
+    _ -> []
+
+-- | Apply a delta to the positions in the given span from the base.
+redelta :: String -> SrcSpanInfo -> SrcSpanInfo -> SrcSpanInfo
+redelta qname base (SrcSpanInfo (SrcSpan fp sl sc el ec) pts) =
+  SrcSpanInfo
+    (if sl == 1
+        then SrcSpan fp
+                     (sl + lineOffset)
+                     (sc + columnOffset)
+                     (el + lineOffset)
+                     (if el == sl
+                         then ec + columnOffset
+                         else ec)
+        else SrcSpan fp
+                     (sl + lineOffset)
+                     sc
+                     (el + lineOffset)
+                     ec)
+    pts
+  where lineOffset = sl' - 1
+        columnOffset =
+          sc' - 1 +
+          length ("[" :: String) +
+          length qname +
+          length ("|" :: String)
+        (SrcSpanInfo (SrcSpan _ sl' sc' _ _) _) = base
 
 -- | Generate a span from a HSE SrcSpan.
 spanHSE :: String -> String -> SrcSpan -> String
