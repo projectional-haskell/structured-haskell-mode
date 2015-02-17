@@ -205,4 +205,33 @@ Only parenthesized nodes are supported at the moment."
             (shm-insert-string " qualified")
             (just-one-space 1))))))))
 
+(defun shm/bind-toggle ()
+  "Swap the monadicness of a bind."
+  (interactive)
+  (let ((node (shm-get-binding-parent (shm-current-node-pair))))
+    (case (shm-node-cons node)
+      (Generator (progn (goto-char (shm-node-start node))
+                        (search-forward " <- ")
+                        (delete-region (- (point) (length " <- "))
+                                       (point))
+                        (insert " = ")
+                        (goto-char (shm-node-start node))
+                        (shm-insert-string "let ")))
+      (LetStmt (progn (goto-char (shm-node-start node))
+                      (delete-region (point) (+ (point) (length "let ")))
+                      (search-forward " = ")
+                      (delete-region (- (point) (length " = "))
+                                     (point))
+                      (insert " <- "))))))
+
+(defun shm-get-binding-parent (node-pair)
+  "Get the binding parent of the node."
+  (if (or (eq 'Generator (shm-node-cons (cdr node-pair)))
+          (eq 'LetStmt (shm-node-cons (cdr node-pair))))
+      (cdr node-pair)
+    (let ((parent-pair (shm-node-parent node-pair)))
+      (if parent-pair
+          (shm-get-binding-parent parent-pair)
+        (error "Couldn't find a let/generator statement in the node's parents.")))))
+
 (provide 'shm-manipulation)
