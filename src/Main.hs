@@ -110,17 +110,17 @@ output action parser exts code =
 --
 parseTopLevel :: ParseMode -> String -> ParseResult D
 parseTopLevel mode code =
-  D . fix <$> parseDeclWithMode mode code   <|>
-  D       <$> parseImport mode code         <|>
-  D . fix <$> parseModuleWithMode mode code <|>
-  D       <$> parseModulePragma mode code
+  [i|(D . fix) (parseDeclWithMode mode code)|] <|>
+  [i|D (parseImport mode code)|] <|>
+  [i|(D . fix) (parseModuleWithMode mode code)|] <|>
+  [i|D (parseModulePragma mode code)|]
 
 -- | Parse a do-notation statement.
 parseSomeStmt :: ParseMode -> String -> ParseResult D
 parseSomeStmt mode code =
-  D . fix <$> parseStmtWithMode mode code <|>
-  D . fix <$> parseExpWithMode mode code <|>
-  D       <$> parseImport mode code
+  [i|(D . fix) (parseStmtWithMode mode code)|] <|>
+  [i|(D . fix) (parseExpWithMode mode code)|] <|>
+  [i|D (parseImport mode code)|]
 
 -- | Apply fixities after parsing.
 fix ast = fromMaybe ast (applyFixities baseFixities ast)
