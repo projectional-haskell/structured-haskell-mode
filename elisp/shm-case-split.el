@@ -71,9 +71,12 @@ Where the _ and undefineds are evaporating slots."
   "Given a data declaration STRING, generate a list of alternatives."
   (with-temp-buffer
     (insert (replace-regexp-in-string
-             "[a-zA-Z0-9]+-[0-9.]+:"
+             "[A-Z][a-zA-Z0-9_'.]+?\\."
              ""
-             string))
+             (replace-regexp-in-string
+              "[a-zA-Z0-9]+-[0-9.]+:"
+              ""
+              string)))
     (text-mode)
     (structured-haskell-mode)
     (setq shm-last-parse-start (point-max))
@@ -162,8 +165,8 @@ White space here is any of: space, tab, emacs newline (line feed, ASCII 10)."
    () to allow shm/case-split to work in more cases."
   (let* ((clean-s (car
 		   (last
-			(mapcar 'shm-trim-string
-				(split-string s "=>"))))))
+                    (mapcar 'shm-trim-string
+                            (split-string s "=>"))))))
     (if s
 	(let ((case-fold-search nil))
 	  (replace-regexp-in-string "\\b[a-z_][A-Za-z_]*\\b" "()" clean-s))
