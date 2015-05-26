@@ -109,7 +109,9 @@
 
 ;;;###autoload
 (define-minor-mode structured-haskell-mode
-  "Structured editing for Haskell."
+  "Structured editing for Haskell.
+  
+\\{shm-map}"
   :lighter shm-lighter
   :keymap shm-map
   (if structured-haskell-mode
@@ -170,7 +172,9 @@
   a REPL, with inappropriate ones removed.")
 
 (define-minor-mode structured-haskell-repl-mode
-  "Structured editing for Haskell inside a REPL."
+  "Structured editing for Haskell inside a REPL.
+  
+\\{shm-repl-map}"
   :lighter shm-lighter
   :keymap shm-repl-map
   (cond
