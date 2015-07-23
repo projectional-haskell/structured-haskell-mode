@@ -2,3 +2,4 @@ TAGS
 dist/
 .dir-locals.el
 *.elc
+.stack-work/
