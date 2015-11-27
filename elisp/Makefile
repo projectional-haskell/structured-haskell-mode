@@ -6,6 +6,8 @@ ELFILES = shm-ast-documentation.el \
           shm-edit-string.el \
           shm.el \
           shm-evaporate.el \
+          shm-stack.el \
+          shm-languages.el \
           shm-indent.el \
           shm-in.el \
           shm-insert-del.el \

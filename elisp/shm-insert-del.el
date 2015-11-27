@@ -21,6 +21,7 @@
 (require 'shm-slot)
 (require 'shm-layout)
 (require 'shm-indent)
+(require 'shm-languages)
 
 (defun shm-post-self-insert ()
   "Self-insertion handler."
@@ -231,18 +232,18 @@ the current node to the parent."
   (interactive "p")
   (if (and (looking-back "{-")
            (looking-at "-}"))
-      (progn (insert "#  #")
-             (forward-char -2)
-             (let ((pragma (ido-completing-read "Pragma: "
-                                                shm-pragmas)))
-               (insert pragma
-                       " ")
-               (when (string= pragma "LANGUAGE")
-                 (insert (ido-completing-read
-                          "Language: "
-                          (remove-if (lambda (s) (string= s ""))
-                                     (split-string (shell-command-to-string "ghc --supported-languages")
-                                                   "\n")))))))
+      (progn
+        (insert "#  #")
+        (forward-char -2)
+        (let ((pragma (ido-completing-read "Pragma: "
+                                           shm-pragmas)))
+          (insert pragma
+                  " ")
+          (when (string= pragma "LANGUAGE")
+            (insert
+             (ido-completing-read
+              "Language: "
+              (shm-supported-languages))))))
     (self-insert-command n)))
 
 (defun shm/open-paren ()
