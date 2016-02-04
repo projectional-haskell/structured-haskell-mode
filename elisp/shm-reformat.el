@@ -24,7 +24,9 @@
   "Reformat the current declaration with `hindent/reformat-decl'
 and then jump back to the right node."
   (interactive)
-  (let* ((current-pair (shm-current-node-pair))
+  (if (region-active-p)
+      (call-interactively 'hindent-reformat-region)
+      (let* ((current-pair (shm-current-node-pair))
          (index (car current-pair))
          (offset (- (point) (shm-node-start (cdr current-pair)))))
     (structured-haskell-mode -1)
@@ -32,6 +34,6 @@ and then jump back to the right node."
     (structured-haskell-mode 1)
     (shm/reparse)
     (let ((new-current (elt (shm-decl-ast) index)))
-      (goto-char (+ (shm-node-start new-current) offset)))))
+      (goto-char (+ (shm-node-start new-current) offset))))))
 
 (provide 'shm-reformat)
