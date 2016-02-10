@@ -169,6 +169,16 @@ and instate this one."
     (font-lock-fontify-buffer)
     (buffer-substring (+ (point-min) (length "x=")) (point-max))))
 
+(defun shm/call-process-region-ignoring-comments (start end prog-name delete out-buffer display &rest args)
+  (save-match-data
+    (let ((source-code (buffer-substring-no-properties start end)))
+      (with-temp-buffer
+        (insert source-code)
+        (goto-char (point-min))
+        (while (search-forward-regexp "^#.*$" nil t)
+          (replace-match ""))
+        (apply #'call-process-region (point-min) (point-max) prog-name delete out-buffer display args)))))
+
 (defun shm-get-ast (type start end)
   "Get the AST for the given region at START and END. Parses with TYPE.
 
@@ -185,7 +195,7 @@ imagine."
         (let ((temp-buffer (current-buffer)))
           (with-current-buffer buffer
             (condition-case e
-                (apply #'call-process-region
+                (apply #'shm/call-process-region-ignoring-comments
                        (append (list start
                                      end
                                      shm-program-name
@@ -209,7 +219,7 @@ parses."
     (with-temp-buffer
       (let ((temp-buffer (current-buffer)))
         (with-current-buffer buffer
-          (apply #'call-process-region
+          (apply #'shm/call-process-region-ignoring-comments
                  (append (list start
                                end
                                shm-program-name
