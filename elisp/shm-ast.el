@@ -305,13 +305,13 @@ expected to work."
    ;; proper declaration.
    ((and (not use-line-comments)
          (shm-in-comment)
-         (save-excursion (goto-char (line-beginning-position))
+         (save-excursion (beginning-of-line)
                          (shm-in-comment)))
     nil)
    ((save-excursion
-      (goto-char (line-beginning-position))
-      (or (looking-at "^-}$")
-          (looking-at "^{-$")))
+      (beginning-of-line)
+      (or (looking-at-p "^-}$")
+          (looking-at-p "^{-$")))
     nil)
    ((bound-and-true-p structured-haskell-repl-mode)
     (case major-mode
@@ -330,44 +330,45 @@ expected to work."
                                 haskell-interactive-mode-prompt-start
                                 (line-end-position))))
                ;; Don't activate if we're doing a GHCi command.
-               (unless (and (string-match "^:" whole-line)
-                            (not (string-match "^:[tk] " whole-line)))
+               (unless (and (string-match-p "^:" whole-line)
+                            (not (string-match-p "^:[tk] " whole-line)))
                  (cons (save-excursion
                          (goto-char haskell-interactive-mode-prompt-start)
-                         (when (looking-at ":[kt] ")
+                         (when (looking-at-p ":[kt] ")
                            (search-forward " " (point-max) t 1))
                          (point))
                        (line-end-position))))))))))
    ;; Otherwise we just do our line-based hack.
    (t
     (save-excursion
-      (let ((start (or (flet
-                           ((jump ()
-                                  (search-backward-regexp "^[^ \n]" nil t 1)
-                                  (cond
-                                   ((save-excursion (goto-char (line-beginning-position))
-                                                    (looking-at "|]"))
-                                    (jump))
-                                   (t (unless (or (looking-at "^-}$")
-                                                  (looking-at "^{-$"))
-                                        (point))))))
-                         (goto-char (line-end-position))
-                         (jump))
-                       0))
-            (end (progn (goto-char (1+ (point)))
-                        (or (flet
-                                ((jump ()
-                                       (when (search-forward-regexp "[\n]+[^ \n]" nil t 1)
-                                         (cond
-                                          ((save-excursion (goto-char (line-beginning-position))
-                                                           (looking-at "|]"))
-                                           (jump))
-                                          (t (forward-char -1)
-                                             (search-backward-regexp "[^\n ]" nil t)
-                                             (forward-char)
-                                             (point))))))
-                              (jump))
-                            (point-max)))))
+      (let* ((skip-at-start-re (rx (or "#" "--" "|]")))
+             (start (or (flet
+                            ((jump ()
+                                   (search-backward-regexp "^[^ \n]" nil t 1)
+                                   (cond
+                                    ((save-excursion (beginning-of-line)
+                                                     (looking-at-p skip-at-start-re))
+                                     (jump))
+                                    (t (unless (or (looking-at-p "^-}$")
+                                                   (looking-at-p "^{-$"))
+                                         (point))))))
+                          (goto-char (line-end-position))
+                          (jump))
+                        0))
+             (end (progn (goto-char (1+ (point)))
+                         (or (flet
+                                 ((jump ()
+                                        (when (search-forward-regexp "[\n]+[^ \n]" nil t 1)
+                                          (cond
+                                           ((save-excursion (beginning-of-line)
+                                                            (looking-at-p skip-at-start-re))
+                                            (jump))
+                                           (t (forward-char -1)
+                                              (search-backward-regexp "[^\n ]" nil t)
+                                              (forward-char)
+                                              (point))))))
+                               (jump))
+                             (point-max)))))
         (cons start end))))))
 
 (defun shm-delete-markers (decl)
