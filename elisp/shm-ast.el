@@ -207,7 +207,8 @@ imagine."
                                (shm-extra-arguments)))
               ((file-error)
                (error "Unable to find structured-haskell-mode executable! See README for help.")))))
-        (read (buffer-string))))))
+        (goto-char (point-min))
+        (read (current-buffer))))))
 
 (defun shm-check-ast (type start end)
   "Check whether the region of TYPE from START to END parses.
