@@ -358,7 +358,8 @@ expected to work."
                                    (search-backward-regexp "^[^ \n]" nil t 1)
                                    (cond
                                     ((save-excursion (beginning-of-line)
-                                                     (looking-at-p skip-at-start-re))
+                                                     (and (not (bobp))
+                                                          (looking-at-p skip-at-start-re)))
                                      (jump))
                                     (t (unless (or (looking-at-p "^-}$")
                                                    (looking-at-p "^{-$"))
