@@ -1,5 +1,7 @@
 flags: {}
 packages:
 - '.'
-extra-deps: []
-resolver: lts-2.17
+extra-deps:
+- applicative-quoters-0.1.0.8
+resolver: lts-5.14
+
