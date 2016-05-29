@@ -19,6 +19,17 @@
 
 (require 'shm-layout)
 
+(defun shm/split ()
+  "Split the current thing into two parts.
+
+Strings: \"x|y\" -> \"x\" \"y\"
+"
+  (interactive)
+  (cond
+   ((shm-in-string)
+    (insert "\" \"")
+    (forward-char -2))))
+
 (defun shm/$ ()
   "Swap parens with a dollar."
   (interactive)

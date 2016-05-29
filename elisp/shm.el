@@ -93,6 +93,7 @@
     (define-key map (kbd "C-M-SPC") 'shm/mark-node)
     (define-key map (kbd "C-c C-w") 'shm/goto-where)
     ;; Splitting, slurping, barfing, etc.
+    (define-key map (kbd "M-S") 'shm/split)
     (define-key map (kbd "C-+") 'shm/add-operand)
     (define-key map (kbd "C-$") 'shm/$)
     (define-key map (kbd "M-r") 'shm/raise)
@@ -110,7 +111,7 @@
 ;;;###autoload
 (define-minor-mode structured-haskell-mode
   "Structured editing for Haskell.
-  
+
 \\{shm-map}"
   :lighter shm-lighter
   :keymap shm-map
@@ -161,6 +162,7 @@
     (define-key map (kbd "M-DEL") 'shm/backward-kill-word)
     (define-key map (kbd "C-<backspace>") 'shm/backward-kill-word)
     ;; Splitting, slurping, barfing, etc.
+    (define-key map (kbd "M-S") 'shm/split)
     (define-key map (kbd "C-$") 'shm/$)
     (define-key map (kbd "C-+") 'shm/add-operand)
     (define-key map (kbd "M-r") 'shm/raise)
@@ -173,7 +175,7 @@
 
 (define-minor-mode structured-haskell-repl-mode
   "Structured editing for Haskell inside a REPL.
-  
+
 \\{shm-repl-map}"
   :lighter shm-lighter
   :keymap shm-repl-map
