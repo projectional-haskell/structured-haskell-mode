@@ -1,5 +1,4 @@
 {-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE PatternGuards #-}
 {-# LANGUAGE RecordWildCards #-}
@@ -14,7 +13,6 @@
 module Main (main) where
 
 import           Control.Applicative
-import           Control.Applicative.QQ.Idiom
 import           Data.Data
 import           Data.List
 import           Data.Maybe
@@ -22,7 +20,6 @@ import           Data.Text (Text)
 import qualified Data.Text as T
 import           Descriptive
 import           Descriptive.Options
-import           GHC.Tuple
 import           Language.Haskell.Exts.Annotated
 import           System.Environment
 
@@ -63,7 +60,7 @@ data ParseType = Decl | Stmt
 
 -- | Command line options.
 options :: Monad m => Consumer [Text] (Option ()) m (Action,ParseType,[Extension])
-options = [i|(,,) action typ exts|]
+options = (,,) <$> action <*> typ <*> exts
   where action =
           constant "parse" "Parse and spit out spans" Parse <|>
           constant "check" "Just check the syntax" Check
@@ -110,17 +107,17 @@ output action parser exts code =
 --
 parseTopLevel :: ParseMode -> String -> ParseResult D
 parseTopLevel mode code =
-  [i|(D . fix) (parseDeclWithMode mode code)|] <|>
-  [i|D (parseImport mode code)|] <|>
-  [i|(D . fix) (parseModuleWithMode mode code)|] <|>
-  [i|D (parseModulePragma mode code)|]
+  ((D . fix) <$> parseDeclWithMode mode code) <|>
+  (D <$> parseImport mode code) <|>
+  ((D . fix) <$> parseModuleWithMode mode code) <|>
+  (D <$> parseModulePragma mode code)
 
 -- | Parse a do-notation statement.
 parseSomeStmt :: ParseMode -> String -> ParseResult D
 parseSomeStmt mode code =
-  [i|(D . fix) (parseStmtWithMode mode code)|] <|>
-  [i|(D . fix) (parseExpWithMode mode code)|] <|>
-  [i|D (parseImport mode code)|]
+  ((D . fix) <$> parseStmtWithMode mode code) <|>
+  ((D . fix) <$> parseExpWithMode mode code) <|>
+  (D <$> parseImport mode code)
 
 -- | Apply fixities after parsing.
 fix ast = fromMaybe ast (applyFixities baseFixities ast)

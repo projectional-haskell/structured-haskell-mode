@@ -1,7 +1,1 @@
-flags: {}
-packages:
-- '.'
-extra-deps:
-- applicative-quoters-0.1.0.8
-resolver: lts-5.14
-
+resolver: lts-5.16
