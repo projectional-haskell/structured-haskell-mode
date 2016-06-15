@@ -36,7 +36,8 @@
   "Copy the region, and save it in the clipboard."
   (interactive "r")
   (save-excursion
-    (shm-kill-region 'clipboard-kill-ring-save beg end t)))
+    (shm-kill-region 'clipboard-kill-ring-save beg end t))
+  (setq deactivate-mark t))
 
 (defun shm/kill-line ()
   "Kill everything possible to kill after point before the end of
