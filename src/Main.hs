@@ -20,7 +20,7 @@ import           Data.Text (Text)
 import qualified Data.Text as T
 import           Descriptive
 import           Descriptive.Options
-import           Language.Haskell.Exts.Annotated
+import           Language.Haskell.Exts
 import           System.Environment
 
 -- | A generic Dynamic-like constructor -- but more convenient to
