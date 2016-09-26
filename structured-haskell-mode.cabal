@@ -32,6 +32,7 @@ data-files:          elisp/shm-ast-documentation.el
                      elisp/shm-overlays.el
                      elisp/shm-simple-indent.el
                      elisp/shm-slot.el
+                     elisp/shm-stack.el
                      elisp/shm-test.el
                      elisp/shm-tests.el
                      elisp/shm-type.el
