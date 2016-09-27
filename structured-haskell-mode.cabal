@@ -24,6 +24,7 @@ data-files:          elisp/shm-ast-documentation.el
                      elisp/shm-indent.el
                      elisp/shm-in.el
                      elisp/shm-insert-del.el
+                     elisp/shm-languages.el
                      elisp/shm-layout.el
                      elisp/shm-macros.el
                      elisp/shm-manipulation.el
