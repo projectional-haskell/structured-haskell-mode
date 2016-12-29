@@ -46,7 +46,7 @@ and then jump back to the right node."
       (save-restriction
        (narrow-to-region (car bounds) (cdr bounds))
        (goto-char (point-min))
-       (while (search-forward "undefined" nil t)
+       (while (search-forward-regexp "\bundefined\b" nil t)
          (progn
            (delete-region (point) (save-excursion (backward-word 1) (point)))
            (shm/insert-undefined)
