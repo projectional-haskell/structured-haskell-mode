@@ -289,6 +289,17 @@ Only parenthesized nodes are supported at the moment."
                (< n (length regions))
                (< m (length regions))
                (not (= m n)))
+      ;; We need to move the point to the Ident node for the transposition to work correctly.
+      (let ((x (elt (cdr (shm-current-node-pair)) 1)))
+        (cond ((eq x 'DataDecl) (forward-word 1))
+              ((eq x 'Ident) (forward-word 0))
+              ((eq x 'ConDecl) (if (= (point) (shm-node-start (cdr (shm-current-node-pair))))
+                                   (shm-set-node-overlay)
+                                 (progn (shm/backward-node) (shm-set-node-overlay))))
+              (t (progn
+                   (while (not (eq 'ConDecl (elt (cdr (shm-current-node-pair)) 1)))
+                     (shm/goto-parent))
+                   (shm-set-node-overlay)))))
       (transpose-regions
        (marker-position m1)
        (marker-position m2)
