@@ -246,6 +246,15 @@ Only parenthesized nodes are supported at the moment."
         (error "Couldn't find a let/generator statement in the node's parents.")))))
 
 (defun shm-push-current-data-constructor-down (&optional arg)
+  "Transpose the current data constructor with the data
+constructor ARG \"constructors\" below (wrap around if
+necessary). Here's an example:
+
+data Test = A | (point)B | C
+
+=>
+
+data Test = A | C | (point)B"
   (interactive)
   (setq arg (or arg 1))
   (let ((end (1- (length (shm-get-data-constructor-members-points))))
@@ -253,6 +262,15 @@ Only parenthesized nodes are supported at the moment."
     (shm-transpose-data-constructors ind (mod (+ ind arg) end))))
 
 (defun shm-push-current-data-constructor-up (&optional arg)
+  "Transpose the current data constructor with the data
+constructor ARG \"constructors\" above (wrap around if
+necessary). Here's an example:
+
+data Test = A | (point)B | C
+
+=>
+
+data Test = (point)B | A | C"
   (interactive)
   (setq arg (or arg 1))
   (let ((end (1- (length (shm-get-data-constructor-members-points))))
@@ -260,9 +278,13 @@ Only parenthesized nodes are supported at the moment."
     (shm-transpose-data-constructors (mod (- ind arg) end) ind)))
 
 (defun shm-in-data-constructor ()
+  "Check if the current node is a Data Declaration (DataDecl) or
+the child of one."
   (eq 'DataDecl (elt (elt (shm-decl-ast) 0) 1)))
 
 (defun shm-get-data-constructor-members-points ()
+  "Find the region bounds of all the data constructors within the
+current data declaration."
   (when (shm-in-data-constructor)
     (mapcar (lambda (ps) (cons (elt ps 2) (elt ps 3)))
             (remove-if (lambda (n) (eq n 'nil))
@@ -270,6 +292,8 @@ Only parenthesized nodes are supported at the moment."
                                (shm-decl-ast))))))
 
 (defun shm-find-current-data-member-index-at-point ()
+  "Find the index of the current data constructor with the
+current data declaration."
   (let ((location (point)))
     (-find-index (lambda (bounds) (and
                               (>= (marker-position (cdr bounds)) location)
@@ -277,6 +301,45 @@ Only parenthesized nodes are supported at the moment."
                  (shm-get-data-constructor-members-points))))
 
 (defun shm-transpose-data-constructors (m n)
+  "Transpose the mth and nth data constructors. This function
+will silently fail if the m or n are not valid indices (the first
+index is 0). Here's an example of the function working as
+intended. In this example, the 1st and 9th data constructors will
+be swapped.
+
+data JSValue
+  = JSLetIn String
+            JSValue
+            JSValue
+  | JSLambda [String]
+             JSValue (**)
+  | JSNull
+  | JSIdentifier String
+  | JSString String
+  | JSArray [JSValue]
+  | JSIndexInfo JSValue
+                JSValue
+  | JSApplication JSValue
+                  [JSValue]
+  | JSNumber Double
+  | JSObject [(String, JSValue)] (**)
+
+data JSValue
+  = JSLetIn String
+            JSValue
+            JSValue
+  | JSObject [(String, JSValue)] (**)
+  | JSNull
+  | JSIdentifier String
+  | JSString String
+  | JSArray [JSValue]
+  | JSIndexInfo JSValue
+                JSValue
+  | JSApplication JSValue
+                  [JSValue]
+  | JSNumber Double
+  | JSLambda [String]
+             JSValue (**)"
   (let* ((bounds (bounds-of-thing-at-point 'defun))
          (regions (shm-get-data-constructor-members-points))
          (m1 (car (elt regions m)))
