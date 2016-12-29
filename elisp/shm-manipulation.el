@@ -245,4 +245,83 @@ Only parenthesized nodes are supported at the moment."
           (shm-get-binding-parent parent-pair)
         (error "Couldn't find a let/generator statement in the node's parents.")))))
 
+(defun shm-push-current-data-constructor-down (&optional arg)
+  (interactive)
+  (setq arg (or arg 1))
+  (let ((end (1- (length (shm-get-data-constructor-members-points))))
+        (ind (shm-find-current-data-member-index-at-point)))
+    (shm-transpose-data-constructors ind (mod (+ ind arg) end))))
+
+(defun shm-push-current-data-constructor-up (&optional arg)
+  (interactive)
+  (setq arg (or arg 1))
+  (let ((end (1- (length (shm-get-data-constructor-members-points))))
+        (ind (shm-find-current-data-member-index-at-point)))
+    (shm-transpose-data-constructors (mod (- ind arg) end) ind)))
+
+(defun shm-in-data-constructor ()
+  (eq 'DataDecl (elt (elt (shm-decl-ast) 0) 1)))
+
+(defun shm-get-data-constructor-members-points ()
+  (when (shm-in-data-constructor)
+    (mapcar (lambda (ps) (cons (elt ps 2) (elt ps 3)))
+            (remove-if (lambda (n) (eq n 'nil))
+                       (mapcar (lambda (c) (if (eq' ConDecl (elt c 1)) c nil))
+                               (shm-decl-ast))))))
+
+(defun shm-find-current-data-member-index-at-point ()
+  (let ((location (point)))
+    (-find-index (lambda (bounds) (and
+                              (>= (marker-position (cdr bounds)) location)
+                              (<= (marker-position (car bounds)) location)))
+                 (shm-get-data-constructor-members-points))))
+
+(defun shm-transpose-data-constructors (m n)
+  (let* ((bounds (bounds-of-thing-at-point 'defun))
+         (regions (shm-get-data-constructor-members-points))
+         (m1 (car (elt regions m)))
+         (m2 (cdr (elt regions m)))
+         (m3 (car (elt regions n)))
+         (m4 (cdr (elt regions n))))
+    (when (and (shm-in-data-constructor)
+               (>= m 0)
+               (>= n 0)
+               (< n (length regions))
+               (< m (length regions))
+               (not (= m n)))
+      (transpose-regions
+       (marker-position m1)
+       (marker-position m2)
+       (marker-position m3)
+       (marker-position m4))
+      (let ((parsed-ast (shm-get-ast (if (bound-and-true-p structured-haskell-repl-mode)
+                                         "stmt"
+                                       "decl")
+                                     (car bounds) (cdr bounds))))
+        (let ((bail (lambda ()
+                      (when shm-display-quarantine
+                        (shm-quarantine-overlay (car bounds) (cdr bounds)))
+                      (setq shm-lighter " SHM!")
+                      nil)))
+          (if parsed-ast
+              (progn
+                (when (bound-and-true-p structured-haskell-repl-mode)
+                  (shm-font-lock-region (car bounds) (cdr bounds)))
+                (let ((ast (shm-get-nodes parsed-ast (car bounds) (cdr bounds))))
+                  (if ast
+                      (progn (setq shm-lighter " SHM")
+                             (set-marker m1 nil)
+                             (set-marker m2 nil)
+                             (set-marker m3 nil)
+                             (set-marker m4 nil)
+                             (shm-set-decl-ast (car bounds) ast)
+                             (shm-delete-overlays (point-min) (point-max) 'shm-quarantine)
+                               ;This was my initial guess for
+                               ;silencing the message at the end. It
+                               ;doesn't work.
+                             (let ((inhibit-message t))
+                               (shm/init)))
+                    (funcall bail))))
+            (funcall bail)))))))
+
 (provide 'shm-manipulation)
