@@ -257,9 +257,16 @@ data Test = A | (point)B | C
 data Test = A | C | (point)B"
   (interactive)
   (setq arg (or arg 1))
-  (let ((end (1- (length (shm-get-data-constructor-members-points))))
-        (ind (shm-find-current-data-member-index-at-point)))
-    (shm-transpose-data-constructors ind (mod (+ ind arg) end))))
+  (let* ((regions (cond ((shm-find-current-field-member-index-at-point) (shm-get-field-constructor-members-points))
+                        ((shm-find-current-data-member-index-at-point) (shm-get-data-constructor-members-points))
+                        (t (error "Not a valid point for transposition."))))
+         (end (length regions))
+         (ind (or (shm-find-current-field-member-index-at-point)
+                  (shm-find-current-data-member-index-at-point))))
+    (if ind
+        (let ((next (mod (+ ind arg) end)))
+          (shm-transpose-data-constructors ind next))
+      (message "Point is not a data constructor."))))
 
 (defun shm-push-current-data-constructor-up (&optional arg)
   "Transpose the current data constructor with the data
@@ -273,9 +280,16 @@ data Test = A | (point)B | C
 data Test = (point)B | A | C"
   (interactive)
   (setq arg (or arg 1))
-  (let ((end (1- (length (shm-get-data-constructor-members-points))))
-        (ind (shm-find-current-data-member-index-at-point)))
-    (shm-transpose-data-constructors (mod (- ind arg) end) ind)))
+  (let* ((regions (cond ((shm-find-current-field-member-index-at-point) (shm-get-field-constructor-members-points))
+                        ((shm-find-current-data-member-index-at-point) (shm-get-data-constructor-members-points))
+                        (t (error "Not a valid point for transposition."))))
+         (end (length regions))
+         (ind (or (shm-find-current-field-member-index-at-point)
+                  (shm-find-current-data-member-index-at-point))))
+    (if ind
+        (let ((prev (mod (- ind arg) end)))
+          (shm-transpose-data-constructors ind prev))
+      (message "Point is not a data constructor."))))
 
 (defun shm-in-data-constructor ()
   "Check if the current node is a Data Declaration (DataDecl) or
@@ -288,8 +302,62 @@ current data declaration."
   (when (shm-in-data-constructor)
     (mapcar (lambda (ps) (cons (elt ps 2) (elt ps 3)))
             (remove-if (lambda (n) (eq n 'nil))
-                       (mapcar (lambda (c) (if (eq' ConDecl (elt c 1)) c nil))
+                       (mapcar (lambda (c) (let ((decl (elt c 1)))
+                                        (cond
+                                         ((eq decl 'QualConDecl) c)
+                                         (t nil))))
                                (shm-decl-ast))))))
+
+(defun shm-get-field-constructor-members-points ()
+  "Find the region bounds of all the field constructors within
+  the current data declaration."
+  (let ((field-list (when (shm-in-data-constructor)
+                      (mapcar (lambda (ps) (cons (elt ps 2) (elt ps 3)))
+                              (remove-if (lambda (n) (eq n 'nil))
+                                         (mapcar (lambda (c) (if (eq 'FieldDecl (elt c 1)) c nil))
+                                                 (shm-decl-ast)))))))
+    (if-let ((data-index (shm-find-current-data-member-index-at-point)))
+        (let ((bounds-data-index (elt (shm-get-data-constructor-members-points) data-index)))
+          (delq nil
+                (mapcar (lambda (b) (if (within-interval bounds-data-index b) b nil))
+                        field-list)))
+      field-list)))
+
+(defun within-interval (data field)
+  "Check if field constructor is within a data constructor and
+give the appropriate index."
+  (let ((data-start1 (marker-position (car data)))
+        (data-end1 (marker-position (cdr data)))
+        (field-start1 (marker-position (car field)))
+        (field-end1 (marker-position (cdr field))))
+   (and (< data-start1 field-start1) (> data-end1 field-start1)
+        (< data-start1 field-end1) (> data-end1 field-end1))))
+
+(defun shm-find-current-data-member-index-at-point ()
+  "Find the index of the current data constructor with the
+current data declaration."
+  (let ((location (point)))
+    (-find-index (lambda (bounds) (and
+                              (>= (marker-position (cdr bounds)) location)
+                              (<= (marker-position (car bounds)) location)))
+                 (shm-get-data-constructor-members-points))))
+
+(defun shm-find-current-field-member-index-at-point ()
+  "Find the index of the current data field constructor with the
+current data declaration."
+  (let ((location (point)))
+    (if-let ((data-index (shm-find-current-data-member-index-at-point)))
+        (let ((bounds-data-index (elt (shm-get-data-constructor-members-points) data-index)))
+          (-find-index (lambda (bounds) (and
+                                    (>= (marker-position (cdr bounds)) location)
+                                    (<= (marker-position (car bounds)) location)))
+                       (delq nil
+                             (mapcar (lambda (b) (if (within-interval bounds-data-index b) b nil))
+                                     (shm-get-field-constructor-members-points)))))
+      (-find-index (lambda (bounds) (and
+                                (>= (marker-position (cdr bounds)) location)
+                                (<= (marker-position (car bounds)) location)))
+                   (shm-get-field-constructor-members-points)))))
 
 (defun shm-find-current-data-member-index-at-point ()
   "Find the index of the current data constructor with the
@@ -341,12 +409,16 @@ data JSValue
   | JSLambda [String]
              JSValue (**)"
   (let* ((bounds (bounds-of-thing-at-point 'defun))
-         (regions (shm-get-data-constructor-members-points))
+         (regions (cond ((shm-find-current-field-member-index-at-point) (shm-get-field-constructor-members-points))
+                        ((shm-find-current-data-member-index-at-point) (shm-get-data-constructor-members-points))
+                        (t (error "Not a valid point for transposition."))))
          (m1 (car (elt regions m)))
          (m2 (cdr (elt regions m)))
          (m3 (car (elt regions n)))
          (m4 (cdr (elt regions n))))
     (when (and (shm-in-data-constructor)
+               n
+               m
                (>= m 0)
                (>= n 0)
                (< n (length regions))
@@ -354,48 +426,141 @@ data JSValue
                (not (= m n)))
       ;; We need to move the point to the Ident node for the transposition to work correctly.
       (let ((x (elt (cdr (shm-current-node-pair)) 1)))
-        (cond ((eq x 'DataDecl) (forward-word 1))
-              ((eq x 'Ident) (forward-word 0))
-              ((eq x 'ConDecl) (if (= (point) (shm-node-start (cdr (shm-current-node-pair))))
-                                   (shm-set-node-overlay)
-                                 (progn (shm/backward-node) (shm-set-node-overlay))))
+        (cond ((eq x 'DataDecl)
+               (progn
+                 (forward-word 1)
+                 (shm-transpose-data-constructors-helper bounds m1 m2 m3 m4)))
+              ((eq x 'Ident) (progn (message "%s " m4)  (shm-transpose-data-constructors-helper bounds m1 m2 m3 m4)))
+              ((eq x 'FieldDecl)
+               (progn
+                 (if (= (point (shm-node-start (cdr (shm-current-node-pair)))))
+                     (shm-set-node-overlay)
+                   (progn (shm/backward-node) (shm-set-node-overlay)))
+                 (shm-transpose-data-constructors-helper bounds m1 m2 m3 m4)))
+              ((member x '(QualConDecl ConDecl))
+               (progn
+                 (if (= (point) (shm-node-start (cdr (shm-current-node-pair))))
+                     (shm-set-node-overlay)
+                   (progn (shm/backward-node) (shm-set-node-overlay)))
+                 (shm-transpose-data-constructors-helper bounds m1 m2 m3 m4)))
               (t (progn
                    (while (not (eq 'ConDecl (elt (cdr (shm-current-node-pair)) 1)))
                      (shm/goto-parent))
-                   (shm-set-node-overlay)))))
-      (transpose-regions
-       (marker-position m1)
-       (marker-position m2)
-       (marker-position m3)
-       (marker-position m4))
-      (let ((parsed-ast (shm-get-ast (if (bound-and-true-p structured-haskell-repl-mode)
-                                         "stmt"
-                                       "decl")
-                                     (car bounds) (cdr bounds))))
-        (let ((bail (lambda ()
-                      (when shm-display-quarantine
-                        (shm-quarantine-overlay (car bounds) (cdr bounds)))
-                      (setq shm-lighter " SHM!")
-                      nil)))
-          (if parsed-ast
-              (progn
-                (when (bound-and-true-p structured-haskell-repl-mode)
-                  (shm-font-lock-region (car bounds) (cdr bounds)))
-                (let ((ast (shm-get-nodes parsed-ast (car bounds) (cdr bounds))))
-                  (if ast
-                      (progn (setq shm-lighter " SHM")
-                             (set-marker m1 nil)
-                             (set-marker m2 nil)
-                             (set-marker m3 nil)
-                             (set-marker m4 nil)
-                             (shm-set-decl-ast (car bounds) ast)
-                             (shm-delete-overlays (point-min) (point-max) 'shm-quarantine)
-                               ;This was my initial guess for
-                               ;silencing the message at the end. It
-                               ;doesn't work.
-                             (let ((inhibit-message t))
-                               (shm/init)))
-                    (funcall bail))))
-            (funcall bail)))))))
+                   (shm-set-node-overlay)
+                   (shm-transpose-data-constructors-helper bounds m1 m2 m3 m4))))))))
+
+(defun shm-transpose-data-constructors-helper (bounds m1 m2 m3 m4)
+  (let ((commentEndA
+         (save-excursion
+           (goto-char (marker-position m2))
+           (if (comment-forward 1)
+               (progn
+                 (while (comment-forward))
+                 (skip-chars-backward " " nil)
+                 (backward-char)
+                 (point))
+             (if (looking-at "\}")
+                 (if (= (+ (save-excursion (skip-chars-backward " ")) (point)) (point-at-bol))
+                     (marker-position m2)
+                   (progn
+                     (delete-horizontal-space)
+                     (let* ((start (point))
+                            (commentbounds
+                             (save-excursion
+                               (progn
+                                 (if (search-forward "--" (cdr bounds) t)
+                                     (let ((startcommentblock (- (point) 2)))
+                                       (backward-char 2)
+                                       (while (comment-forward))
+                                       (cons startcommentblock (point)))
+                                   nil))))
+                            (text (if commentbounds
+                                      (delete-and-extract-region
+                                       (car commentbounds)
+                                       (cdr commentbounds))
+                                    "")))
+                       (goto-char start)
+                       (save-excursion
+                         (shm/newline-indent-proxy))
+                       (insert " ")
+                       (insert text)
+                       (point))))   ;The text will be unnormalized for now. May fix this later.
+               (progn
+                 (skip-chars-backward " " nil)
+                 (backward-char)
+                 (point))))))
+        (commentEndB
+         (save-excursion
+           (goto-char (marker-position m4))
+           (if (comment-forward 1)
+               (progn
+                 (while (comment-forward))
+                 (skip-chars-backward " " nil)
+                 (backward-char)
+                 (point))
+             (if (looking-at "\}")
+                 (if (= (+ (save-excursion (skip-chars-backward " ")) (point)) (point-at-bol))  ; The \} might be on a newline.
+                     (marker-position m4)
+                   (progn
+                     (delete-horizontal-space)
+                     (let* ((start (point))
+                            (commentbounds
+                             (save-excursion
+                               (progn
+                                 (if (search-forward "--" (cdr bounds) t)
+                                     (let ((startcommentblock (- (point) 2)))
+                                       (backward-char 2)
+                                       (while (comment-forward))
+                                       (cons startcommentblock (point)))
+                                   nil))))
+                            (text (if commentbounds
+                                      (delete-and-extract-region
+                                       (car commentbounds)
+                                       (cdr commentbounds))
+                                    "")))
+                       (goto-char start)
+                       (save-excursion
+                         (shm/newline-indent-proxy))
+                       (insert " ")
+                       (insert text)
+                       (point))))      ;The text will be unnormalized for now. May fix this later.
+               (progn
+                 (skip-chars-backward " " nil)
+                 (backward-char)
+                 (point)))))))
+    (transpose-regions
+     (marker-position m1)
+     commentEndA
+     (marker-position m3)
+     commentEndB)
+    (let ((parsed-ast (shm-get-ast (if (bound-and-true-p structured-haskell-repl-mode)
+                                       "stmt"
+                                     "decl")
+                                   (car bounds) (cdr bounds))))
+      (let ((bail (lambda ()
+                    (when shm-display-quarantine
+                      (shm-quarantine-overlay (car bounds) (cdr bounds)))
+                    (setq shm-lighter " SHM!")
+                    nil)))
+        (if parsed-ast
+            (progn
+              (when (bound-and-true-p structured-haskell-repl-mode)
+                (shm-font-lock-region (car bounds) (cdr bounds)))
+              (let ((ast (shm-get-nodes parsed-ast (car bounds) (cdr bounds))))
+                (if ast
+                    (progn (setq shm-lighter " SHM")
+                           (set-marker m1 nil)
+                           (set-marker m2 nil)
+                           (set-marker m3 nil)
+                           (set-marker m4 nil)
+                           (shm-set-decl-ast (car bounds) ast)
+                           (shm-delete-overlays (point-min) (point-max) 'shm-quarantine)
+                                        ;This was my initial guess for
+                                        ;silencing the message at the end. It
+                                        ;doesn't work.
+                           (let ((inhibit-message t))
+                             (shm/init)))
+                  (funcall bail))))
+          (funcall bail))))))
 
 (provide 'shm-manipulation)
