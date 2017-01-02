@@ -36,4 +36,23 @@ and then jump back to the right node."
     (let ((new-current (elt (shm-decl-ast) index)))
       (goto-char (+ (shm-node-start new-current) offset))))))
 
+(defun shm-reinsert-undefined-slots-after-fill ()
+  "Replace any text matching \"\bundefined\b\" with the with the
+  same text and \"evaporating slot\" slot property. Hindent seems
+  to remove certain text properties."
+  (interactive)
+  (let ((bounds (bounds-of-thing-at-point 'defun)))
+    (save-excursion
+      (save-restriction
+       (narrow-to-region (car bounds) (cdr bounds))
+       (goto-char (point-min))
+       (while (search-forward-regexp "\\bundefined\\b" nil t)
+         (progn
+           (delete-region (point) (save-excursion (backward-word 1) (point)))
+           (shm/insert-undefined)
+           (forward-word)))))))
+
+(defadvice shm-reformat-decl (after reinsert-undefined activate)
+  (shm-reinsert-undefined-slots-after-fill))
+
 (provide 'shm-reformat)
