@@ -563,4 +563,20 @@ data JSValue
                   (funcall bail))))
           (funcall bail))))))
 
+(defun shm-add-deriving-clause ()
+  "Add deriving clause to data type declaration. If successful,
+  the point should be at the beginning of an evaporating undefined."
+  (shm/goto-topmost-parent)
+  (let ((current (shm-current-node)))
+    (cond ((eq (elt current 1) 'DataDecl)
+           (progn
+             (shm/forward-node)
+             (shm/newline-indent-proxy)
+             (insert "deriving (")
+             (shm/insert-undefined)
+             (save-excursion
+               (forward-word)
+               (insert ")"))))
+          (t (message "The point is not contained within a data type declaration.")))))
+
 (provide 'shm-manipulation)
