@@ -565,13 +565,16 @@ data JSValue
 
 (defun shm-add-deriving-clause ()
   "Add deriving clause to data type declaration. If successful,
-  the point should be at the beginning of an evaporating undefined."
+the point should be at the beginning of an evaporating undefined."
   (shm/goto-topmost-parent)
-  (let ((current (shm-current-node)))
+  (let ((current (shm-current-node))
+        (line (line-number-at-pos)))
     (cond ((eq (elt current 1) 'DataDecl)
            (progn
              (shm/forward-node)
-             (shm/newline-indent-proxy)
+             (if (= line (line-number-at-pos))
+                 (insert " ")
+               (shm/newline-indent-proxy))
              (insert "deriving (")
              (shm/insert-undefined)
              (save-excursion
