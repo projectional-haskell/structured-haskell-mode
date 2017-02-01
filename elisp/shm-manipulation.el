@@ -568,21 +568,11 @@ data JSValue
 the point should be at the beginning of an evaporating undefined."
   (interactive)
   (shm/goto-topmost-parent)
-  (let ((current (shm-current-node))
-        (line (line-number-at-pos)))
+  (let ((current (shm-current-node)))
     (cond ((eq (elt current 1) 'DataDecl)
            (progn
              (shm/forward-node)
-             ;; The logic contained within the "if statement" assumes
-             ;; that the data declaration at point can be parsed by
-             ;; structured-haskell-mode. Specifically, it checks if
-             ;; the entire declaration fits on a single line; if so it
-             ;; creates space for the deriving clause to fit on the
-             ;; same line. Otherwise, it creates a new line for the
-             ;; desired clause.
-             (if (= line (line-number-at-pos))
-                 (insert " ")
-               (shm/newline-indent-proxy))
+             (shm/newline-indent-proxy)
              (insert "deriving (")
              (shm/insert-undefined)
              (save-excursion
