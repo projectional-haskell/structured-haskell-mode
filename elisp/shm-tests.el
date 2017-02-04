@@ -616,7 +616,37 @@ fn x = y + y
 "
          :kbd [?\M-x ?s ?h ?m ?/ ?g ?o ?t ?o ?- ?w ?h ?e ?r ?e return ?y]
          :customizations
-         '((shm-indent-point-after-adding-where-clause t)))))
+         '((shm-indent-point-after-adding-where-clause t)))
+   (list :name "typing 'if' snippet"
+         :start-buffer-content "foo ="
+         :start-cursor 6
+         :finish-cursor 10
+         :current-node-overlay 'nil
+         :end-buffer-content "foo = if undefined
+         then undefined
+         else undefined"
+         :kbd [?\s ?i ?f ?\s])
+   (list :name "typing 'let' snippet"
+         :start-buffer-content "foo ="
+         :start-cursor 6
+         :finish-cursor 11
+         :current-node-overlay 'nil
+         :end-buffer-content "foo = let \n      in undefined"
+         :kbd [?\s ?l ?e ?t ?\s])
+   (list :name "'if' snippet not expanded in '#if'"
+         :start-buffer-content "#if"
+         :start-cursor 4
+         :finish-cursor 5
+         :current-node-overlay 'nil
+         :end-buffer-content "#if "
+         :kbd [?\s])
+   (list :name "'let' snippet not expanded in '#let'"
+         :start-buffer-content "#let"
+         :start-cursor 5
+         :finish-cursor 6
+         :current-node-overlay 'nil
+         :end-buffer-content "#let "
+         :kbd [?\s])))
 
 (provide 'shm-tests)
 
