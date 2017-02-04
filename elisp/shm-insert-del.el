@@ -81,11 +81,12 @@
           (shm-auto-insert-case t))
          ((and (looking-back "[^a-zA-Z0-9_]case")
                (shm-nothing-following-p))
+
           (shm-auto-insert-case nil))
-         ((and (looking-back "[^a-zA-Z0-9_]if")
+         ((and (looking-back "[^a-zA-Z0-9_#]if")
                (shm-nothing-following-p))
           (shm-auto-insert-if))
-         ((and (looking-back "[^a-zA-Z0-9_]let")
+         ((and (looking-back "[^a-zA-Z0-9_#]let")
                (shm-nothing-following-p))
           (cond
            ((let ((current (shm-current-node)))
@@ -102,8 +103,7 @@
                   (- (point) 6))
                (looking-at "[ ]*$"))
           (shm-auto-insert-module))
-         (t (shm-insert-string " ")))
-        )
+         (t (shm-insert-string " "))))
        (t (shm-insert-string " "))))))
 
 (defun shm-nothing-following-p ()
