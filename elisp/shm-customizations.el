@@ -171,6 +171,31 @@ when option is nil.
   :group 'shm
   :type 'list)
 
+(defcustom shm-indent-if-offset 3
+  "Amount of indentation for 'true' and 'false' branches of the if expression.
+
+E.g. if this is equal to `0' then 'if' snippet will be expanded as
+
+if <condition>
+then <true branch>
+else <false branch>
+
+If this is equal to `2' then 'if' snippet will be expanded as
+
+if <condition>
+  then <true branch>
+  else <false branch>
+
+If this is equal to `4' then 'if' snippet will be expanded as
+
+if <condition>
+    then <true branch>
+    else <false branch>
+
+etc."
+  :group 'shm
+  :type 'integer)
+
 
 ;; Provide
 

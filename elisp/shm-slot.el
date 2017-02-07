@@ -151,21 +151,26 @@ case {undefined} of
   "Insert template
 
 if {undefined}
-   then {undefined}
-   else {undefined}
+<offset>then {undefined}
+<offset>else {undefined}
 
 or
 
 if {undefined} then {undefined} else {undefined}
 
 if inside parentheses."
-  (let ((start (save-excursion (forward-char -1)
-                               (search-backward-regexp "[^a-zA-Z0-9_]")
-                               (forward-char 1)
-                               (point)))
-        (template (if (bound-and-true-p structured-haskell-repl-mode)
-                      "if undefined then undefined else undefined"
-                    "if undefined\n   then undefined\n   else undefined")))
+  (let* ((start (save-excursion (forward-char -1)
+                                (search-backward-regexp "[^a-zA-Z0-9_]")
+                                (forward-char 1)
+                                (point)))
+         (offset (make-string
+                  (if (bound-and-true-p structured-haskell-repl-mode)
+                    3
+                    (make-string shm-indent-if-offset ?\s))
+                  ?\s))
+         (template (format "if undefined\n%sthen undefined\n%selse undefined"
+                           offset
+                           offset)))
     (shm-adjust-dependents (point) (- start (point)))
     (delete-region start (point))
     (shm-adjust-dependents (point) (length (car (last (split-string template "\n")))))

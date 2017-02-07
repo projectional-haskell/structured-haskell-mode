@@ -64,7 +64,7 @@ foo = do
 
 (defvar shm-tests
   (list
-(list :name "inserting after '"
+   (list :name "inserting after '"
       :start-buffer-content "x = [foo'
     ,()]
 "
@@ -616,7 +616,37 @@ fn x = y + y
 "
          :kbd [?\M-x ?s ?h ?m ?/ ?g ?o ?t ?o ?- ?w ?h ?e ?r ?e return ?y]
          :customizations
-         '((shm-indent-point-after-adding-where-clause t)))))
+         '((shm-indent-point-after-adding-where-clause . t)))
+   (list :name "if-then-else template width indent 0"
+         :start-buffer-content "fn :: a -> b
+fn x = if
+"
+         :start-cursor 23
+         :finish-cursor 24
+         :current-node-overlay 'nil
+         :end-buffer-content "fn :: a -> b
+fn x = if undefined
+       then undefined
+       else undefined
+"
+         :kbd " "
+         :customizations
+         '((shm-indent-if-offset . 0)))
+   (list :name "if-then-else template with indent 3"
+         :start-buffer-content "fn :: a -> b
+fn x = if
+"
+         :start-cursor 23
+         :finish-cursor 24
+         :current-node-overlay 'nil
+         :end-buffer-content "fn :: a -> b
+fn x = if undefined
+          then undefined
+          else undefined
+"
+         :kbd " "
+         :customizations
+         '((shm-indent-if-offset . 3)))))
 
 (provide 'shm-tests)
 
