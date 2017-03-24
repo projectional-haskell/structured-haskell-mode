@@ -27,8 +27,8 @@ so, in Haskell. To get around this limitation, we have a “current”
 node, which is always highlighted with a background color. With that
 in place, one is able to do all of the operations that paredit can do.
 
-Feature | Explanation
---- | --- | ---
+|Feature | Explanation |
+|--------|-------------|
 ![newline-indent](http://chrisdone.com/structured-haskell-mode/gifs-nocache/newline-indent.gif) | **Indenting**: `shm/newline-indent` (`C-j`) takes the current node and its type into consideration giving very predictable and useful behaviour.
 ![goto-parent](http://chrisdone.com/structured-haskell-mode/gifs-nocache/goto-parent.gif) | **Going to parent**: `shm/goto-parent` (`M-a`) jumps to the start of the parent.
 ![goto-parent-end](http://chrisdone.com/structured-haskell-mode/gifs-nocache/goto-parent-end.gif) | **Going to parent end**: `shm/goto-parent-end` (`)`) jumps to the end of the parent.
