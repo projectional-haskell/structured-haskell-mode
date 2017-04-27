@@ -29,22 +29,22 @@ in place, one is able to do all of the operations that paredit can do.
 
 |Feature | Explanation |
 |--------|-------------|
-![newline-indent](http://chrisdone.com/structured-haskell-mode/gifs-nocache/newline-indent.gif) | **Indenting**: `shm/newline-indent` (`C-j`) takes the current node and its type into consideration giving very predictable and useful behaviour.
-![goto-parent](http://chrisdone.com/structured-haskell-mode/gifs-nocache/goto-parent.gif) | **Going to parent**: `shm/goto-parent` (`M-a`) jumps to the start of the parent.
-![goto-parent-end](http://chrisdone.com/structured-haskell-mode/gifs-nocache/goto-parent-end.gif) | **Going to parent end**: `shm/goto-parent-end` (`)`) jumps to the end of the parent.
-![add-list-item](http://chrisdone.com/structured-haskell-mode/gifs-nocache/add-list-item.gif) | **Adding a list item**: `shm/newline-indent` (`C-j`) will automatically add a comma when inside a list.
-![add-operand](http://chrisdone.com/structured-haskell-mode/gifs-nocache/add-operands.gif) | **Adding operands**: `shm/add-operand` (`C-+`) will look at the current node and add another operand in the direction the cursor is leaning towards.
-![auto-re-indent](http://chrisdone.com/structured-haskell-mode/gifs-nocache/auto-re-indent.gif) | **Auto-reindenting**: Typing and deleting will automatically re-indent dependent code blocks.
-![raise](http://chrisdone.com/structured-haskell-mode/gifs-nocache/raise.gif) | **Raising**: `shm/raise` (`M-r`) raises the current node to replace its parent. If its direct parent is not the same expression type, it continues up the tree.
-![re-indenting](http://chrisdone.com/structured-haskell-mode/gifs-nocache/re-indenting.gif) | **Re-indenting**: `shm/newline-indent` (`C-j`) and `shm/delete-indentation` (`M-^`) allow you to bring nodes inwards or outwards relative to the parent.
-![record-syntax](http://chrisdone.com/structured-haskell-mode/gifs-nocache/record-syntax.gif) | **Record syntax**: Creating new elements with record syntax, like lists (and tuples) automatically adds the right separators. Note: you have to use `)` to expand the current node to be `foo :: X` rather than merely `X` in order to use `C-j` to get a new record field.
-![kill-yank](http://chrisdone.com/structured-haskell-mode/gifs-nocache/kill-yank.gif) | **Copy/pasting**: `shm/kill` (`M-k`) and `shm/yank` (`C-y`) take indentation into account, and automatically normalize so that re-inserting will indent properly.
-![kill-lines](http://chrisdone.com/structured-haskell-mode/gifs-nocache/kill-multiple-line.gif) | **Killing lines**: `shm/kill-line` (`C-k`) and `shm/yank` (`C-y`) also take indentation into account for killing and pasting, working with multiple lines at once happily.
-![skeletons](http://chrisdone.com/structured-haskell-mode/gifs-nocache/skeletons.gif) | **Skeletons**: Typing prefixes of common syntax will auto-fill in the structure with "slots" that you can hit `TAB` to jump to, which auto-disappear when you type in them.
-![imports](http://chrisdone.com/structured-haskell-mode/gifs-nocache/imports.gif) | **Imports**: Imports have some limited support when using `C-j` to auto-create new import lines, and `C-c C-q` to qualify/unqualify.
-![multi-strings](http://chrisdone.com/structured-haskell-mode/gifs-nocache/multi-strings.gif) | **Multi-line strings**: Use `C-j` inside a string to split it into multiple lines. Use backspace at the start of a line to join it with the previous.
-![pragmas](http://chrisdone.com/structured-haskell-mode/gifs-nocache/pragmas.gif) | **Pragmas**: There is some limited support to help with typing pragmas `{-# … #-}`.
-![case-split](http://chrisdone.com/structured-haskell-mode/gifs-nocache/case-split.gif) | **Case split**: If you are using `interactive-haskell-mode`, you can get case splits for simple sum types, you can `(require 'shm-case-split)` make a keybinding for `shm/case-split`.
+![newline-indent](gifs/newline-indent.gif) | **Indenting**: `shm/newline-indent` (`C-j`) takes the current node and its type into consideration giving very predictable and useful behaviour.
+![goto-parent](gifs/goto-parent.gif) | **Going to parent**: `shm/goto-parent` (`M-a`) jumps to the start of the parent.
+![goto-parent-end](gifs/goto-parent-end.gif) | **Going to parent end**: `shm/goto-parent-end` (`)`) jumps to the end of the parent.
+![add-list-item](gifs/add-list-item.gif) | **Adding a list item**: `shm/newline-indent` (`C-j`) will automatically add a comma when inside a list.
+![add-operand](gifs/add-operands.gif) | **Adding operands**: `shm/add-operand` (`C-+`) will look at the current node and add another operand in the direction the cursor is leaning towards.
+![auto-re-indent](gifs/auto-re-indent.gif) | **Auto-reindenting**: Typing and deleting will automatically re-indent dependent code blocks.
+![raise](gifs/raise.gif) | **Raising**: `shm/raise` (`M-r`) raises the current node to replace its parent. If its direct parent is not the same expression type, it continues up the tree.
+![re-indenting](gifs/re-indenting.gif) | **Re-indenting**: `shm/newline-indent` (`C-j`) and `shm/delete-indentation` (`M-^`) allow you to bring nodes inwards or outwards relative to the parent.
+![record-syntax](gifs/record-syntax.gif) | **Record syntax**: Creating new elements with record syntax, like lists (and tuples) automatically adds the right separators. Note: you have to use `)` to expand the current node to be `foo :: X` rather than merely `X` in order to use `C-j` to get a new record field.
+![kill-yank](gifs/kill-yank.gif) | **Copy/pasting**: `shm/kill` (`M-k`) and `shm/yank` (`C-y`) take indentation into account, and automatically normalize so that re-inserting will indent properly.
+![kill-lines](gifs/kill-multiple-line.gif) | **Killing lines**: `shm/kill-line` (`C-k`) and `shm/yank` (`C-y`) also take indentation into account for killing and pasting, working with multiple lines at once happily.
+![skeletons](gifs/skeletons.gif) | **Skeletons**: Typing prefixes of common syntax will auto-fill in the structure with "slots" that you can hit `TAB` to jump to, which auto-disappear when you type in them.
+![imports](gifs/imports.gif) | **Imports**: Imports have some limited support when using `C-j` to auto-create new import lines, and `C-c C-q` to qualify/unqualify.
+![multi-strings](gifs/multi-strings.gif) | **Multi-line strings**: Use `C-j` inside a string to split it into multiple lines. Use backspace at the start of a line to join it with the previous.
+![pragmas](gifs/pragmas.gif) | **Pragmas**: There is some limited support to help with typing pragmas `{-# … #-}`.
+![case-split](gifs/case-split.gif) | **Case split**: If you are using `interactive-haskell-mode`, you can get case splits for simple sum types, you can `(require 'shm-case-split)` make a keybinding for `shm/case-split`.
 
 Useful keybinding for case-split.
 
