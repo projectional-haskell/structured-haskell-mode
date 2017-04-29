@@ -564,8 +564,9 @@ data JSValue
           (funcall bail))))))
 
 (defun shm-add-deriving-clause ()
-  "Add deriving clause to data type declaration. If successful,
-  the point should be at the beginning of an evaporating undefined."
+  "Add a deriving clause to the data type declaration. If successful,
+the point should be at the beginning of an evaporating undefined."
+  (interactive)
   (shm/goto-topmost-parent)
   (let ((current (shm-current-node)))
     (cond ((eq (elt current 1) 'DataDecl)
@@ -578,5 +579,13 @@ data JSValue
                (forward-word)
                (insert ")"))))
           (t (message "The point is not contained within a data type declaration.")))))
+
+(defun shm/goto-topmost-parent ()
+  "Go to the topmost parent of the current node."
+  (let ((loc (point)))
+    (shm/goto-parent)
+    (while (< (point) loc)
+      (shm/goto-parent)
+      (setq loc (point)))))
 
 (provide 'shm-manipulation)

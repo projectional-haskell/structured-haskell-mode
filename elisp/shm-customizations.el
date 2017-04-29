@@ -144,6 +144,78 @@ syntax."
   :group 'shm
   :type 'string)
 
+(defcustom shm-skeleton-alist
+  '(((looking-back "[[ (,]\\\\")
+  (shm-auto-insert-lambda))
+ ((and
+   (looking-back "[^a-zA-Z0-9_]do")
+   (shm-nothing-following-p))
+  (shm-auto-insert-do))
+ ((and
+   (looking-back " <-")
+   (let
+       ((current
+         (shm-current-node)))
+     (when current
+       (or
+        (eq 'Do
+            (shm-node-cons current))
+        (string= "Stmt"
+                 (shm-node-type-name current))))))
+  (if
+      (bound-and-true-p structured-haskell-repl-mode)
+      (insert " ")
+    (shm-auto-insert-stmt 'qualifier)))
+ ((and
+   (looking-back "[^a-zA-Z0-9_]case")
+   (shm-nothing-following-p))
+  (shm-auto-insert-case))
+ ((and
+   (looking-back "[^a-zA-Z0-9_]if")
+   (shm-nothing-following-p))
+  (shm-auto-insert-if))
+ ((and
+   (looking-back "[^a-zA-Z0-9_]let")
+   (shm-nothing-following-p))
+  (cond
+   ((let
+        ((current
+          (shm-current-node)))
+      (and current
+           (or
+            (not
+             (or
+              (eq 'Do
+                  (shm-node-cons current))
+              (eq 'BDecls
+                  (shm-node-cons current))
+              (string= "Stmt"
+                       (shm-node-type-name current))))
+            (bound-and-true-p structured-haskell-repl-mode))))
+    (shm-auto-insert-let))
+   ((not
+     (bound-and-true-p structured-haskell-repl-mode))
+    (shm-auto-insert-stmt 'let))))
+ ((and
+   (looking-back "module")
+   (=
+    (line-beginning-position)
+    (-
+     (point)
+     6))
+   (looking-at "[ ]*$"))
+  (shm-auto-insert-module))
+ (t
+  (shm-insert-string " ")))
+  "Association list of rules of which skeleton to produce based
+on what has been typed in the buffer. The key of an element in
+the association list is a predicate. The value of an element in
+the association list is the action(s) to perform if the
+corresponding predicate is satisfied."
+  :group 'shm
+  :type '(alist :key-type (list :tag "Complete Predicate Expression" (sexp :tag "Individual Predicate Expression"))
+                :value-type (list :tag "Complete Action" (sexp :tag "Individual Action"))))
+
 (defcustom shm-indent-point-after-adding-where-clause
   nil
   "Whether to indent point to the next line when inseting where clause, e.g.

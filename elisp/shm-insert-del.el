@@ -22,6 +22,7 @@
 (require 'shm-layout)
 (require 'shm-indent)
 (require 'shm-languages)
+(require 'shm-customizations)
 
 (defun shm-post-self-insert ()
   "Self-insertion handler."
@@ -62,44 +63,7 @@
             (shm-in-string))
         (insert " "))
        (shm-auto-insert-skeletons
-        (cond
-         ((looking-back "[[ (,]\\\\")
-          (shm-auto-insert-lambda))
-         ((and (looking-back "[^a-zA-Z0-9_]do")
-               (shm-nothing-following-p))
-          (shm-auto-insert-do))
-         ((and (looking-back " <-")
-               (let ((current (shm-current-node)))
-                 (when current
-                   (or (eq 'Do (shm-node-cons current))
-                       (string= "Stmt" (shm-node-type-name current))))))
-          (if (bound-and-true-p structured-haskell-repl-mode)
-              (insert " ")
-            (shm-auto-insert-stmt 'qualifier)))
-         ((and (looking-back "[^a-zA-Z0-9_]case")
-               (shm-nothing-following-p))
-          (shm-auto-insert-case))
-         ((and (looking-back "[^a-zA-Z0-9_]if")
-               (shm-nothing-following-p))
-          (shm-auto-insert-if))
-         ((and (looking-back "[^a-zA-Z0-9_]let")
-               (shm-nothing-following-p))
-          (cond
-           ((let ((current (shm-current-node)))
-              (and current
-                   (or (not (or (eq 'Do (shm-node-cons current))
-                                (eq 'BDecls (shm-node-cons current))
-                                (string= "Stmt" (shm-node-type-name current))))
-                       (bound-and-true-p structured-haskell-repl-mode))))
-            (shm-auto-insert-let))
-           ((not (bound-and-true-p structured-haskell-repl-mode))
-            (shm-auto-insert-stmt 'let))))
-         ((and (looking-back "module")
-               (= (line-beginning-position)
-                  (- (point) 6))
-               (looking-at "[ ]*$"))
-          (shm-auto-insert-module))
-         (t (shm-insert-string " ")))
+          (shm-cond-wrapper shm-skeleton-alist)
         )
        (t (shm-insert-string " "))))))
 
