@@ -119,19 +119,28 @@ do {undefined}
             (goto-char next-point)
             (shm-evaporate (point) (+ (point) (length "undefined")))))))))
 
-(defun shm-auto-insert-case ()
+(defun shm-auto-insert-case (lambda-case)
   "Insert template
 
 case {undefined} of
+  {_} -> {undefined}
+
+or
+
+\\case {undefined}
   {_} -> {undefined}
 "
   (let ((start (save-excursion (forward-char -1)
                                (search-backward-regexp "[^a-zA-Z0-9_]")
                                (forward-char 1)
                                (point)))
-        (template (if (bound-and-true-p structured-haskell-repl-mode)
-                      "case undefined of _ -> undefined"
-                    "case undefined of\n  _ -> undefined")))
+        (template (if lambda-case
+                      (if (bound-and-true-p structured-haskell-repl-mode)
+                          "case _ -> undefined"
+                        "case\n  _ -> undefined")
+                    (if (bound-and-true-p structured-haskell-repl-mode)
+                        "case undefined of _ -> undefined"
+                      "case undefined of\n  _ -> undefined"))))
     (shm-adjust-dependents (point) (- start (point)))
     (delete-region start (point))
     (shm-adjust-dependents (point) (length (car (last (split-string template "\n")))))
@@ -140,12 +149,19 @@ case {undefined} of
        (insert template)))
     (forward-char 5)
     (shm/reparse)
-    (save-excursion
-      (shm-evaporate (point) (+ (point) (length "undefined")))
-      (search-forward-regexp "_" nil nil 1)
-      (shm-evaporate (1- (point)) (point))
-      (forward-char 4)
-      (shm-evaporate (point) (+ (point) (length "undefined"))))))
+    (if lambda-case
+        (progn (search-forward-regexp "_" nil nil 1)
+               (let ((here (1- (point))))
+                 (shm-evaporate (1- (point)) (point))
+                 (forward-char 4)
+                 (shm-evaporate (point) (+ (point) (length "undefined")))
+                 (goto-char here)))
+      (save-excursion
+        (shm-evaporate (point) (+ (point) (length "undefined")))
+        (search-forward-regexp "_" nil nil 1)
+        (shm-evaporate (1- (point)) (point))
+        (forward-char 4)
+        (shm-evaporate (point) (+ (point) (length "undefined")))))))
 
 (defun shm-auto-insert-if ()
   "Insert template
