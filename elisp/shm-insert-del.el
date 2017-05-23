@@ -76,7 +76,7 @@
           (if (bound-and-true-p structured-haskell-repl-mode)
               (insert " ")
             (shm-auto-insert-stmt 'qualifier)))
-         ((and (looking-back "\\case")
+         ((and (looking-back "\\\\case")
                (shm-nothing-following-p))
           (shm-auto-insert-case t))
          ((and (looking-back "[^a-zA-Z0-9_]case")
