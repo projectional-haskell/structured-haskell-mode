@@ -226,4 +226,93 @@ White space here is any of: space, tab, emacs newline (line feed, ASCII 10)."
      (shm-case-split-alts-from-data-decl
       (haskell-process-get-data-type name)))))
 
+(defun shm/case-split-completing-read (&optional expr-string)
+  (interactive)
+  "Using whichever `completing-read' function is available, this
+will gather all the data types currently within the current
+buffer (and also those given in the imports) that is loaded into
+an interactive haskell session and present them in a list (the
+manner in which is specified by `completing-read'). Upon
+selection of a data type, the corresponding case statement for
+that type will be inserted into the buffer. EXPR-STRING will be
+used as the variable to match on in the case statement when it is
+non-nil."
+  (let* ((err "Can't work with this type.")
+         (execute
+          (condition-case nil
+              (shm/case-split
+               (completing-read
+                "Choose a type: "
+                (shm-haskell-interactive-get-types))
+               expr-string)
+            (error err))))
+    (when execute
+      (delete-region (point-at-bol) (point-at-eol))
+      (delete-char 1)
+      execute)))
+
+(defun shm-haskell-interactive-get-types ()
+  "When an interactive-haskell session is currently loaded,
+gather all the data types necessarily loaded in the current
+session."
+  (if (haskell-process)
+      (progn
+        (require 'rx)
+        (require 'dash)
+        (let* ((imports
+                (save-excursion
+                  (goto-char (point-min))
+                  (let (collect)
+                    (while (re-search-forward
+                            "^import \\(qualified\\)*\\s-+" nil t)
+                      (setq collect
+                            (cons
+                             (buffer-substring-no-properties
+                              (point)
+                              (skip-chars-forward
+                               (rx (or alphanumeric (any ".")))
+                               (point-at-eol)))
+                             collect)))
+                    collect))))
+          (-filter
+           (lambda (str) (not (string= "" str)))
+           (split-string
+            (mapconcat
+             'identity
+             (-filter
+              (lambda (str) (not (string= "" str)))
+              (mapcar
+               (lambda (import)
+                 (let ((reply
+                        (haskell-process-queue-sync-request
+                         (haskell-process)
+                         (concat ":browse " import))))
+                   (with-temp-buffer
+                     (insert reply)
+                     (keep-lines "^data" (point-min) (point-max))
+                     (goto-char (point-min))
+                     (haskell-mode)
+                     (structured-haskell-mode -1)
+                     (while (/= (point) (point-max))
+                       (delete-char 5)
+                       (forward-sexp 1)
+                       (delete-region (point) (point-at-eol))
+                       (forward-line 1))
+                     (fundamental-mode)
+                     (eod-region-remove-properties (point-min) (point-max))
+                     (buffer-string))))
+               (cons ""                   ;the empty string is necessary
+                                        ;so that the current module is
+                                        ;searched
+                     (if (member "Prelude" imports)
+                         imports
+                       (cons "Prelude" imports)))))
+             "")
+            "\n"))))
+    (error
+     "You do not have an interactive haskell session
+    loaded. Load an interactive haskell process by executing
+    M-x `haskell-session' or by pressing C-c
+    C-z (or M-x `haskell-interactive-switch').")))
+
 (provide 'shm-case-split)
