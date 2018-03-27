@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE PatternGuards #-}
@@ -162,7 +163,11 @@ pre x i =
                           (srcSpanEndColumn end))]
     _ -> case cast x :: Maybe (Deriving SrcSpanInfo)  of
            -- <deriving (X,Y,Z)> becomes <deriving (<X,Y,Z>)
+#if MIN_VERSION_haskell_src_exts(1,20,0)
+           Just (Deriving _ _ ds@(_:_)) ->
+#else
            Just (Deriving _ ds@(_:_)) ->
+#endif
              [spanHSE (show "InstHeads")
                       "InstHeads"
                       (SrcSpan (srcSpanFilename start)
@@ -276,8 +281,8 @@ readExtension x =
 -- | Default extensions.
 defaultExtensions :: [Extension]
 defaultExtensions =
-  [e | e@EnableExtension{} <- knownExtensions] \\
-  map EnableExtension badExtensions
+  [e | e@EnableExtension{} <- knownExtensions] \\ baddies
+  where baddies = map EnableExtension badExtensions
 
 -- | Extensions which steal too much syntax.
 badExtensions :: [KnownExtension]
