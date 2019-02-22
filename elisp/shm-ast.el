@@ -170,14 +170,21 @@ and instate this one."
     (buffer-substring (+ (point-min) (length "x=")) (point-max))))
 
 (defun shm/call-process-region-ignoring-comments (start end prog-name delete out-buffer display &rest args)
-  (save-match-data
-    (let ((source-code (buffer-substring-no-properties start end)))
-      (with-temp-buffer
-        (insert source-code)
-        (goto-char (point-min))
-        (while (search-forward-regexp "^#.*$" nil t)
-          (replace-match ""))
-        (apply #'call-process-region (point-min) (point-max) prog-name delete out-buffer display args)))))
+  (let ((the-major-mode major-mode))
+    (save-match-data
+      (let ((source-code (buffer-substring-no-properties start end)))
+        (with-temp-buffer
+          (insert
+           (if (eq the-major-mode 'purescript-mode)
+               (replace-regexp-in-string
+                "instance \\([a-zA-Z0-9]+\\) :: " "instance \\1 => "
+                (replace-regexp-in-string
+                 "\\([a-zA-Z0-9]+\\): *\\([\n]*\\)" "\\1_\\2=" source-code))
+             source-code))
+          (goto-char (point-min))
+          (while (search-forward-regexp "^#.*$" nil t)
+            (replace-match ""))
+          (apply #'call-process-region (point-min) (point-max) prog-name delete out-buffer display args))))))
 
 (defun shm-get-ast (type start end)
   "Get the AST for the given region at START and END. Parses with TYPE.
